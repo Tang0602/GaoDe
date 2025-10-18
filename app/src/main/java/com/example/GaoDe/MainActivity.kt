@@ -65,7 +65,14 @@ fun MainScreen() {
                                 launchSingleTop = true
                                 restoreState = true
                             }
-                        }
+                        },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = androidx.compose.ui.graphics.Color.Transparent,
+                            selectedIconColor = androidx.compose.ui.graphics.Color(0xFF2196F3),
+                            selectedTextColor = androidx.compose.ui.graphics.Color(0xFF2196F3),
+                            unselectedIconColor = androidx.compose.ui.graphics.Color.Gray.copy(alpha = 0.6f),
+                            unselectedTextColor = androidx.compose.ui.graphics.Color.Gray.copy(alpha = 0.6f)
+                        )
                     )
                 }
             }

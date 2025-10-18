@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(mkdir:*)",
-      "Bash(gradlew.bat build:*)"
+      "Bash(gradlew.bat build:*)",
+      "Bash(./gradlew:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(gradle build)"
     ],
     "deny": []
   }

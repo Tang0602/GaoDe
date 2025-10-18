@@ -1,5 +1,6 @@
 package com.example.GaoDe.ui.home
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,18 +11,25 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.GaoDe.R
@@ -123,33 +131,50 @@ fun MapView(
 ) {
     Box(
         modifier = modifier
-            .background(Color(0xFFE8F5E8))
+            .fillMaxSize()
     ) {
+        /* Map SDK View Placeholder */
+        // TODO: Replace with actual map SDK implementation
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color(0xFFE3F2FD),
+                            Color(0xFFBBDEFB)
+                        )
+                    )
+                )
+        )
+        
+        // Map overlay elements
         Text(
-            text = "地图视图 - ${places.size} 个地点",
+            text = "地图加载中...",
             modifier = Modifier
                 .align(Alignment.Center)
                 .background(
-                    Color.White.copy(alpha = 0.8f),
+                    Color.White.copy(alpha = 0.9f),
                     RoundedCornerShape(8.dp)
                 )
-                .padding(16.dp),
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Medium
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            fontSize = 14.sp,
+            color = Color.Gray.copy(alpha = 0.8f)
         )
         
+        // User location indicator
         Box(
             modifier = Modifier
                 .align(Alignment.Center)
-                .size(40.dp)
-                .background(Color.Blue.copy(alpha = 0.3f), CircleShape),
+                .offset(y = 40.dp)
+                .size(16.dp)
+                .background(Color(0xFF2196F3), CircleShape),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = Icons.Default.Person,
-                contentDescription = "用户位置",
-                tint = Color.White,
-                modifier = Modifier.size(20.dp)
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .background(Color.White, CircleShape)
             )
         }
     }
@@ -163,38 +188,50 @@ fun MapControls(
 ) {
     Column(
         modifier = modifier.padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         FloatingActionButton(
             onClick = { },
-            modifier = Modifier.size(48.dp),
-            containerColor = MaterialTheme.colorScheme.surface
+            modifier = Modifier
+                .size(52.dp)
+                .graphicsLayer {
+                    shadowElevation = 8.dp.toPx()
+                    shape = CircleShape
+                    clip = true
+                },
+            containerColor = Color.White,
+            elevation = FloatingActionButtonDefaults.elevation(
+                defaultElevation = 0.dp,
+                pressedElevation = 0.dp
+            )
         ) {
-            Icon(Icons.Default.Add, contentDescription = "更多")
+            Icon(
+                Icons.Default.Add, 
+                contentDescription = "更多",
+                tint = Color.Gray.copy(alpha = 0.8f)
+            )
         }
         
         FloatingActionButton(
             onClick = { },
-            modifier = Modifier.size(48.dp),
-            containerColor = MaterialTheme.colorScheme.surface
+            modifier = Modifier
+                .size(52.dp)
+                .graphicsLayer {
+                    shadowElevation = 8.dp.toPx()
+                    shape = CircleShape
+                    clip = true
+                },
+            containerColor = Color.White,
+            elevation = FloatingActionButtonDefaults.elevation(
+                defaultElevation = 0.dp,
+                pressedElevation = 0.dp
+            )
         ) {
-            Text("🗂️", fontSize = 20.sp)
-        }
-        
-        FloatingActionButton(
-            onClick = onLocationClick,
-            modifier = Modifier.size(48.dp),
-            containerColor = MaterialTheme.colorScheme.surface
-        ) {
-            Icon(Icons.Default.LocationOn, contentDescription = "定位")
-        }
-        
-        FloatingActionButton(
-            onClick = onRouteClick,
-            modifier = Modifier.size(48.dp),
-            containerColor = MaterialTheme.colorScheme.surface
-        ) {
-            Text("🧭", fontSize = 20.sp)
+            Icon(
+                Icons.Default.Layers, 
+                contentDescription = "图层",
+                tint = Color.Gray.copy(alpha = 0.8f)
+            )
         }
     }
 }
@@ -207,46 +244,53 @@ fun BottomSheet(
     onSearchQueryChange: (String) -> Unit,
     onPlaceClick: (Place) -> Unit
 ) {
-    Card(
+    val density = LocalDensity.current
+    
+    Surface(
         modifier = modifier
             .fillMaxWidth()
-            .height(400.dp),
-        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            .padding(horizontal = 4.dp)
+            .height(420.dp)
+            .graphicsLayer {
+                shadowElevation = with(density) { 16.dp.toPx() }
+                shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+                clip = true
+                ambientShadowColor = Color.Black.copy(alpha = 0.1f)
+                spotShadowColor = Color.Black.copy(alpha = 0.1f)
+            },
+        shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
+        color = Color.White
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(horizontal = 20.dp, vertical = 16.dp)
         ) {
             Box(
                 modifier = Modifier
-                    .width(40.dp)
-                    .height(4.dp)
+                    .width(48.dp)
+                    .height(5.dp)
                     .background(
-                        Color.Gray.copy(alpha = 0.3f),
-                        RoundedCornerShape(2.dp)
+                        Color.Gray.copy(alpha = 0.4f),
+                        RoundedCornerShape(3.dp)
                     )
                     .align(Alignment.CenterHorizontally)
             )
             
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
             
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = onSearchQueryChange,
-                placeholder = { Text(stringResource(R.string.search_placeholder)) },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                trailingIcon = { 
-                    Icon(Icons.Default.Mic, contentDescription = "语音搜索", tint = Color.Blue) 
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
+            InlineSearchBar(
+                searchQuery = searchQuery,
+                onSearchQueryChange = onSearchQueryChange
             )
             
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
             
             QuickActionsGrid()
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            HomeWorkButtons()
             
             Spacer(modifier = Modifier.height(16.dp))
             
@@ -256,24 +300,70 @@ fun BottomSheet(
 }
 
 @Composable
+fun InlineSearchBar(
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        color = Color(0xFFF5F5F5)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                Icons.Default.Search,
+                contentDescription = "搜索",
+                tint = Color.Gray.copy(alpha = 0.7f),
+                modifier = Modifier.size(20.dp)
+            )
+            
+            Spacer(modifier = Modifier.width(12.dp))
+            
+            BasicTextField(
+                value = searchQuery,
+                onValueChange = onSearchQueryChange,
+                modifier = Modifier.weight(1f),
+                singleLine = true,
+                textStyle = TextStyle(
+                    fontSize = 16.sp,
+                    color = Color.Black.copy(alpha = 0.87f)
+                ),
+                decorationBox = { innerTextField ->
+                    if (searchQuery.isEmpty()) {
+                        Text(
+                            text = "武汉站",
+                            color = Color.Gray.copy(alpha = 0.6f),
+                            fontSize = 16.sp
+                        )
+                    }
+                    innerTextField()
+                }
+            )
+            
+        }
+    }
+}
+
+@Composable
 fun QuickActionsGrid() {
     val actions = listOf(
         QuickAction("🚌", stringResource(R.string.public_transport)),
-        QuickAction("🚍", stringResource(R.string.real_time_bus)),
+        QuickAction("🚇", "地铁"),
         QuickAction("🚴", stringResource(R.string.cycling)),
         QuickAction("🚗", stringResource(R.string.taxi)),
-        QuickAction("🏨", stringResource(R.string.hotel), hasTag = true),
-        QuickAction("🚄", stringResource(R.string.train_flight)),
-        QuickAction("🚙", stringResource(R.string.carpool)),
         QuickAction("🚶", stringResource(R.string.walking)),
-        QuickAction("🎯", stringResource(R.string.nearby_tour)),
-        QuickAction("⚙️", stringResource(R.string.more_tools))
+        QuickAction("🏨", stringResource(R.string.hotel))
     )
     
     LazyVerticalGrid(
-        columns = GridCells.Fixed(5),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        columns = GridCells.Fixed(3),
+        horizontalArrangement = Arrangement.spacedBy(24.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
         modifier = Modifier.height(120.dp)
     ) {
         items(actions) { action ->
@@ -284,111 +374,116 @@ fun QuickActionsGrid() {
 
 data class QuickAction(
     val icon: String,
-    val label: String,
-    val hasTag: Boolean = false
+    val label: String
 )
 
 @Composable
 fun QuickActionItem(action: QuickAction) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        Box {
+        Surface(
+            modifier = Modifier.size(54.dp),
+            shape = CircleShape,
+            color = Color(0xFFE8F5E9),
+            shadowElevation = 2.dp
+        ) {
             Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .background(Color.Green.copy(alpha = 0.1f), CircleShape),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize()
             ) {
                 Text(
                     text = action.icon,
-                    fontSize = 20.sp
+                    fontSize = 24.sp
                 )
-            }
-            
-            if (action.hasTag) {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .background(Color.Red, RoundedCornerShape(6.dp))
-                        .padding(horizontal = 4.dp, vertical = 2.dp)
-                ) {
-                    Text(
-                        text = "订周末",
-                        color = Color.White,
-                        fontSize = 8.sp
-                    )
-                }
             }
         }
         
         Text(
             text = action.label,
-            fontSize = 10.sp,
-            color = Color.Gray
+            fontSize = 11.sp,
+            color = Color.Gray.copy(alpha = 0.8f),
+            fontWeight = FontWeight.Medium
         )
+    }
+}
+
+@Composable
+fun HomeWorkButtons() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Surface(
+            modifier = Modifier.weight(1f),
+            color = Color.White,
+            shape = RoundedCornerShape(12.dp),
+            shadowElevation = 2.dp
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Default.Home,
+                    contentDescription = "回家",
+                    tint = Color(0xFF4CAF50),
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "回家",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color.Black.copy(alpha = 0.87f)
+                )
+            }
+        }
+        
+        Surface(
+            modifier = Modifier.weight(1f),
+            color = Color.White,
+            shape = RoundedCornerShape(12.dp),
+            shadowElevation = 2.dp
+        ) {
+            Row(
+                modifier = Modifier.padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Default.Business,
+                    contentDescription = "去单位",
+                    tint = Color(0xFF2196F3),
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "去单位",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color.Black.copy(alpha = 0.87f)
+                )
+            }
+        }
     }
 }
 
 @Composable
 fun RecommendationCards() {
     Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Card(
+        Surface(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF3E0))
+            color = Color.White,
+            shape = RoundedCornerShape(12.dp),
+            shadowElevation = 1.dp
         ) {
             Row(
-                modifier = Modifier.padding(12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .background(Color.Red, RoundedCornerShape(4.dp))
-                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                ) {
-                    Text(
-                        text = "优惠",
-                        color = Color.White,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                
-                Spacer(modifier = Modifier.width(8.dp))
-                
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "打车去南湖山庄",
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 14.sp
-                    )
-                    Text(
-                        text = "· 半岛花园",
-                        color = Color.Gray,
-                        fontSize = 12.sp
-                    )
-                    Text(
-                        text = "预计3分钟接驾",
-                        color = Color.Gray,
-                        fontSize = 12.sp
-                    )
-                }
-                
-                IconButton(onClick = { }) {
-                    Icon(Icons.Default.Close, contentDescription = "关闭")
-                }
-            }
-        }
-        
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-        ) {
-            Row(
-                modifier = Modifier.padding(12.dp),
+                modifier = Modifier.padding(14.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(modifier = Modifier.weight(1f)) {
@@ -398,16 +493,18 @@ fun RecommendationCards() {
                         Text(
                             text = "周边公共交通推荐",
                             fontWeight = FontWeight.Medium,
-                            fontSize = 14.sp
+                            fontSize = 14.sp,
+                            color = Color.Black.copy(alpha = 0.87f)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = ">",
-                            color = Color.Gray,
-                            fontSize = 14.sp
+                        Icon(
+                            Icons.Default.ChevronRight,
+                            contentDescription = null,
+                            tint = Color.Gray.copy(alpha = 0.6f),
+                            modifier = Modifier.size(16.dp)
                         )
                     }
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -415,27 +512,32 @@ fun RecommendationCards() {
                             text = "🚌",
                             fontSize = 16.sp
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = "586路",
-                            fontSize = 12.sp
+                            fontSize = 12.sp,
+                            color = Color.Black.copy(alpha = 0.8f)
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(10.dp))
                         Text(
                             text = "20分钟/趟",
-                            color = Color.Green,
-                            fontSize = 12.sp
+                            color = Color(0xFF4CAF50),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium
                         )
                     }
                 }
                 
                 OutlinedButton(
                     onClick = { },
-                    modifier = Modifier.height(32.dp)
+                    modifier = Modifier.height(34.dp),
+                    shape = RoundedCornerShape(50),
+                    border = BorderStroke(1.dp, Color.Gray.copy(alpha = 0.3f))
                 ) {
                     Text(
                         text = "关注",
-                        fontSize = 12.sp
+                        fontSize = 12.sp,
+                        color = Color.Black.copy(alpha = 0.7f)
                     )
                 }
             }
