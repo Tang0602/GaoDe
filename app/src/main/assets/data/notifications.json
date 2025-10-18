@@ -1,0 +1,49 @@
+[
+  {
+    "id": "notif_001",
+    "title": "交通拥堵提醒",
+    "content": "您常走的路线目前有轻微拥堵，建议选择替代路线",
+    "timestamp": 1698825000000,
+    "notificationType": "TRAFFIC_UPDATE",
+    "isRead": false,
+    "priority": "HIGH"
+  },
+  {
+    "id": "notif_002", 
+    "title": "路线推荐",
+    "content": "发现更快的路线，可节省15分钟",
+    "timestamp": 1698824000000,
+    "notificationType": "ROUTE_SUGGESTION",
+    "isRead": true,
+    "actionUrl": "gaode://route/suggest?id=route_001",
+    "priority": "NORMAL"
+  },
+  {
+    "id": "notif_003",
+    "title": "位置提醒",
+    "content": "您已到达目的地附近，请注意停车位置",
+    "timestamp": 1698823000000,
+    "notificationType": "LOCATION_REMINDER",
+    "isRead": true,
+    "priority": "NORMAL"
+  },
+  {
+    "id": "notif_004",
+    "title": "应用更新",
+    "content": "高德地图有新版本可用，建议更新以获得更好体验",
+    "timestamp": 1698822000000,
+    "notificationType": "SYSTEM_UPDATE",
+    "isRead": false,
+    "actionUrl": "gaode://update",
+    "priority": "LOW"
+  },
+  {
+    "id": "notif_005",
+    "title": "紧急提醒",
+    "content": "前方发生交通事故，请谨慎驾驶",
+    "timestamp": 1698826000000,
+    "notificationType": "EMERGENCY_ALERT",
+    "isRead": false,
+    "priority": "URGENT"
+  }
+]

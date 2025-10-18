@@ -1,0 +1,39 @@
+[
+  {
+    "id": "msg_001",
+    "senderId": "user_001",
+    "receiverId": "user_002", 
+    "content": "你好，请问去机场怎么走？",
+    "timestamp": 1698825600000,
+    "messageType": "TEXT",
+    "isRead": true
+  },
+  {
+    "id": "msg_002",
+    "senderId": "user_002",
+    "receiverId": "user_001",
+    "content": "建议你走机场高速，现在路况还不错",
+    "timestamp": 1698825720000,
+    "messageType": "TEXT", 
+    "isRead": true
+  },
+  {
+    "id": "msg_003",
+    "senderId": "user_001",
+    "receiverId": "user_002",
+    "content": "谢谢！大概需要多长时间？",
+    "timestamp": 1698825800000,
+    "messageType": "TEXT",
+    "isRead": false
+  },
+  {
+    "id": "msg_004",
+    "senderId": "system",
+    "receiverId": "user_001",
+    "content": "您共享的位置信息",
+    "timestamp": 1698825900000,
+    "messageType": "LOCATION",
+    "isRead": false,
+    "attachmentUrl": "location://39.9042,116.3974"
+  }
+]

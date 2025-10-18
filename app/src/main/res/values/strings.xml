@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">高德地图</string>
+    <string name="home">首页</string>
+    <string name="message">消息</string>
+    <string name="my">我的</string>
+    <string name="search_placeholder">长途汽车站</string>
+    <string name="public_transport">公交地铁</string>
+    <string name="real_time_bus">实时公交</string>
+    <string name="cycling">骑行</string>
+    <string name="taxi">打车</string>
+    <string name="hotel">订酒店</string>
+    <string name="train_flight">火车票机票</string>
+    <string name="carpool">顺风车</string>
+    <string name="walking">步行</string>
+    <string name="nearby_tour">周边游</string>
+    <string name="more_tools">更多工具</string>
+</resources>
