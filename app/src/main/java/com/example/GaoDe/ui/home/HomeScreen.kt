@@ -32,6 +32,9 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+
+import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
 import com.example.GaoDe.R
 import com.example.GaoDe.data.DataManager
@@ -43,12 +46,14 @@ fun HomeScreen() {
     val context = LocalContext.current
     val dataManager = remember { DataManager(context) }
     val presenter = remember { HomePresenter(dataManager) }
+    val viewModel: HomePageViewModel = viewModel()
     
     var places by remember { mutableStateOf<List<Place>>(emptyList()) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var searchQuery by remember { mutableStateOf("") }
     
+    val mapUiState by viewModel.uiState.collectAsStateWithLifecycle()
     val bottomSheetState = rememberBottomSheetScaffoldState()
     val scope = rememberCoroutineScope()
     
@@ -93,7 +98,7 @@ fun HomeScreen() {
     
     BottomSheetScaffold(
         scaffoldState = bottomSheetState,
-        sheetPeekHeight = 80.dp,
+        sheetPeekHeight = 120.dp,
         sheetContent = {
             SheetContent(
                 searchQuery = searchQuery,
@@ -108,7 +113,9 @@ fun HomeScreen() {
         Box(modifier = Modifier.fillMaxSize()) {
             MapView(
                 modifier = Modifier.fillMaxSize(),
-                places = places
+                places = places,
+                mapUiState = mapUiState,
+                onRetry = { viewModel.retryLoadMap() }
             )
             
             MapControls(
@@ -136,7 +143,9 @@ fun HomeScreen() {
 @Composable
 fun MapView(
     modifier: Modifier = Modifier,
-    places: List<Place>
+    places: List<Place>,
+    mapUiState: MapUiState,
+    onRetry: () -> Unit
 ) {
     Box(
         modifier = modifier
@@ -157,34 +166,93 @@ fun MapView(
                 )
         )
         
-        // Map overlay elements
-        Text(
-            text = "地图加载中...",
-            modifier = Modifier
-                .align(Alignment.Center)
-                .background(
-                    Color.White.copy(alpha = 0.9f),
-                    RoundedCornerShape(8.dp)
-                )
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            fontSize = 14.sp,
-            color = Color.Gray.copy(alpha = 0.8f)
-        )
-        
-        // User location indicator
-        Box(
-            modifier = Modifier
-                .align(Alignment.Center)
-                .offset(y = 40.dp)
-                .size(16.dp)
-                .background(Color(0xFF2196F3), CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(8.dp)
-                    .background(Color.White, CircleShape)
-            )
+        // Map overlay elements based on state
+        when (mapUiState) {
+            is MapUiState.Loading -> {
+                Surface(
+                    modifier = Modifier
+                        .align(Alignment.Center),
+                    color = Color.White.copy(alpha = 0.9f),
+                    shape = RoundedCornerShape(12.dp),
+                    shadowElevation = 4.dp
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            strokeWidth = 2.dp,
+                            color = Color(0xFF2196F3)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            text = "地图加载中...",
+                            fontSize = 14.sp,
+                            color = Color.Gray.copy(alpha = 0.8f)
+                        )
+                    }
+                }
+            }
+            is MapUiState.Success -> {
+                // User location indicator
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .offset(y = 40.dp)
+                        .size(16.dp)
+                        .background(Color(0xFF2196F3), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .background(Color.White, CircleShape)
+                    )
+                }
+            }
+            is MapUiState.Error -> {
+                Surface(
+                    modifier = Modifier
+                        .align(Alignment.Center),
+                    color = Color.White.copy(alpha = 0.9f),
+                    shape = RoundedCornerShape(12.dp),
+                    shadowElevation = 4.dp
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            Icons.Default.Error,
+                            contentDescription = null,
+                            tint = Color.Red,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "地图加载失败",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Text(
+                            text = mapUiState.message,
+                            fontSize = 12.sp,
+                            color = Color.Gray
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(
+                            onClick = onRetry,
+                            modifier = Modifier.height(32.dp)
+                        ) {
+                            Text(
+                                text = "重试",
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }

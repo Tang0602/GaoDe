@@ -1,0 +1,20 @@
+R_DEF: Internal format may change without notice
+local
+string app_name
+string carpool
+string cycling
+string home
+string hotel
+string message
+string more_tools
+string my
+string nearby_tour
+string public_transport
+string real_time_bus
+string search_placeholder
+string taxi
+string train_flight
+string walking
+style Theme.GaoDe
+xml backup_rules
+xml data_extraction_rules

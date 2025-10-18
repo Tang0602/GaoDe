@@ -103,22 +103,26 @@ app/src/main/
 
 ### 构建要求
 - Android Studio Arctic Fox (2020.3.1) 或更高版本
-- Android SDK 34
-- Kotlin 1.9.10
-- Gradle 8.2.1
+- Android SDK 35
+- Kotlin 1.9.25
+- Gradle 8.6.0
 
 ### 运行环境
+- 编译 Android API 35
 - 最低 Android API 24 (Android 7.0)
 - 目标 Android API 34
 
 ## 开发状态
 
-### 当前版本: 1.3
+### 当前版本: 1.4
 - 📱 基础项目结构搭建完成
 - 🏠 首页核心功能实现完成
-- 🎨 UI 界面结构性重构完成：
-  - 🎪 **BottomSheetScaffold集成**：完整的可交互拖拽底部面板实现
-  - 📏 **拖拽状态配置**：折叠状态(peek height: 80dp)和完全展开状态
+- 🎨 UI 界面优化和状态管理完善：
+  - 🎪 **BottomSheetScaffold优化**：完整的可交互拖拽底部面板，收起时保持搜索栏可见
+  - 📏 **拖拽状态优化**：折叠状态(peek height: 120dp)确保搜索栏完整显示
+  - 🔄 **状态管理系统**：引入MapUiState密封类和HomePageViewModel
+  - ⚡ **地图加载优化**：通过StateFlow管理加载状态，改善用户等待体验
+  - 🎯 **UI状态响应**：Loading(1.5s加载动画)、Success(位置指示器)、Error(重试功能)
   - 🗺️ **地图背景优化**：地图视图放置在主内容区域，作为页面背景
   - 📄 **面板内容整合**：所有内容(搜索栏、快捷网格、回家/去单位按钮)统一在sheetContent中
   - 🗑️ **内容精简**：彻底移除"周边公共交通推荐"卡片
@@ -129,7 +133,7 @@ app/src/main/
   - 🎯 浮动操作按钮添加自定义阴影效果
   - 🧭 底部导航栏移除胶囊指示器，采用颜色切换的选中效果
 - 📊 数据管理系统完成
-- 🔧 MVP 架构基础框架完成
+- 🔧 MVP + ViewModel 混合架构框架完成
 
 ### 下一步计划
 - 消息页面实现

@@ -1,7 +1,7 @@
 buildscript {
     ext {
-        compose_version = '1.5.4'
-        kotlin_version = '1.9.10'
+        compose_version = '1.5.15'
+        kotlin_version = '1.9.25'
     }
     dependencies {
         classpath "com.android.tools.build:gradle:8.1.2"
@@ -10,9 +10,9 @@ buildscript {
 }
 
 plugins {
-    id 'com.android.application' version '8.1.2' apply false
-    id 'com.android.library' version '8.1.2' apply false
-    id 'org.jetbrains.kotlin.android' version '1.9.20' apply false
+    id 'com.android.application' version '8.6.0' apply false
+    id 'com.android.library' version '8.6.0' apply false
+    id 'org.jetbrains.kotlin.android' version '1.9.25' apply false
 }
 
 task clean(type: Delete) {
