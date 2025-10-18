@@ -32,6 +32,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
 import com.example.GaoDe.R
 import com.example.GaoDe.data.DataManager
 import com.example.GaoDe.model.Place
@@ -47,6 +48,9 @@ fun HomeScreen() {
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var searchQuery by remember { mutableStateOf("") }
+    
+    val bottomSheetState = rememberBottomSheetScaffoldState()
+    val scope = rememberCoroutineScope()
     
     val homeView = remember {
         object : HomeContract.View {
@@ -87,38 +91,43 @@ fun HomeScreen() {
         }
     }
     
-    Box(modifier = Modifier.fillMaxSize()) {
-        MapView(
-            modifier = Modifier.fillMaxSize(),
-            places = places
-        )
-        
-        MapControls(
-            modifier = Modifier.align(Alignment.CenterEnd),
-            onLocationClick = { presenter.onLocationButtonClicked() },
-            onRouteClick = { presenter.onRouteButtonClicked() }
-        )
-        
-        BottomSheet(
-            modifier = Modifier.align(Alignment.BottomCenter),
-            searchQuery = searchQuery,
-            onSearchQueryChange = { 
-                searchQuery = it
-                presenter.searchPlaces(it)
-            },
-            onPlaceClick = { presenter.onPlaceClicked(it) }
-        )
-        
-        if (isLoading) {
-            CircularProgressIndicator(
-                modifier = Modifier.align(Alignment.Center)
+    BottomSheetScaffold(
+        scaffoldState = bottomSheetState,
+        sheetPeekHeight = 80.dp,
+        sheetContent = {
+            SheetContent(
+                searchQuery = searchQuery,
+                onSearchQueryChange = { 
+                    searchQuery = it
+                    presenter.searchPlaces(it)
+                },
+                onPlaceClick = { presenter.onPlaceClicked(it) }
             )
         }
-        
-        errorMessage?.let { message ->
-            LaunchedEffect(message) {
-                
-                errorMessage = null
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            MapView(
+                modifier = Modifier.fillMaxSize(),
+                places = places
+            )
+            
+            MapControls(
+                modifier = Modifier.align(Alignment.CenterEnd),
+                onLocationClick = { presenter.onLocationButtonClicked() },
+                onRouteClick = { presenter.onRouteButtonClicked() }
+            )
+            
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
+            
+            errorMessage?.let { message ->
+                LaunchedEffect(message) {
+                    
+                    errorMessage = null
+                }
             }
         }
     }
@@ -238,64 +247,43 @@ fun MapControls(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BottomSheet(
-    modifier: Modifier = Modifier,
+fun SheetContent(
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
     onPlaceClick: (Place) -> Unit
 ) {
-    val density = LocalDensity.current
-    
-    Surface(
-        modifier = modifier
+    Column(
+        modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 4.dp)
-            .height(420.dp)
-            .graphicsLayer {
-                shadowElevation = with(density) { 16.dp.toPx() }
-                shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
-                clip = true
-                ambientShadowColor = Color.Black.copy(alpha = 0.1f)
-                spotShadowColor = Color.Black.copy(alpha = 0.1f)
-            },
-        shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
-        color = Color.White
+            .padding(horizontal = 20.dp, vertical = 16.dp)
     ) {
-        Column(
+        Box(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 20.dp, vertical = 16.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .width(48.dp)
-                    .height(5.dp)
-                    .background(
-                        Color.Gray.copy(alpha = 0.4f),
-                        RoundedCornerShape(3.dp)
-                    )
-                    .align(Alignment.CenterHorizontally)
-            )
-            
-            Spacer(modifier = Modifier.height(20.dp))
-            
-            InlineSearchBar(
-                searchQuery = searchQuery,
-                onSearchQueryChange = onSearchQueryChange
-            )
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            QuickActionsGrid()
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            HomeWorkButtons()
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            RecommendationCards()
-        }
+                .width(48.dp)
+                .height(5.dp)
+                .background(
+                    Color.Gray.copy(alpha = 0.4f),
+                    RoundedCornerShape(3.dp)
+                )
+                .align(Alignment.CenterHorizontally)
+        )
+        
+        Spacer(modifier = Modifier.height(20.dp))
+        
+        InlineSearchBar(
+            searchQuery = searchQuery,
+            onSearchQueryChange = onSearchQueryChange
+        )
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        QuickActionsGrid()
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        HomeWorkButtons()
+        
+        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 
@@ -471,76 +459,3 @@ fun HomeWorkButtons() {
     }
 }
 
-@Composable
-fun RecommendationCards() {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = Color.White,
-            shape = RoundedCornerShape(12.dp),
-            shadowElevation = 1.dp
-        ) {
-            Row(
-                modifier = Modifier.padding(14.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "周边公共交通推荐",
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 14.sp,
-                            color = Color.Black.copy(alpha = 0.87f)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Icon(
-                            Icons.Default.ChevronRight,
-                            contentDescription = null,
-                            tint = Color.Gray.copy(alpha = 0.6f),
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "🚌",
-                            fontSize = 16.sp
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "586路",
-                            fontSize = 12.sp,
-                            color = Color.Black.copy(alpha = 0.8f)
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text(
-                            text = "20分钟/趟",
-                            color = Color(0xFF4CAF50),
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-                }
-                
-                OutlinedButton(
-                    onClick = { },
-                    modifier = Modifier.height(34.dp),
-                    shape = RoundedCornerShape(50),
-                    border = BorderStroke(1.dp, Color.Gray.copy(alpha = 0.3f))
-                ) {
-                    Text(
-                        text = "关注",
-                        fontSize = 12.sp,
-                        color = Color.Black.copy(alpha = 0.7f)
-                    )
-                }
-            }
-        }
-    }
-}
