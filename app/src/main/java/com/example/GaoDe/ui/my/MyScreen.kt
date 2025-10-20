@@ -31,8 +31,8 @@ fun MyScreen() {
                 .fillMaxSize()
                 .background(Color(0xFFF5F5F5))
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // 顶部用户信息模块
             UserProfileHeader()
@@ -101,17 +101,22 @@ fun MyScreen() {
 
 @Composable
 fun UserProfileHeader() {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.White, RoundedCornerShape(8.dp))
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(top = 20.dp)
         ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
             // 用户头像
             Box(
                 modifier = Modifier
@@ -171,16 +176,17 @@ fun UserProfileHeader() {
                 fontSize = 14.sp,
                 color = Color.Gray
             )
+            }
         }
     }
 }
 
 @Composable
 fun UserStatsCard() {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.White, RoundedCornerShape(8.dp))
     ) {
         Row(
             modifier = Modifier
@@ -296,10 +302,10 @@ fun UserStatsCard() {
 
 @Composable
 fun PersonalizationCard() {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.White, RoundedCornerShape(8.dp))
     ) {
         Row(
             modifier = Modifier
@@ -382,10 +388,10 @@ fun PersonalizationItem(
 
 @Composable
 fun OrderCenterCard() {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.White, RoundedCornerShape(8.dp))
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -464,10 +470,10 @@ fun OrderItem(
 
 @Composable
 fun CommonToolsCard() {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.White, RoundedCornerShape(8.dp))
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -552,10 +558,10 @@ fun ToolItem(
 
 @Composable
 fun MyWalletCard() {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.White, RoundedCornerShape(8.dp))
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -645,10 +651,10 @@ fun WalletItem(
 
 @Composable
 fun MyVehicleCard() {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.White, RoundedCornerShape(8.dp))
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
