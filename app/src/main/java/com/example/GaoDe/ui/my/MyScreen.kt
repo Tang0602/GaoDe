@@ -37,9 +37,6 @@ fun MyScreen() {
             // 顶部用户信息模块
             UserProfileHeader()
             
-            // 统计数据模块
-            UserStatsCard()
-            
             // 个性化设置模块
             PersonalizationCard()
             
@@ -48,9 +45,6 @@ fun MyScreen() {
             
             // 常用工具模块
             CommonToolsCard()
-            
-            // 我的钱包模块
-            MyWalletCard()
             
             // 我的车辆模块
             MyVehicleCard()
@@ -181,124 +175,6 @@ fun UserProfileHeader() {
     }
 }
 
-@Composable
-fun UserStatsCard() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.White, RoundedCornerShape(8.dp))
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            // 足迹部分
-            Column(
-                modifier = Modifier.weight(1f),
-                horizontalAlignment = Alignment.Start
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.LocationOn,
-                        contentDescription = "足迹",
-                        tint = Color(0xFF2196F3),
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "足迹",
-                        fontSize = 12.sp,
-                        color = Color.Gray
-                    )
-                }
-                
-                Text(
-                    text = "2",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
-                
-                Text(
-                    text = "点亮城市 >",
-                    fontSize = 12.sp,
-                    color = Color.Gray
-                )
-            }
-            
-            // 走过武汉
-            Column(
-                modifier = Modifier.weight(1f),
-                horizontalAlignment = Alignment.Start
-            ) {
-                Text(
-                    text = "4.1%",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
-                
-                Text(
-                    text = "走过武汉 >",
-                    fontSize = 12.sp,
-                    color = Color.Gray
-                )
-            }
-            
-            // 贡献部分
-            Column(
-                modifier = Modifier.weight(1f),
-                horizontalAlignment = Alignment.Start
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.Favorite,
-                        contentDescription = "贡献",
-                        tint = Color(0xFFE91E63),
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "贡献",
-                        fontSize = 12.sp,
-                        color = Color.Gray
-                    )
-                }
-                
-                Row {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "0",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.Black
-                        )
-                        Text(
-                            text = "浏览总量 >",
-                            fontSize = 12.sp,
-                            color = Color.Gray
-                        )
-                    }
-                    
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "0",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.Black
-                        )
-                        Text(
-                            text = "获赞总数 >",
-                            fontSize = 12.sp,
-                            color = Color.Gray
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
 
 @Composable
 fun PersonalizationCard() {
@@ -414,18 +290,6 @@ fun OrderCenterCard() {
                 )
                 
                 OrderItem(
-                    icon = Icons.Default.CreditCard,
-                    title = "待付款",
-                    modifier = Modifier.weight(1f)
-                )
-                
-                OrderItem(
-                    icon = Icons.Default.Schedule,
-                    title = "待使用",
-                    modifier = Modifier.weight(1f)
-                )
-                
-                OrderItem(
                     icon = Icons.Default.Cancel,
                     title = "退款/取消",
                     modifier = Modifier.weight(1f)
@@ -489,30 +353,9 @@ fun CommonToolsCard() {
                 )
                 
                 ToolItem(
-                    icon = Icons.Default.Wallet,
-                    iconColor = Color(0xFFFF9800),
-                    title = "钱包卡券",
-                    modifier = Modifier.weight(1f)
-                )
-                
-                ToolItem(
                     icon = Icons.Default.VolumeUp,
                     iconColor = Color(0xFF2196F3),
                     title = "语音包",
-                    modifier = Modifier.weight(1f)
-                )
-                
-                ToolItem(
-                    icon = Icons.Default.DirectionsCar,
-                    iconColor = Color(0xFF2196F3),
-                    title = "3D车标",
-                    modifier = Modifier.weight(1f)
-                )
-                
-                ToolItem(
-                    icon = Icons.Default.Store,
-                    iconColor = Color(0xFFE91E63),
-                    title = "我的店铺",
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -556,98 +399,6 @@ fun ToolItem(
     }
 }
 
-@Composable
-fun MyWalletCard() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.White, RoundedCornerShape(8.dp))
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "我的钱包",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
-                
-                Text(
-                    text = "进入 >",
-                    fontSize = 14.sp,
-                    color = Color.Gray
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            Row(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                WalletItem(
-                    amount = "19.8万",
-                    label = "借钱",
-                    modifier = Modifier.weight(1f)
-                )
-                
-                WalletItem(
-                    amount = "80G",
-                    label = "手机充值",
-                    modifier = Modifier.weight(1f)
-                )
-                
-                WalletItem(
-                    amount = "0张",
-                    label = "优惠券",
-                    modifier = Modifier.weight(1f)
-                )
-                
-                WalletItem(
-                    amount = "1张",
-                    label = "卡",
-                    modifier = Modifier.weight(1f)
-                )
-                
-                WalletItem(
-                    amount = "0.00元",
-                    label = "余额",
-                    modifier = Modifier.weight(1f)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun WalletItem(
-    amount: String,
-    label: String,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = amount,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.Black
-        )
-        
-        Text(
-            text = label,
-            fontSize = 12.sp,
-            color = Color.Gray
-        )
-    }
-}
 
 @Composable
 fun MyVehicleCard() {
@@ -699,7 +450,7 @@ fun MyVehicleCard() {
                     )
                     
                     Text(
-                        text = "加油、洗车优惠点这里",
+                        text = "添加爱车点这里",
                         fontSize = 12.sp,
                         color = Color.Gray
                     )
