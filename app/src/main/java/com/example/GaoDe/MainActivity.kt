@@ -23,6 +23,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.GaoDe.ui.home.HomeScreen
 import com.example.GaoDe.ui.message.MessageScreen
+import com.example.GaoDe.ui.my.MyScreen
 import com.example.GaoDe.ui.theme.GaoDeTheme
 import androidx.compose.ui.unit.dp
 class MainActivity : ComponentActivity() {
@@ -97,7 +98,7 @@ fun MainScreen() {
                 MessageScreen()
             }
             composable(Screen.My.route) {
-                PlaceholderScreen("我的页面")
+                MyScreen()
             }
         }
     }
