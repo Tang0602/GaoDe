@@ -1,10 +1,18 @@
 [
     {
-        "merged": "com.example.GaoDe.app-debug-54:/xml_backup_rules.xml.flat",
-        "source": "com.example.GaoDe.app-main-56:/xml/backup_rules.xml"
+        "merged": "C:\\Users\\tsr\\.gradle\\daemon\\8.7\\com.example.GaoDe.app-debug-54:\\layout_activity_main.xml.flat",
+        "source": "C:\\Users\\tsr\\.gradle\\daemon\\8.7\\com.example.GaoDe.app-main-56:\\layout\\activity_main.xml"
     },
     {
-        "merged": "com.example.GaoDe.app-debug-54:/xml_data_extraction_rules.xml.flat",
-        "source": "com.example.GaoDe.app-main-56:/xml/data_extraction_rules.xml"
+        "merged": "com.example.GaoDe.app-debug-54:/layout_activity_main.xml.flat",
+        "source": "com.example.GaoDe.app-main-56:/layout/activity_main.xml"
+    },
+    {
+        "merged": "C:\\Users\\tsr\\.gradle\\daemon\\8.7\\com.example.GaoDe.app-debug-54:\\xml_backup_rules.xml.flat",
+        "source": "C:\\Users\\tsr\\.gradle\\daemon\\8.7\\com.example.GaoDe.app-main-56:\\xml\\backup_rules.xml"
+    },
+    {
+        "merged": "C:\\Users\\tsr\\.gradle\\daemon\\8.7\\com.example.GaoDe.app-debug-54:\\xml_data_extraction_rules.xml.flat",
+        "source": "C:\\Users\\tsr\\.gradle\\daemon\\8.7\\com.example.GaoDe.app-main-56:\\xml\\data_extraction_rules.xml"
     }
 ]

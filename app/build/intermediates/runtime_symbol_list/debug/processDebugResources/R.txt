@@ -145,6 +145,7 @@ int id is_pooling_container_tag 0x7f050036
 int id italic 0x7f050037
 int id line1 0x7f050038
 int id line3 0x7f050039
+int id map 0x7f050059
 int id nav_controller_view_tag 0x7f05003a
 int id normal 0x7f05003b
 int id notification_background 0x7f05003c
@@ -178,6 +179,7 @@ int id view_tree_view_model_store_owner 0x7f050057
 int id wrapped_composition_tag 0x7f050058
 int integer m3c_window_layout_in_display_cutout_mode 0x7f060000
 int integer status_bar_notification_info_maxnum 0x7f060001
+int layout activity_main 0x7f070009
 int layout custom_dialog 0x7f070000
 int layout ime_base_split_test_activity 0x7f070001
 int layout ime_secondary_split_test_activity 0x7f070002

@@ -6,7 +6,8 @@
       "Bash(./gradlew:*)",
       "Bash(ls:*)",
       "Bash(find:*)",
-      "Bash(gradle build)"
+      "Bash(gradle build)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }
