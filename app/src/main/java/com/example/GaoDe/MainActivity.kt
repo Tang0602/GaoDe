@@ -10,11 +10,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Mail
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -22,6 +24,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.GaoDe.ui.home.HomeScreen
+import com.example.GaoDe.ui.home.SearchHistoryScreen
 import com.example.GaoDe.ui.message.MessageScreen
 import com.example.GaoDe.ui.my.MyScreen
 import com.example.GaoDe.ui.theme.GaoDeTheme
@@ -46,7 +49,10 @@ sealed class Screen(val route: String, val icon: ImageVector, val label: String)
     object Home : Screen("home", Icons.Filled.Home, "首页")
     object Message : Screen("message", Icons.Filled.Mail, "消息")
     object My : Screen("my", Icons.Filled.AccountCircle, "我的")
+    object SearchPlace : Screen("SearchPlace", Icons.Filled.Search, "搜索地点")
 }
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -92,13 +98,22 @@ fun MainScreen() {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(Screen.Home.route) {
-                HomeScreen()
+                HomeScreen(
+                    navController = navController
+                )
             }
             composable(Screen.Message.route) {
                 MessageScreen()
             }
             composable(Screen.My.route) {
                 MyScreen()
+            }
+            composable(Screen.SearchPlace.route) {
+                SearchHistoryScreen(
+                    onBackClick = {
+                        navController.popBackStack()
+                    }
+                )
             }
         }
     }

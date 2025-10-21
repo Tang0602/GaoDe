@@ -4,6 +4,7 @@ import android.view.View
 // import com.google.android.gms.maps.MapView // 实际项目中需要导入地图SDK的MapView
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -38,11 +39,12 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
+import androidx.navigation.NavController
 import com.example.GaoDe.R
 import com.example.GaoDe.data.DataManager
 import com.example.GaoDe.model.Place
 import android.content.Context
-
+import com.example.GaoDe.Screen
 // 临时MapView类，实际项目中应使用真实的地图SDK
 class MapView(context: Context) : View(context) {
     init {
@@ -52,7 +54,9 @@ class MapView(context: Context) : View(context) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    navController: NavController
+) {
     val context = LocalContext.current
     val dataManager = remember { DataManager(context) }
     val presenter = remember { HomePresenter(dataManager) }
@@ -116,7 +120,8 @@ fun HomeScreen() {
                     searchQuery = it
                     presenter.searchPlaces(it)
                 },
-                onPlaceClick = { presenter.onPlaceClicked(it) }
+                onPlaceClick = { presenter.onPlaceClicked(it) },
+                navController = navController
             )
         }
     ) {
@@ -321,7 +326,8 @@ fun MapControls(
 fun SheetContent(
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
-    onPlaceClick: (Place) -> Unit
+    onPlaceClick: (Place) -> Unit,
+    navController: NavController
 ) {
     Column(
         modifier = Modifier
@@ -339,10 +345,11 @@ fun SheetContent(
                 .background(Color.LightGray)
                 .align(Alignment.CenterHorizontally)
         )
-        
+
         InlineSearchBar(
             searchQuery = searchQuery,
-            onSearchQueryChange = onSearchQueryChange
+            onSearchQueryChange = onSearchQueryChange,
+            navController = navController
         )
         
         Spacer(modifier = Modifier.height(24.dp))
@@ -357,54 +364,6 @@ fun SheetContent(
     }
 }
 
-@Composable
-fun InlineSearchBar(
-    searchQuery: String,
-    onSearchQueryChange: (String) -> Unit
-) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        color = Color(0xFFF5F5F5)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                Icons.Default.Search,
-                contentDescription = "搜索",
-                tint = Color.Gray.copy(alpha = 0.7f),
-                modifier = Modifier.size(20.dp)
-            )
-            
-            Spacer(modifier = Modifier.width(12.dp))
-            
-            BasicTextField(
-                value = searchQuery,
-                onValueChange = onSearchQueryChange,
-                modifier = Modifier.weight(1f),
-                singleLine = true,
-                textStyle = TextStyle(
-                    fontSize = 16.sp,
-                    color = Color.Black.copy(alpha = 0.87f)
-                ),
-                decorationBox = { innerTextField ->
-                    if (searchQuery.isEmpty()) {
-                        Text(
-                            text = "武汉站",
-                            color = Color.Gray.copy(alpha = 0.6f),
-                            fontSize = 16.sp
-                        )
-                    }
-                    innerTextField()
-                }
-            )
-            
-        }
-    }
-}
 
 @Composable
 fun QuickActionsGrid() {
@@ -529,3 +488,58 @@ fun HomeWorkButtons() {
     }
 }
 
+@Composable
+fun InlineSearchBar(
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
+    navController: NavController
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { navController.navigate(Screen.SearchPlace.route) }
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            color = Color(0xFFF5F5F5)
+        ) {
+            Row(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Default.Search,
+                    contentDescription = "搜索",
+                    tint = Color.Gray.copy(alpha = 0.7f),
+                    modifier = Modifier.size(20.dp)
+                )
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                BasicTextField(
+                    value = searchQuery,
+                    onValueChange = onSearchQueryChange,
+                    modifier = Modifier.weight(1f),
+                    singleLine = true,
+                    enabled = false,
+                    textStyle = TextStyle(
+                        fontSize = 16.sp,
+                        color = Color.Black.copy(alpha = 0.87f)
+                    ),
+                    decorationBox = { innerTextField ->
+                        if (searchQuery.isEmpty()) {
+                            Text(
+                                text = "武汉站",
+                                color = Color.Gray.copy(alpha = 0.6f),
+                                fontSize = 16.sp
+                            )
+                        }
+                        innerTextField()
+                    }
+                )
+            }
+        }
+    }
+}
