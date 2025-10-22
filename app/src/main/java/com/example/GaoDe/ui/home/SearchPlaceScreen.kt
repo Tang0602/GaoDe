@@ -223,50 +223,44 @@ fun CommonPlacesChips() {
 fun HistorySection(navController: androidx.navigation.NavController? = null) {
     val historyItems = listOf(
         HistoryItem(
-            icon = Icons.Default.Search,
-            title = "美食",
-            subtitle = "",
-            actions = emptyList()
-        ),
-        HistoryItem(
-            icon = Icons.Default.Search,
-            title = "酒店",
-            subtitle = "",
-            actions = emptyList()
+            icon = Icons.Default.LocationOn,
+            title = "山姆会员商店(光谷店)",
+            subtitle = "江夏区",
+            actions = listOf("打车", "路线")
         ),
         HistoryItem(
             icon = Icons.Default.LocationOn,
-            title = "南湖山庄·半岛花园",
+            title = "中影烽禾影城泛悦店",
             subtitle = "洪山区",
-            actions = listOf("打车", "路线")
+            actions = listOf("路线")
+        ),
+        HistoryItem(
+            icon = Icons.Default.Search,
+            title = "电影院",
+            subtitle = "",
+            actions = emptyList()
         ),
         HistoryItem(
             icon = Icons.Default.LocationOn,
-            title = "湖北财税职业学院",
-            subtitle = "武昌区",
-            actions = listOf("打车", "路线")
+            title = "中国石化南湖北加油站",
+            subtitle = "洪山区",
+            actions = listOf("路线")
+        ),
+        HistoryItem(
+            icon = Icons.Default.Search,
+            title = "黄鹤楼",
+            subtitle = "",
+            actions = emptyList()
+        ),
+        HistoryItem(
+            icon = Icons.Default.LocationOn,
+            title = "武汉光谷广场杨家湾亚朵酒店",
+            subtitle = "洪山区",
+            actions = listOf("路线")
         ),
         HistoryItem(
             icon = Icons.Default.LocationOn,
             title = "巴奴毛肚火锅(群光广场店)",
-            subtitle = "洪山区",
-            actions = listOf("打车", "路线")
-        ),
-        HistoryItem(
-            icon = Icons.Default.LocationOn,
-            title = "华中师范大学东区学生宿舍3号楼",
-            subtitle = "洪山区",
-            actions = listOf("路线")
-        ),
-        HistoryItem(
-            icon = Icons.Default.LocationOn,
-            title = "鲁湖服务区停车场",
-            subtitle = "来自微信",
-            actions = listOf("路线")
-        ),
-        HistoryItem(
-            icon = Icons.Default.LocationOn,
-            title = "华中师范大学(南湖校区)",
             subtitle = "洪山区",
             actions = listOf("路线")
         )
