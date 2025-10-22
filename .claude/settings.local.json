@@ -7,7 +7,8 @@
       "Bash(ls:*)",
       "Bash(find:*)",
       "Bash(gradle build)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(true)"
     ],
     "deny": []
   }

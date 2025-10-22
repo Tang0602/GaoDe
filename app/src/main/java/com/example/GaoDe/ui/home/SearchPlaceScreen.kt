@@ -39,6 +39,7 @@ data class CategoryItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchHistoryScreen(
+    navController: androidx.navigation.NavController? = null,
     onBackClick: () -> Unit = {},
     onSearchClick: () -> Unit = {}
 ) {
@@ -69,7 +70,7 @@ fun SearchHistoryScreen(
         Spacer(modifier = Modifier.height(24.dp))
         
         // 历史记录
-        HistorySection()
+        HistorySection(navController = navController)
     }
 }
 
@@ -219,7 +220,7 @@ fun CommonPlacesChips() {
 }
 
 @Composable
-fun HistorySection() {
+fun HistorySection(navController: androidx.navigation.NavController? = null) {
     val historyItems = listOf(
         HistoryItem(
             icon = Icons.Default.Search,
@@ -281,7 +282,10 @@ fun HistorySection() {
         
         // 历史记录列表
         historyItems.forEach { item ->
-            HistoryRow(item = item)
+            HistoryRow(
+                item = item,
+                navController = navController
+            )
             if (item != historyItems.last()) {
                 Divider(
                     modifier = Modifier.padding(horizontal = 16.dp),
@@ -329,11 +333,24 @@ fun HistoryHeader() {
 }
 
 @Composable
-fun HistoryRow(item: HistoryItem) {
+fun HistoryRow(
+    item: HistoryItem,
+    navController: androidx.navigation.NavController? = null
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { }
+            .clickable { 
+                if (item.icon == Icons.Default.LocationOn && navController != null) {
+                    // Navigate to place details for location items
+                    when (item.title) {
+                        "巴奴毛肚火锅(群光广场店)" -> {
+                            navController.navigate("ShowPlaceDetails/place_006")
+                        }
+                        // Add more specific place mappings as needed
+                    }
+                }
+            }
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

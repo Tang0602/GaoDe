@@ -56,5 +56,17 @@
     "rating": 4.1,
     "description": "大型综合性购物娱乐中心",
     "imageUrl": "https://example.com/wanda.jpg"
+  },
+  {
+    "id": "place_006",
+    "name": "巴奴毛肚火锅(群光广场店)",
+    "address": "洪山区珞喻路169号群光广场 8楼 8011号铺位",
+    "latitude": 30.5236,
+    "longitude": 114.3668,
+    "category": "餐饮",
+    "phone": "027-87654321",
+    "rating": 4.5,
+    "description": "连续2年四川火锅榜首，食材新鲜，汤味道浓郁",
+    "imageUrl": "https://example.com/banu.jpg"
   }
 ]

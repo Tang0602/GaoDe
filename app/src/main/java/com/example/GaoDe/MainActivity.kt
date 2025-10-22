@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Mail
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,6 +26,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.GaoDe.ui.home.HomeScreen
 import com.example.GaoDe.ui.home.SearchHistoryScreen
+import com.example.GaoDe.ui.home.ShowPlaceDetailsScreen
 import com.example.GaoDe.ui.message.MessageScreen
 import com.example.GaoDe.ui.my.MyScreen
 import com.example.GaoDe.ui.theme.GaoDeTheme
@@ -50,6 +52,7 @@ sealed class Screen(val route: String, val icon: ImageVector, val label: String)
     object Message : Screen("message", Icons.Filled.Mail, "消息")
     object My : Screen("my", Icons.Filled.AccountCircle, "我的")
     object SearchPlace : Screen("SearchPlace", Icons.Filled.Search, "搜索地点")
+    object ShowPlaceDetails : Screen("ShowPlaceDetails", Icons.Filled.Place, "地点详情")
 }
 
 
@@ -110,6 +113,16 @@ fun MainScreen() {
             }
             composable(Screen.SearchPlace.route) {
                 SearchHistoryScreen(
+                    navController = navController,
+                    onBackClick = {
+                        navController.popBackStack()
+                    }
+                )
+            }
+            composable("${Screen.ShowPlaceDetails.route}/{placeId}") { backStackEntry ->
+                val placeId = backStackEntry.arguments?.getString("placeId") ?: ""
+                ShowPlaceDetailsScreen(
+                    placeId = placeId,
                     onBackClick = {
                         navController.popBackStack()
                     }
