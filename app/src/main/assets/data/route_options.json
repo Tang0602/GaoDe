@@ -1,0 +1,114 @@
+[
+  {
+    "id": "route_001",
+    "transportationType": "公交",
+    "duration": "1小时22分钟",
+    "distance": "1.8公里",
+    "price": "2元",
+    "mainRoute": [
+      {
+        "type": "步行",
+        "description": "12",
+        "icon": "walk",
+        "backgroundColor": null
+      },
+      {
+        "type": "公交",
+        "description": "804路",
+        "icon": "bus",
+        "backgroundColor": "绿色"
+      },
+      {
+        "type": "步行",
+        "description": "14",
+        "icon": "walk",
+        "backgroundColor": null
+      }
+    ],
+    "details": "15站 · 2元 · 雄楚大道BRT元宝山站上车",
+    "realTimeInfo": "804路 预计 20:23~20:33 到站",
+    "tags": [],
+    "isRecommended": true
+  },
+  {
+    "id": "route_002",
+    "transportationType": "混合",
+    "duration": "1小时1分钟",
+    "distance": "1.8公里",
+    "price": "约8元",
+    "mainRoute": [
+      {
+        "type": "打车",
+        "description": "打车 约8元",
+        "icon": "taxi",
+        "backgroundColor": "蓝色"
+      },
+      {
+        "type": "步行",
+        "description": "10",
+        "icon": "walk",
+        "backgroundColor": null
+      },
+      {
+        "type": "地铁",
+        "description": "轨道交通 5号线",
+        "icon": "subway",
+        "backgroundColor": "蓝色"
+      },
+      {
+        "type": "地铁",
+        "description": "轨道交通 11号线",
+        "icon": "subway",
+        "backgroundColor": "蓝色"
+      }
+    ],
+    "details": "6站 · 12元 · 虎泉 (G2) 进站",
+    "realTimeInfo": "轨道交通 11号线 首班发车约 8分钟/趟",
+    "tags": ["限时特价", "打车混合"],
+    "isRecommended": false
+  },
+  {
+    "id": "route_003",
+    "transportationType": "轨道交通",
+    "duration": "58分钟",
+    "distance": "1.8公里",
+    "price": "4元",
+    "mainRoute": [
+      {
+        "type": "步行",
+        "description": "31",
+        "icon": "walk",
+        "backgroundColor": null
+      },
+      {
+        "type": "地铁",
+        "description": "换乘两次轨道交通",
+        "icon": "subway",
+        "backgroundColor": "蓝色"
+      }
+    ],
+    "details": "6站 · 4元 · 虎泉 (G1口) 进站",
+    "realTimeInfo": null,
+    "tags": [],
+    "isRecommended": false
+  },
+  {
+    "id": "route_004",
+    "transportationType": "打车",
+    "duration": "33分钟",
+    "distance": "11.8公里",
+    "price": "14元",
+    "mainRoute": [
+      {
+        "type": "打车",
+        "description": "一口价 14元",
+        "icon": "taxi",
+        "backgroundColor": "蓝色"
+      }
+    ],
+    "details": "11.8公里 · 更快更省心 · 上门接送",
+    "realTimeInfo": "附近有车，预计 3分钟上车",
+    "tags": ["少步行"],
+    "isRecommended": false
+  }
+]

@@ -30,6 +30,7 @@ import com.example.GaoDe.ui.home.ShowPlaceDetailsScreen
 import com.example.GaoDe.ui.home.POIResultsListScreen
 import com.example.GaoDe.ui.home.HotelResultsListScreen
 import com.example.GaoDe.ui.home.ScenicSpotResultsListScreen
+import com.example.GaoDe.ui.home.PlanRouteScreen
 import com.example.GaoDe.ui.message.MessageScreen
 import com.example.GaoDe.ui.my.MyScreen
 import com.example.GaoDe.ui.theme.GaoDeTheme
@@ -59,6 +60,7 @@ sealed class Screen(val route: String, val icon: ImageVector, val label: String)
     object POIResultsList : Screen("POIResultsList", Icons.Filled.Search, "POI结果列表")
     object HotelResultsList : Screen("HotelResultsList", Icons.Filled.Place, "酒店结果列表")
     object ScenicSpotResultsList : Screen("ScenicSpotResultsList", Icons.Filled.Place, "景点结果列表")
+    object PlanRoute : Screen("PlanRoute", Icons.Filled.Place, "路线规划")
 }
 
 
@@ -131,6 +133,9 @@ fun MainScreen() {
                     placeId = placeId,
                     onBackClick = {
                         navController.popBackStack()
+                    },
+                    onRouteClick = { placeName ->
+                        navController.navigate("${Screen.PlanRoute.route}/$placeName")
                     }
                 )
             }
@@ -167,6 +172,15 @@ fun MainScreen() {
                     },
                     onScenicSpotClick = { scenicSpotId ->
                         navController.navigate("${Screen.ShowPlaceDetails.route}/$scenicSpotId")
+                    }
+                )
+            }
+            composable("${Screen.PlanRoute.route}/{endName}") { backStackEntry ->
+                val endName = backStackEntry.arguments?.getString("endName") ?: "目的地"
+                PlanRouteScreen(
+                    endLocation = endName,
+                    onBackClick = {
+                        navController.popBackStack()
                     }
                 )
             }

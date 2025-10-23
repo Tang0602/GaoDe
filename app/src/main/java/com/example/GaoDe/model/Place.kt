@@ -113,3 +113,23 @@ data class TicketInfo(
     val originalPrice: String? = null, // 划线价格，如 "¥230"
     val currentPrice: String // 现价，如 "¥229起"
 )
+
+data class RouteOption(
+    val id: String,
+    val transportationType: String, // 如 "公交", "打车", "轨道交通", "混合"
+    val duration: String, // 如 "1小时22分钟"
+    val distance: String, // 如 "1.8公里"
+    val price: String? = null, // 如 "2元", "约8元", "14元"
+    val mainRoute: List<RouteSegment>,
+    val details: String, // 如 "15站 · 2元 · 雄楚大道BRT元宝山站上车"
+    val realTimeInfo: String? = null, // 如 "804路 预计 20:23~20:33 到站"
+    val tags: List<String> = emptyList(), // 如 ["限时特价", "打车混合"]
+    val isRecommended: Boolean = false
+)
+
+data class RouteSegment(
+    val type: String, // 如 "步行", "公交", "地铁", "打车"
+    val description: String, // 如 "12分钟", "804路", "轨道交通5号线"
+    val icon: String, // 图标类型
+    val backgroundColor: String? = null // 如 "绿色", "蓝色"
+)

@@ -30,12 +30,15 @@ import android.graphics.BitmapFactory
 import com.example.GaoDe.data.DataManager
 import com.example.GaoDe.model.PlaceDetails
 import com.google.accompanist.flowlayout.FlowRow
+import com.example.GaoDe.ui.home.ShowPlaceDetailsContract
+import com.example.GaoDe.ui.home.ShowPlaceDetailsPresenter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShowPlaceDetailsScreen(
     placeId: String,
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    onRouteClick: (String) -> Unit = {}
 ) {
     var placeDetails by remember { mutableStateOf<PlaceDetails?>(null) }
     var isLoading by remember { mutableStateOf(true) }
@@ -132,7 +135,10 @@ fun ShowPlaceDetailsScreen(
                 )
                 
                 // Bottom Action Bar
-                BottomActionBar()
+                BottomActionBar(
+                    placeDetails = placeDetails!!,
+                    onRouteClick = onRouteClick
+                )
             }
         }
     }
@@ -724,7 +730,10 @@ fun ReviewCard(review: com.example.GaoDe.model.Review) {
 }
 
 @Composable
-fun BottomActionBar() {
+fun BottomActionBar(
+    placeDetails: PlaceDetails,
+    onRouteClick: (String) -> Unit
+) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = Color.White,
@@ -775,7 +784,9 @@ fun BottomActionBar() {
                 }
                 
                 Button(
-                    onClick = { },
+                    onClick = { 
+                        onRouteClick(placeDetails.place.name)
+                    },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF2196F3)
                     ),
