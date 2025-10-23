@@ -13,6 +13,7 @@
 - ✅ 首页地图视图（集成高德SDK）
 - ✅ 搜索功能
 - ✅ 搜索地点页面（SearchPlace 界面）
+- ✅ POI结果列表页面（POIResultsList 界面）
 - ✅ 地点详情页面（ShowPlaceDetails 界面）
 - ✅ 快捷功能入口网格
 - ✅ 推荐卡片区域
@@ -27,6 +28,7 @@ MainActivity
 ├── HomePage (已完成)
 │   ├── ShowMap
 │   ├── SearchPlace (已完成)
+│   ├── POIResultsList (已完成)
 │   ├── ShowPlaceDetails (已完成)
 │   ├── PlanRoute
 │   └── StartNavigation
@@ -76,6 +78,7 @@ app/src/main/
 │   │   │   ├── HomePageViewModel.kt
 │   │   │   ├── GaodeMap.kt  # 高德地图组件
 │   │   │   ├── SearchPlaceScreen.kt  # 搜索历史页面
+│   │   │   ├── POIResultsListScreen.kt  # POI结果列表页面
 │   │   │   ├── ShowPlaceDetailsContract.kt
 │   │   │   ├── ShowPlaceDetailsPresenter.kt
 │   │   │   └── ShowPlaceDetailsScreen.kt  # 地点详情页面
@@ -93,7 +96,8 @@ app/src/main/
 │   ├── notifications.json
 │   ├── user_preferences.json
 │   ├── routes.json
-│   └── favorites.json
+│   ├── favorites.json
+│   └── poi_restaurants.json
 └── res/                     # Android 资源文件
 ```
 
@@ -107,6 +111,7 @@ app/src/main/
 - **用户偏好** (user_preferences.json): 用户个性化设置
 - **路线数据** (routes.json): 路线规划和导航信息
 - **收藏数据** (favorites.json): 用户收藏的地点
+- **POI餐厅数据** (poi_restaurants.json): 美食分类下的餐厅详细信息
 
 ## 开发说明
 
@@ -248,6 +253,36 @@ app/src/main/
   - ✅ **MVP架构**：完整的Contract-Presenter-View分离
   - ✅ **加载状态管理**：Loading、Success、Error状态处理
   - ✅ **UI精确复刻**：严格按照ShowPlaceDetails.jpg截图实现
+- 🍽️ **POI结果列表页面完整实现**：
+  - ✅ 创建 POIResultsListScreen.kt 美食搜索结果页面
+  - ✅ 实现 POIItem 和 GroupBuyInfo 数据模型
+  - ✅ 创建 poi_restaurants.json 餐厅数据文件
+  - ✅ **顶部导航栏**：
+    - ✅ 返回按钮 + 搜索关键词显示（美食）
+    - ✅ 定位图标和清除按钮
+  - ✅ **分类筛选栏**：
+    - ✅ 水平滚动分类标签（美食、火锅、烧烤等）
+    - ✅ 选中状态高亮效果
+  - ✅ **POI列表展示**：
+    - ✅ 使用 LazyColumn 实现垂直滚动列表
+    - ✅ 完整的餐厅卡片布局：品牌Logo、详细信息、操作按钮
+    - ✅ 品牌信息：名称、认证标识、营业状态
+    - ✅ 位置信息：距离、交通方式、时间
+    - ✅ 评价信息：评分、分类、人均价格、浏览量
+    - ✅ 特色标签：榜单排名（红色）+ 特色菜品（灰色）
+    - ✅ 用户评价：引号包装的用户评论
+    - ✅ 优惠信息：团购价格、原价、折扣显示
+  - ✅ **4个餐厅数据**：
+    - ✅ 巴奴毛肚火锅：火锅榜第5名，4.5分，¥148/人
+    - ✅ 木屋烧烤：烧烤榜第3名，4.7分，¥85/人，团购8折
+    - ✅ 麦当劳：4.3分，¥35/人，代金券9折
+    - ✅ 老乡鸡：早餐榜第1名，4.6分，¥28/人，团购6.4折
+  - ✅ **导航集成**：
+    - ✅ 从搜索页面"美食"分类图标点击跳转
+    - ✅ 从搜索历史"美食"关键词点击跳转
+    - ✅ POI卡片点击跳转到地点详情页
+  - ✅ **图片资源**：使用 assets/avatar/ 目录下的餐厅Logo图片
+  - ✅ **UI完美复刻**：严格按照POIResultsList_food.jpg截图实现
 
 ### 下一步计划
 - 路线规划功能

@@ -23,6 +23,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.foundation.Image
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import android.graphics.BitmapFactory
 import com.example.GaoDe.data.DataManager
 import com.example.GaoDe.model.PlaceDetails
 import com.google.accompanist.flowlayout.FlowRow
@@ -453,7 +457,7 @@ fun MenuSection(photos: List<String>) {
         Spacer(modifier = Modifier.height(8.dp))
         
         Text(
-            text = "菜单 (141)",
+            text = "菜单 (2)",
             fontSize = 14.sp,
             color = Color.Gray
         )
@@ -463,36 +467,66 @@ fun MenuSection(photos: List<String>) {
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(listOf("经典毛肚", "梅花肉", "鸭血", "豆腐")) { dishName ->
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
+            val dishes = listOf(
+                "经典毛肚" to "经典毛肚.jpg",
+                "梅花肉" to "梅花肉.jpg"
+            )
+            
+            items(dishes) { (dishName, imageName) ->
+                DishItem(dishName = dishName, imageName = imageName)
+            }
+        }
+    }
+}
+
+@Composable
+fun DishItem(dishName: String, imageName: String) {
+    val context = LocalContext.current
+    val bitmap = remember(imageName) {
+        try {
+            val inputStream = context.assets.open("avatar/$imageName")
+            BitmapFactory.decodeStream(inputStream)
+        } catch (e: Exception) {
+            null
+        }
+    }
+    
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Surface(
+            modifier = Modifier.size(64.dp),
+            shape = RoundedCornerShape(8.dp),
+            color = Color(0xFFF5F5F5)
+        ) {
+            if (bitmap != null) {
+                Image(
+                    bitmap = bitmap.asImageBitmap(),
+                    contentDescription = dishName,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                // Fallback to emoji if image loading fails
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxSize()
                 ) {
-                    Surface(
-                        modifier = Modifier.size(64.dp),
-                        shape = RoundedCornerShape(8.dp),
-                        color = Color(0xFFF5F5F5)
-                    ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            Text(
-                                text = "🍲",
-                                fontSize = 24.sp
-                            )
-                        }
-                    }
-                    
-                    Spacer(modifier = Modifier.height(4.dp))
-                    
                     Text(
-                        text = dishName,
-                        fontSize = 12.sp,
-                        color = Color.Black
+                        text = "🍲",
+                        fontSize = 24.sp
                     )
                 }
             }
         }
+        
+        Spacer(modifier = Modifier.height(4.dp))
+        
+        Text(
+            text = dishName,
+            fontSize = 12.sp,
+            color = Color.Black
+        )
     }
 }
 

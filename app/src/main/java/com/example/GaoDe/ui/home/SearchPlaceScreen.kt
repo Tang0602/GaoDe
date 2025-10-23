@@ -60,7 +60,7 @@ fun SearchHistoryScreen(
         Spacer(modifier = Modifier.height(16.dp))
         
         // 分类快捷入口
-        CategoryShortcutsGrid()
+        CategoryShortcutsGrid(navController)
         
         Spacer(modifier = Modifier.height(16.dp))
         
@@ -131,7 +131,7 @@ fun TopSearchBar(
 }
 
 @Composable
-fun CategoryShortcutsGrid() {
+fun CategoryShortcutsGrid(navController: androidx.navigation.NavController? = null) {
     val categories = listOf(
         CategoryItem("🍽️", "美食", Color(0xFFFFE082)),
         CategoryItem("🏨", "酒店", Color(0xFF90CAF9)),
@@ -150,7 +150,8 @@ fun CategoryShortcutsGrid() {
         categories.forEach { category ->
             CategoryShortcutItem(
                 category = category,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                navController = navController
             )
         }
     }
@@ -159,10 +160,15 @@ fun CategoryShortcutsGrid() {
 @Composable
 fun CategoryShortcutItem(
     category: CategoryItem,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navController: androidx.navigation.NavController? = null
 ) {
     Column(
-        modifier = modifier.clickable { },
+        modifier = modifier.clickable { 
+            if (category.label == "美食" && navController != null) {
+                navController.navigate("POIResultsList/美食")
+            }
+        },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Surface(
@@ -233,6 +239,12 @@ fun HistorySection(navController: androidx.navigation.NavController? = null) {
             title = "中影烽禾影城泛悦店",
             subtitle = "洪山区",
             actions = listOf("路线")
+        ),
+        HistoryItem(
+            icon = Icons.Default.Search,
+            title = "美食",
+            subtitle = "",
+            actions = emptyList()
         ),
         HistoryItem(
             icon = Icons.Default.Search,
@@ -335,13 +347,21 @@ fun HistoryRow(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { 
-                if (item.icon == Icons.Default.LocationOn && navController != null) {
-                    // Navigate to place details for location items
-                    when (item.title) {
-                        "巴奴毛肚火锅(群光广场店)" -> {
-                            navController.navigate("ShowPlaceDetails/place_006")
+                if (navController != null) {
+                    when {
+                        item.icon == Icons.Default.LocationOn -> {
+                            // Navigate to place details for location items
+                            when (item.title) {
+                                "巴奴毛肚火锅(群光广场店)" -> {
+                                    navController.navigate("ShowPlaceDetails/place_006")
+                                }
+                                // Add more specific place mappings as needed
+                            }
                         }
-                        // Add more specific place mappings as needed
+                        item.icon == Icons.Default.Search && item.title == "美食" -> {
+                            // Navigate to POI results for search items
+                            navController.navigate("POIResultsList/美食")
+                        }
                     }
                 }
             }
