@@ -1,6 +1,6 @@
 [
   {
-    "id": "poi_001",
+    "id": "place_006",
     "brandName": "巴奴毛肚火锅(群光广场店)",
     "address": "洪山区珞喻路169号群光广场 8楼 8011号铺位",
     "latitude": 30.5236,
@@ -25,7 +25,7 @@
     "actionButtonText": "预览"
   },
   {
-    "id": "poi_002", 
+    "id": "place_007", 
     "brandName": "木屋烧烤(光谷世界城店)",
     "address": "洪山区珞喻路527号光谷世界城1楼",
     "latitude": 30.5189,
@@ -55,7 +55,7 @@
     "actionButtonText": "订单"
   },
   {
-    "id": "poi_003",
+    "id": "place_008",
     "brandName": "麦当劳(武汉广场店)",
     "address": "江汉区解放大道688号武汉广场1楼",
     "latitude": 30.5881,
@@ -85,7 +85,7 @@
     "actionButtonText": "订单"
   },
   {
-    "id": "poi_004",
+    "id": "place_009",
     "brandName": "老乡鸡(珞喻路店)",
     "address": "洪山区珞喻路78号华中科技大学对面",
     "latitude": 30.5134,

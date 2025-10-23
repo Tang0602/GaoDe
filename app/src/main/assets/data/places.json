@@ -68,5 +68,41 @@
     "rating": 4.5,
     "description": "连续2年四川火锅榜首，食材新鲜，汤味道浓郁",
     "imageUrl": "https://example.com/banu.jpg"
+  },
+  {
+    "id": "place_007",
+    "name": "木屋烧烤(光谷世界城店)",
+    "address": "洪山区珞喻路527号光谷世界城1楼",
+    "latitude": 30.5189,
+    "longitude": 114.3742,
+    "category": "餐饮",
+    "phone": "027-87123456",
+    "rating": 4.7,
+    "description": "正宗烧烤，夜宵必备",
+    "imageUrl": "https://example.com/muwo.jpg"
+  },
+  {
+    "id": "place_008",
+    "name": "麦当劳(武汉广场店)",
+    "address": "江汉区解放大道688号武汉广场1楼",
+    "latitude": 30.5881,
+    "longitude": 114.2652,
+    "category": "餐饮",
+    "phone": "027-85432100",
+    "rating": 4.3,
+    "description": "全球知名快餐连锁",
+    "imageUrl": "https://example.com/mcdonalds.jpg"
+  },
+  {
+    "id": "place_009",
+    "name": "老乡鸡(珞喻路店)",
+    "address": "洪山区珞喻路78号华中科技大学对面",
+    "latitude": 30.5134,
+    "longitude": 114.4190,
+    "category": "餐饮",
+    "phone": "027-87765432",
+    "rating": 4.6,
+    "description": "中式快餐，招牌鸡汤",
+    "imageUrl": "https://example.com/laoxiangji.jpg"
   }
 ]

@@ -82,9 +82,6 @@ fun POIResultsListScreen(
             onBackClick = onBackClick
         )
         
-        // Category Filter Bar
-        CategoryFilterBar()
-        
         if (isLoading) {
             Box(
                 modifier = Modifier.fillMaxSize(),
@@ -190,50 +187,6 @@ fun POITopBar(
     }
 }
 
-@Composable
-fun CategoryFilterBar() {
-    val categories = listOf("美食", "火锅", "烧烤", "快餐", "中式", "西式", "甜品", "咖啡")
-    
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = Color.White
-    ) {
-        LazyRow(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(categories) { category ->
-                CategoryChip(
-                    category = category,
-                    isSelected = category == "美食"
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun CategoryChip(
-    category: String,
-    isSelected: Boolean = false
-) {
-    Surface(
-        modifier = Modifier.clickable { },
-        shape = RoundedCornerShape(16.dp),
-        color = if (isSelected) Color(0xFFE3F2FD) else Color(0xFFF5F5F5),
-        border = if (isSelected) 
-            androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF2196F3)) 
-        else null
-    ) {
-        Text(
-            text = category,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            fontSize = 14.sp,
-            color = if (isSelected) Color(0xFF2196F3) else Color.Black.copy(alpha = 0.7f),
-            fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal
-        )
-    }
-}
 
 @Composable
 fun POIListItem(
