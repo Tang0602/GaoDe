@@ -165,8 +165,12 @@ fun CategoryShortcutItem(
 ) {
     Column(
         modifier = modifier.clickable { 
-            if (category.label == "美食" && navController != null) {
-                navController.navigate("POIResultsList/美食")
+            if (navController != null) {
+                when (category.label) {
+                    "美食" -> navController.navigate("POIResultsList/美食")
+                    "酒店" -> navController.navigate("HotelResultsList/酒店")
+                    "景点门票" -> navController.navigate("ScenicSpotResultsList/景点")
+                }
             }
         },
         horizontalAlignment = Alignment.CenterHorizontally
@@ -243,6 +247,18 @@ fun HistorySection(navController: androidx.navigation.NavController? = null) {
         HistoryItem(
             icon = Icons.Default.Search,
             title = "美食",
+            subtitle = "",
+            actions = emptyList()
+        ),
+        HistoryItem(
+            icon = Icons.Default.Search,
+            title = "酒店",
+            subtitle = "",
+            actions = emptyList()
+        ),
+        HistoryItem(
+            icon = Icons.Default.Search,
+            title = "景点",
             subtitle = "",
             actions = emptyList()
         ),
@@ -358,9 +374,13 @@ fun HistoryRow(
                                 // Add more specific place mappings as needed
                             }
                         }
-                        item.icon == Icons.Default.Search && item.title == "美食" -> {
+                        item.icon == Icons.Default.Search -> {
                             // Navigate to POI results for search items
-                            navController.navigate("POIResultsList/美食")
+                            when (item.title) {
+                                "美食" -> navController.navigate("POIResultsList/美食")
+                                "酒店" -> navController.navigate("HotelResultsList/酒店")
+                                "景点" -> navController.navigate("ScenicSpotResultsList/景点")
+                            }
                         }
                     }
                 }

@@ -1,0 +1,117 @@
+[
+  {
+    "id": "place_010",
+    "hotelName": "武汉光谷金雁酒店",
+    "hotelType": "高档型",
+    "address": "洪山区关山大道332号",
+    "latitude": 30.5184,
+    "longitude": 114.4190,
+    "nearMetro": "近地铁",
+    "surroundingInfo": "光谷商圈",
+    "rating": 4.8,
+    "ratingText": "超棒",
+    "rankingInfo": "卓刀泉酒店 第1名",
+    "serviceTags": ["免费停车", "近地铁", "商务中心"],
+    "userQuote": "地理位置优越，服务贴心，房间干净整洁。",
+    "priceInfo": {
+      "lowestPriceHint": "过去14天最低价",
+      "originalPrice": "¥580",
+      "currentPrice": "¥362起",
+      "discountInfo": "立减 | 优惠 152 ►"
+    },
+    "logo": "杨家湾.jpg",
+    "phone": "027-87654321"
+  },
+  {
+    "id": "place_011",
+    "hotelName": "汉庭酒店(武汉光谷店)",
+    "hotelType": "经济型",
+    "address": "洪山区珞喻路华中科技大学对面",
+    "latitude": 30.5134,
+    "longitude": 114.4156,
+    "nearMetro": null,
+    "surroundingInfo": "华科大学区",
+    "rating": 4.5,
+    "ratingText": "很好",
+    "rankingInfo": null,
+    "serviceTags": ["免费WiFi", "24小时前台"],
+    "userQuote": "性价比很高，环境整洁，适合学生家长入住。",
+    "priceInfo": {
+      "lowestPriceHint": "过去7天最低价",
+      "originalPrice": "¥268",
+      "currentPrice": "¥188起",
+      "discountInfo": "新客优惠 80 ►"
+    },
+    "logo": "电竞酒店.jpg",
+    "phone": "027-87234567"
+  },
+  {
+    "id": "place_012",
+    "hotelName": "君澜度假酒店(武汉东湖)",
+    "hotelType": "豪华型",
+    "address": "武昌区东湖路特1号",
+    "latitude": 30.5525,
+    "longitude": 114.3715,
+    "nearMetro": "近地铁",
+    "surroundingInfo": "东湖风景区",
+    "rating": 4.9,
+    "ratingText": "棒极了",
+    "rankingInfo": "武昌区度假酒店 第1名",
+    "serviceTags": ["湖景房", "温泉SPA", "免费停车", "儿童乐园"],
+    "userQuote": "环境优美，服务一流，温泉设施很棒，适合度假。",
+    "priceInfo": {
+      "lowestPriceHint": "过去30天最低价",
+      "originalPrice": "¥1280",
+      "currentPrice": "¥968起",
+      "discountInfo": "限时特惠 312 ►"
+    },
+    "logo": "马房山.jpg",
+    "phone": "027-86789012"
+  },
+  {
+    "id": "place_013",
+    "hotelName": "如家酒店(武汉火车站店)",
+    "hotelType": "经济型",
+    "address": "洪山区杨春湖路2号",
+    "latitude": 30.5089,
+    "longitude": 114.4267,
+    "nearMetro": "近地铁",
+    "surroundingInfo": "火车站商圈",
+    "rating": 4.3,
+    "ratingText": "不错",
+    "rankingInfo": "火车站酒店 第3名",
+    "serviceTags": ["交通便利", "免费WiFi", "接送服务"],
+    "userQuote": "交通方便，适合中转住宿，房间虽小但设施齐全。",
+    "priceInfo": {
+      "lowestPriceHint": "过去14天最低价",
+      "originalPrice": "¥199",
+      "currentPrice": "¥148起",
+      "discountInfo": "会员专享 51 ►"
+    },
+    "logo": "酒店1.jpg",
+    "phone": "027-83456789"
+  },
+  {
+    "id": "place_014",
+    "hotelName": "凯悦酒店(武汉光谷)",
+    "hotelType": "奢华型",
+    "address": "洪山区光谷大道58号",
+    "latitude": 30.5298,
+    "longitude": 114.4088,
+    "nearMetro": "近地铁",
+    "surroundingInfo": "光谷CBD",
+    "rating": 4.9,
+    "ratingText": "完美",
+    "rankingInfo": "光谷商务酒店 第1名",
+    "serviceTags": ["行政酒廊", "健身中心", "室内泳池", "米其林餐厅"],
+    "userQuote": "奢华体验，服务无可挑剔，商务设施一流。",
+    "priceInfo": {
+      "lowestPriceHint": "过去14天最低价",
+      "originalPrice": "¥1680",
+      "currentPrice": "¥1288起",
+      "discountInfo": "高级会员 392 ►"
+    },
+    "logo": "酒店2.jpg",
+    "phone": "027-59876543"
+  }
+]

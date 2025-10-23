@@ -1,0 +1,113 @@
+[
+  {
+    "id": "place_015",
+    "spotName": "武汉欢乐谷",
+    "spotLevel": "4A景区",
+    "address": "洪山区欢乐大道196号",
+    "latitude": 30.5019,
+    "longitude": 114.4267,
+    "distance": "13.1公里",
+    "travelTime": "驾车 25分钟",
+    "rating": 4.8,
+    "ratingText": "超棒",
+    "activityInfo": "近期销量 3508",
+    "rankingInfo": "武汉市游乐园榜 第1名",
+    "serviceTags": ["官方售票", "周边游", "亲子户外"],
+    "userQuote": "设施齐全，游乐项目丰富，适合全家出游。",
+    "ticketInfo": {
+      "ticketDescription": "门票-成人票",
+      "originalPrice": "¥230",
+      "currentPrice": "¥229起"
+    },
+    "logo": "friend_1.jpg",
+    "phone": "027-81730666"
+  },
+  {
+    "id": "place_016",
+    "spotName": "东湖风景区",
+    "spotLevel": "红色景点",
+    "address": "武昌区东湖路特1号",
+    "latitude": 30.5525,
+    "longitude": 114.3715,
+    "distance": "8.5公里",
+    "travelTime": "驾车 18分钟",
+    "rating": 4.6,
+    "ratingText": "很好",
+    "activityInfo": "5000+ 人去过",
+    "rankingInfo": "武汉市自然风光榜 第2名",
+    "serviceTags": ["免费参观", "红色教育", "自然风光"],
+    "userQuote": "风景优美，湖光山色，是武汉市民休闲的好去处。",
+    "ticketInfo": {
+      "ticketDescription": "景区门票",
+      "originalPrice": "¥30",
+      "currentPrice": "¥25起"
+    },
+    "logo": "friend_2.jpg",
+    "phone": "027-86791413"
+  },
+  {
+    "id": "place_017",
+    "spotName": "黄鹤楼",
+    "spotLevel": "3A景区",
+    "address": "武昌区蛇山西山坡特1号",
+    "latitude": 30.5442,
+    "longitude": 114.2950,
+    "distance": "6.2公里",
+    "travelTime": "驾车 15分钟",
+    "rating": 4.7,
+    "ratingText": "极好",
+    "activityInfo": "近期销量 2156",
+    "rankingInfo": "武汉市文化古迹榜 第1名",
+    "serviceTags": ["官方售票", "文化古迹", "登高望远"],
+    "userQuote": "江南三大名楼之一，历史悠久，景色壮观。",
+    "ticketInfo": {
+      "ticketDescription": "门票-成人票",
+      "originalPrice": "¥80",
+      "currentPrice": "¥70起"
+    },
+    "logo": "friend_3.jpg",
+    "phone": "027-88875096"
+  },
+  {
+    "id": "place_018",
+    "spotName": "南湖花溪公园",
+    "spotLevel": "生态公园",
+    "address": "洪山区南湖大道178号",
+    "latitude": 30.5089,
+    "longitude": 114.3842,
+    "distance": "5.8公里",
+    "travelTime": "步行 12分钟",
+    "rating": 4.4,
+    "ratingText": "不错",
+    "activityInfo": "1200+ 人去过",
+    "rankingInfo": null,
+    "serviceTags": ["免费开放", "生态环境", "休闲漫步"],
+    "userQuote": "环境清幽，空气清新，是晨练和散步的好地方。",
+    "ticketInfo": null,
+    "logo": "麦当劳.jpg",
+    "phone": "027-87654321"
+  },
+  {
+    "id": "place_019",
+    "spotName": "武汉海昌极地海洋公园",
+    "spotLevel": "4A景区",
+    "address": "东西湖区金银潭大道96号",
+    "latitude": 30.6089,
+    "longitude": 114.1842,
+    "distance": "18.6公里",
+    "travelTime": "驾车 35分钟",
+    "rating": 4.9,
+    "ratingText": "棒极了",
+    "activityInfo": "近期销量 4567",
+    "rankingInfo": "武汉市海洋馆榜 第1名",
+    "serviceTags": ["官方售票", "海洋世界", "亲子娱乐"],
+    "userQuote": "海洋动物种类丰富，表演精彩，孩子们很喜欢。",
+    "ticketInfo": {
+      "ticketDescription": "夜场门票-单人票",
+      "originalPrice": "¥180",
+      "currentPrice": "¥168起"
+    },
+    "logo": "老乡鸡.jpg",
+    "phone": "027-83234567"
+  }
+]
