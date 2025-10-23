@@ -1,0 +1,113 @@
+{
+  "categories": [
+    {"id": "recommend", "name": "推荐", "badge": null, "isSelected": true},
+    {"id": "carpool", "name": "拼车", "badge": null, "isSelected": false},
+    {"id": "express", "name": "特惠快车", "badge": 17, "isSelected": false},
+    {"id": "economy", "name": "经济", "badge": 14, "isSelected": false},
+    {"id": "fast", "name": "特快车", "badge": null, "isSelected": false},
+    {"id": "taxi", "name": "出租", "badge": null, "isSelected": false},
+    {"id": "premium", "name": "优享", "badge": 1, "isSelected": false},
+    {"id": "private", "name": "专车", "badge": null, "isSelected": false},
+    {"id": "sixseat", "name": "六座商务", "badge": null, "isSelected": false},
+    {"id": "luxury", "name": "豪华", "badge": null, "isSelected": false}
+  ],
+  "recommendOptions": [
+    {
+      "id": "hitchhike",
+      "type": "recommendation",
+      "name": "顺风车",
+      "subtitle": "懂导航更顺路",
+      "iconColor": "green",
+      "iconText": "顺",
+      "price": "14.89元",
+      "actionText": "去体验",
+      "isSelected": false
+    }
+  ],
+  "aggregateOptions": [
+    {
+      "id": "express_carpool",
+      "type": "aggregate",
+      "name": "极速拼车",
+      "iconColor": "green",
+      "price": "14.7元",
+      "priceRange": "未拼成 21-23元",
+      "isSelected": false
+    },
+    {
+      "id": "express_car",
+      "type": "aggregate", 
+      "name": "特惠快车",
+      "iconColor": "yellow",
+      "price": "17.1-21.2元",
+      "discount": "特惠 最高优惠1.90元",
+      "tags": ["特惠"],
+      "isSelected": true
+    }
+  ],
+  "economyGroup": {
+    "title": "经济型",
+    "count": 14,
+    "isAllSelected": false,
+    "items": [
+      {
+        "id": "t3_taxi",
+        "type": "provider",
+        "name": "T3出行",
+        "subtitle": "敢坐敢赔 隐私保护",
+        "iconColor": "orange",
+        "price": "20元",
+        "discount": "特惠 已优惠2元",
+        "tags": ["特惠"],
+        "isSelected": true,
+        "logo": "t3_logo.png"
+      },
+      {
+        "id": "lvcheng_taxi",
+        "type": "provider", 
+        "name": "旅程约车",
+        "subtitle": "敢坐敢赔 隐私保护",
+        "iconColor": "blue",
+        "price": "20元",
+        "discount": "特惠 已优惠2元",
+        "tags": ["特惠"],
+        "isSelected": true,
+        "logo": "lvcheng_logo.png"
+      },
+      {
+        "id": "huanghe_taxi",
+        "type": "provider",
+        "name": "黄鹤行",
+        "subtitle": "敢坐敢赔 隐私保护", 
+        "iconColor": "green",
+        "price": "20元",
+        "discount": "特惠 已优惠1元",
+        "tags": ["特惠"],
+        "isSelected": true,
+        "logo": "huanghe_logo.png"
+      },
+      {
+        "id": "aa_taxi",
+        "type": "provider",
+        "name": "AA出行",
+        "subtitle": "敢坐敢赔 隐私保护",
+        "iconColor": "green", 
+        "price": "20元",
+        "discount": "特惠 已优惠1元",
+        "tags": ["特惠"],
+        "isSelected": true,
+        "logo": "aa_logo.png"
+      },
+      {
+        "id": "xinghui_taxi",
+        "type": "provider",
+        "name": "星徽出行",
+        "subtitle": "敢坐敢赔 隐私保护",
+        "iconColor": "dark",
+        "price": "21元",
+        "isSelected": true,
+        "logo": "xinghui_logo.png"
+      }
+    ]
+  }
+}

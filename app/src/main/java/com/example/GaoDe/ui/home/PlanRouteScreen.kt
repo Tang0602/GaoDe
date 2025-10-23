@@ -24,6 +24,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.GaoDe.model.RouteOption
 import com.example.GaoDe.model.RouteSegment
+import com.example.GaoDe.model.TaxiCategory
+import com.example.GaoDe.model.TaxiOption
+import com.example.GaoDe.model.TaxiGroup
 import com.google.accompanist.flowlayout.FlowRow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -94,16 +97,23 @@ fun PlanRouteScreen(
                 CircularProgressIndicator()
             }
         } else {
-            // Route Options List
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(vertical = 8.dp)
-            ) {
-                items(routeOptions) { route ->
-                    RouteOptionCard(
-                        route = route,
-                        onClick = { /* Handle route selection */ }
-                    )
+            // Content based on selected transport mode
+            if (selectedTransportMode == "打车") {
+                TaxiAggregateView(
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else {
+                // Route Options List
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(vertical = 8.dp)
+                ) {
+                    items(routeOptions) { route ->
+                        RouteOptionCard(
+                            route = route,
+                            onClick = { /* Handle route selection */ }
+                        )
+                    }
                 }
             }
         }
@@ -518,4 +528,636 @@ private fun parseRouteOption(jsonObject: JSONObject): RouteOption {
         tags = tags,
         isRecommended = jsonObject.getBoolean("isRecommended")
     )
+}
+
+@Composable
+fun TaxiAggregateView(
+    modifier: Modifier = Modifier
+) {
+    var taxiCategories by remember { mutableStateOf<List<TaxiCategory>>(emptyList()) }
+    var selectedCategory by remember { mutableStateOf("recommend") }
+    var recommendOptions by remember { mutableStateOf<List<TaxiOption>>(emptyList()) }
+    var aggregateOptions by remember { mutableStateOf<List<TaxiOption>>(emptyList()) }
+    var economyGroup by remember { mutableStateOf<TaxiGroup?>(null) }
+    var selectedCount by remember { mutableStateOf(32) }
+    
+    val context = LocalContext.current
+    
+    LaunchedEffect(Unit) {
+        withContext(Dispatchers.IO) {
+            try {
+                val inputStream = context.assets.open("data/taxi_options.json")
+                val jsonString = inputStream.bufferedReader().use { it.readText() }
+                val jsonObject = JSONObject(jsonString)
+                
+                // Parse categories
+                val categoriesArray = jsonObject.getJSONArray("categories")
+                val categories = mutableListOf<TaxiCategory>()
+                for (i in 0 until categoriesArray.length()) {
+                    val categoryJson = categoriesArray.getJSONObject(i)
+                    categories.add(
+                        TaxiCategory(
+                            id = categoryJson.getString("id"),
+                            name = categoryJson.getString("name"),
+                            badge = if (categoryJson.isNull("badge")) null else categoryJson.getInt("badge"),
+                            isSelected = categoryJson.getBoolean("isSelected")
+                        )
+                    )
+                }
+                
+                // Parse recommend options
+                val recommendArray = jsonObject.getJSONArray("recommendOptions")
+                val recommends = mutableListOf<TaxiOption>()
+                for (i in 0 until recommendArray.length()) {
+                    val optionJson = recommendArray.getJSONObject(i)
+                    recommends.add(parseTaxiOption(optionJson))
+                }
+                
+                // Parse aggregate options
+                val aggregateArray = jsonObject.getJSONArray("aggregateOptions")
+                val aggregates = mutableListOf<TaxiOption>()
+                for (i in 0 until aggregateArray.length()) {
+                    val optionJson = aggregateArray.getJSONObject(i)
+                    aggregates.add(parseTaxiOption(optionJson))
+                }
+                
+                // Parse economy group
+                val economyJson = jsonObject.getJSONObject("economyGroup")
+                val economyItems = mutableListOf<TaxiOption>()
+                val economyItemsArray = economyJson.getJSONArray("items")
+                for (i in 0 until economyItemsArray.length()) {
+                    val itemJson = economyItemsArray.getJSONObject(i)
+                    economyItems.add(parseTaxiOption(itemJson))
+                }
+                
+                withContext(Dispatchers.Main) {
+                    taxiCategories = categories
+                    recommendOptions = recommends
+                    aggregateOptions = aggregates
+                    economyGroup = TaxiGroup(
+                        title = economyJson.getString("title"),
+                        count = economyJson.getInt("count"),
+                        isAllSelected = economyJson.getBoolean("isAllSelected"),
+                        items = economyItems
+                    )
+                }
+            } catch (e: Exception) {
+                // Handle error
+            }
+        }
+    }
+    
+    Column(modifier = modifier) {
+        Row(modifier = Modifier.weight(1f)) {
+            // Left sidebar
+            TaxiCategorySidebar(
+                categories = taxiCategories,
+                selectedCategory = selectedCategory,
+                onCategorySelected = { selectedCategory = it },
+                modifier = Modifier.width(100.dp)
+            )
+            
+            // Right content
+            TaxiOptionsContent(
+                recommendOptions = recommendOptions,
+                aggregateOptions = aggregateOptions,
+                economyGroup = economyGroup,
+                modifier = Modifier.weight(1f)
+            )
+        }
+        
+        // Bottom action bar
+        TaxiBottomActionBar(
+            selectedCount = selectedCount,
+            estimatedPrice = "17.1-22元起"
+        )
+    }
+}
+
+@Composable
+fun TaxiCategorySidebar(
+    categories: List<TaxiCategory>,
+    selectedCategory: String,
+    onCategorySelected: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyColumn(
+        modifier = modifier.background(Color(0xFFF5F5F5)),
+        contentPadding = PaddingValues(vertical = 8.dp)
+    ) {
+        items(categories) { category ->
+            TaxiCategoryItem(
+                category = category,
+                isSelected = category.id == selectedCategory,
+                onClick = { onCategorySelected(category.id) }
+            )
+        }
+    }
+}
+
+@Composable
+fun TaxiCategoryItem(
+    category: TaxiCategory,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(horizontal = 8.dp, vertical = 12.dp)
+    ) {
+        Text(
+            text = category.name,
+            fontSize = 14.sp,
+            color = if (isSelected) Color(0xFF2196F3) else Color.Black,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+            modifier = Modifier.align(Alignment.Center)
+        )
+        
+        category.badge?.let { badge ->
+            Surface(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .offset(x = 4.dp, y = (-4).dp),
+                shape = CircleShape,
+                color = Color(0xFF2196F3)
+            ) {
+                Text(
+                    text = badge.toString(),
+                    fontSize = 10.sp,
+                    color = Color.White,
+                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun TaxiOptionsContent(
+    recommendOptions: List<TaxiOption>,
+    aggregateOptions: List<TaxiOption>,
+    economyGroup: TaxiGroup?,
+    modifier: Modifier = Modifier
+) {
+    LazyColumn(
+        modifier = modifier.background(Color.White),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        // Recommendation options
+        items(recommendOptions) { option ->
+            TaxiRecommendationCard(option = option)
+        }
+        
+        // Aggregate options
+        items(aggregateOptions) { option ->
+            TaxiAggregateCard(option = option)
+        }
+        
+        // Economy group
+        economyGroup?.let { group ->
+            item {
+                TaxiEconomyGroup(group = group)
+            }
+        }
+        
+        // Floating tip
+        item {
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = Color.Black.copy(alpha = 0.7f)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "上滑查看更多已选车型",
+                            fontSize = 12.sp,
+                            color = Color.White
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Icon(
+                            Icons.Default.KeyboardArrowUp,
+                            contentDescription = "上滑",
+                            tint = Color.White,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun TaxiBottomActionBar(
+    selectedCount: Int,
+    estimatedPrice: String
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shadowElevation = 8.dp
+    ) {
+        Row(
+            modifier = Modifier
+                .background(Color(0xFF1976D2))
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = "预估 $estimatedPrice",
+                    fontSize = 16.sp,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "已选 ${selectedCount}个车型",
+                    fontSize = 12.sp,
+                    color = Color.White.copy(alpha = 0.8f)
+                )
+            }
+            
+            Button(
+                onClick = { },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF2196F3)
+                ),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text(
+                    text = "立即打车",
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    }
+}
+
+private fun parseTaxiOption(jsonObject: JSONObject): TaxiOption {
+    val tagsArray = jsonObject.optJSONArray("tags")
+    val tags = mutableListOf<String>()
+    if (tagsArray != null) {
+        for (i in 0 until tagsArray.length()) {
+            tags.add(tagsArray.getString(i))
+        }
+    }
+    
+    return TaxiOption(
+        id = jsonObject.getString("id"),
+        type = jsonObject.getString("type"),
+        name = jsonObject.getString("name"),
+        subtitle = jsonObject.optString("subtitle").takeIf { it.isNotEmpty() },
+        iconColor = jsonObject.getString("iconColor"),
+        iconText = jsonObject.optString("iconText").takeIf { it.isNotEmpty() },
+        price = jsonObject.getString("price"),
+        priceRange = jsonObject.optString("priceRange").takeIf { it.isNotEmpty() },
+        actionText = jsonObject.optString("actionText").takeIf { it.isNotEmpty() },
+        discount = jsonObject.optString("discount").takeIf { it.isNotEmpty() },
+        tags = tags,
+        isSelected = jsonObject.getBoolean("isSelected"),
+        logo = jsonObject.optString("logo").takeIf { it.isNotEmpty() }
+    )
+}
+
+@Composable
+fun TaxiRecommendationCard(option: TaxiOption) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Icon
+            Surface(
+                modifier = Modifier.size(40.dp),
+                shape = CircleShape,
+                color = getIconBackgroundColor(option.iconColor)
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Text(
+                        text = option.iconText ?: "🚗",
+                        fontSize = 16.sp,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.width(12.dp))
+            
+            // Content
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = option.name,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+                option.subtitle?.let { subtitle ->
+                    Text(
+                        text = subtitle,
+                        fontSize = 12.sp,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.width(8.dp))
+            
+            // Price and action
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = "一口价 ${option.price}",
+                    fontSize = 14.sp,
+                    color = Color.Black,
+                    fontWeight = FontWeight.Medium
+                )
+                
+                option.actionText?.let { actionText ->
+                    Surface(
+                        modifier = Modifier.padding(top = 4.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        color = Color(0xFF2196F3)
+                    ) {
+                        Text(
+                            text = actionText,
+                            fontSize = 12.sp,
+                            color = Color.White,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun TaxiAggregateCard(option: TaxiOption) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Icon
+            Surface(
+                modifier = Modifier.size(40.dp),
+                shape = CircleShape,
+                color = getIconBackgroundColor(option.iconColor)
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Text(
+                        text = "🚗",
+                        fontSize = 16.sp
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.width(12.dp))
+            
+            // Content
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = option.name,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+                
+                Row(
+                    modifier = Modifier.padding(top = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = if (option.name.contains("拼车")) "拼成价 " else "",
+                        fontSize = 12.sp,
+                        color = Color.Gray
+                    )
+                    Text(
+                        text = option.price,
+                        fontSize = 14.sp,
+                        color = Color.Black,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+                
+                option.priceRange?.let { priceRange ->
+                    Text(
+                        text = priceRange,
+                        fontSize = 12.sp,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                }
+                
+                option.discount?.let { discount ->
+                    Surface(
+                        modifier = Modifier.padding(top = 4.dp),
+                        shape = RoundedCornerShape(4.dp),
+                        color = Color(0xFFFF5722)
+                    ) {
+                        Text(
+                            text = discount,
+                            fontSize = 10.sp,
+                            color = Color.White,
+                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                        )
+                    }
+                }
+            }
+            
+            // Checkbox
+            Checkbox(
+                checked = option.isSelected,
+                onCheckedChange = { },
+                colors = CheckboxDefaults.colors(
+                    checkedColor = Color(0xFF2196F3)
+                )
+            )
+        }
+    }
+}
+
+@Composable  
+fun TaxiEconomyGroup(group: TaxiGroup) {
+    Column {
+        // Group header
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "${group.title} (${group.count})",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            )
+            
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "全选${group.title}",
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
+                Checkbox(
+                    checked = group.isAllSelected,
+                    onCheckedChange = { },
+                    colors = CheckboxDefaults.colors(
+                        uncheckedColor = Color.Gray
+                    )
+                )
+            }
+        }
+        
+        // Group items
+        group.items.forEach { item ->
+            TaxiProviderCard(option = item)
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+    }
+}
+
+@Composable
+fun TaxiProviderCard(option: TaxiOption) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Provider logo/icon
+            Surface(
+                modifier = Modifier.size(40.dp),
+                shape = CircleShape,
+                color = getIconBackgroundColor(option.iconColor)
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Text(
+                        text = option.name.take(1),
+                        fontSize = 16.sp,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.width(12.dp))
+            
+            // Provider info
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = option.name,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+                option.subtitle?.let { subtitle ->
+                    Text(
+                        text = subtitle,
+                        fontSize = 12.sp,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.width(8.dp))
+            
+            // Price section
+            Column(horizontalAlignment = Alignment.End) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "预估",
+                        fontSize = 12.sp,
+                        color = Color.Gray
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = option.price,
+                        fontSize = 16.sp,
+                        color = Color.Black,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                
+                option.discount?.let { discount ->
+                    Surface(
+                        modifier = Modifier.padding(top = 2.dp),
+                        shape = RoundedCornerShape(4.dp),
+                        color = Color(0xFFFF5722)
+                    ) {
+                        Text(
+                            text = discount,
+                            fontSize = 10.sp,
+                            color = Color.White,
+                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                        )
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.width(8.dp))
+            
+            // Checkbox
+            Checkbox(
+                checked = option.isSelected,
+                onCheckedChange = { },
+                colors = CheckboxDefaults.colors(
+                    checkedColor = Color(0xFF2196F3)
+                )
+            )
+        }
+    }
+}
+
+private fun getIconBackgroundColor(colorName: String): Color {
+    return when (colorName) {
+        "green" -> Color(0xFF4CAF50)
+        "yellow" -> Color(0xFFFFC107)
+        "orange" -> Color(0xFFFF9800)
+        "blue" -> Color(0xFF2196F3)
+        "dark" -> Color(0xFF424242)
+        else -> Color(0xFF9E9E9E)
+    }
 }

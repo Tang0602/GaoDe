@@ -133,3 +133,34 @@ data class RouteSegment(
     val icon: String, // 图标类型
     val backgroundColor: String? = null // 如 "绿色", "蓝色"
 )
+
+// 打车模式数据模型
+data class TaxiCategory(
+    val id: String,
+    val name: String,
+    val badge: Int? = null, // 右上角数字角标
+    val isSelected: Boolean = false
+)
+
+data class TaxiOption(
+    val id: String,
+    val type: String, // "recommendation" | "aggregate" | "provider"
+    val name: String,
+    val subtitle: String? = null,
+    val iconColor: String, // "green" | "yellow" | "orange" | ...
+    val iconText: String? = null, // 如 "顺" 
+    val price: String,
+    val priceRange: String? = null, // 如 "未拼成 21-23元"
+    val actionText: String? = null, // 如 "去体验"
+    val discount: String? = null, // 如 "特惠 已优惠2元"
+    val tags: List<String> = emptyList(), // 如 ["特惠", "敢坐敢赔", "隐私保护"]
+    val isSelected: Boolean = false,
+    val logo: String? = null // 服务商Logo
+)
+
+data class TaxiGroup(
+    val title: String,
+    val count: Int,
+    val isAllSelected: Boolean,
+    val items: List<TaxiOption>
+)
