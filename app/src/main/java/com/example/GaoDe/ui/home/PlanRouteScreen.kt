@@ -40,7 +40,6 @@ fun PlanRouteScreen(
     var routeOptions by remember { mutableStateOf<List<RouteOption>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var selectedTransportMode by remember { mutableStateOf("公共交通") }
-    var selectedPreference by remember { mutableStateOf("高德推荐") }
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
@@ -86,11 +85,6 @@ fun PlanRouteScreen(
             onModeSelected = { selectedTransportMode = it }
         )
         
-        // Route Preference Filter
-        RoutePreferenceFilter(
-            selectedPreference = selectedPreference,
-            onPreferenceSelected = { selectedPreference = it }
-        )
         
         if (isLoading) {
             Box(
@@ -303,68 +297,6 @@ fun TransportModeChip(
     }
 }
 
-@Composable
-fun RoutePreferenceFilter(
-    selectedPreference: String,
-    onPreferenceSelected: (String) -> Unit
-) {
-    val preferences = listOf("现在出发", "高德推荐", "地铁优先", "步行少", "换乘少")
-    
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = Color.White
-    ) {
-        LazyRow(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(preferences) { preference ->
-                RoutePreferenceChip(
-                    preference = preference,
-                    isSelected = preference == selectedPreference,
-                    onClick = { onPreferenceSelected(preference) }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun RoutePreferenceChip(
-    preference: String,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    Surface(
-        modifier = Modifier.clickable { onClick() },
-        shape = RoundedCornerShape(16.dp),
-        color = if (isSelected) Color(0xFFE3F2FD) else Color(0xFFF5F5F5),
-        border = if (isSelected) 
-            androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF2196F3)) 
-        else null
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-        ) {
-            Text(
-                text = preference,
-                fontSize = 14.sp,
-                color = if (isSelected) Color(0xFF2196F3) else Color.Black,
-                fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal
-            )
-            if (preference == "现在出发") {
-                Spacer(modifier = Modifier.width(4.dp))
-                Icon(
-                    Icons.Default.KeyboardArrowDown,
-                    contentDescription = "展开",
-                    tint = if (isSelected) Color(0xFF2196F3) else Color.Gray,
-                    modifier = Modifier.size(16.dp)
-                )
-            }
-        }
-    }
-}
 
 @Composable
 fun RouteOptionCard(
@@ -460,35 +392,6 @@ fun RouteOptionCard(
                 )
             }
             
-            // Special action for taxi
-            if (route.transportationType == "打车") {
-                Spacer(modifier = Modifier.height(8.dp))
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { },
-                    shape = RoundedCornerShape(8.dp),
-                    color = Color(0xFF2196F3)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "去打车",
-                            fontSize = 16.sp,
-                            color = Color.White,
-                            fontWeight = FontWeight.Medium,
-                            modifier = Modifier.weight(1f)
-                        )
-                        Icon(
-                            Icons.Default.KeyboardArrowRight,
-                            contentDescription = "去打车",
-                            tint = Color.White
-                        )
-                    }
-                }
-            }
         }
     }
 }
