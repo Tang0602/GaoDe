@@ -19,7 +19,7 @@
       "originalPrice": "¥230",
       "currentPrice": "¥229起"
     },
-    "logo": "friend_1.jpg",
+    "logo": "欢乐谷.jpg",
     "phone": "027-81730666"
   },
   {
@@ -42,7 +42,7 @@
       "originalPrice": "¥30",
       "currentPrice": "¥25起"
     },
-    "logo": "friend_2.jpg",
+    "logo": "东湖.jpg",
     "phone": "027-86791413"
   },
   {
@@ -65,7 +65,7 @@
       "originalPrice": "¥80",
       "currentPrice": "¥70起"
     },
-    "logo": "friend_3.jpg",
+    "logo": "黄鹤楼.jpg",
     "phone": "027-88875096"
   },
   {
@@ -84,7 +84,7 @@
     "serviceTags": ["免费开放", "生态环境", "休闲漫步"],
     "userQuote": "环境清幽，空气清新，是晨练和散步的好地方。",
     "ticketInfo": null,
-    "logo": "麦当劳.jpg",
+    "logo": "南湖公园.jpg",
     "phone": "027-87654321"
   },
   {
@@ -107,7 +107,7 @@
       "originalPrice": "¥180",
       "currentPrice": "¥168起"
     },
-    "logo": "老乡鸡.jpg",
+    "logo": "海洋公园.jpg",
     "phone": "027-83234567"
   }
 ]
