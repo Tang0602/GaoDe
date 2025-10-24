@@ -29,6 +29,12 @@
             android:theme="@style/Theme.GaoDe">
         </activity>
 
+        <activity
+            android:name=".ui.orders.OrderListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.GaoDe">
+        </activity>
+
         <meta-data
             android:name="com.amap.api.v2.apikey"
             android:value="bdb7ce34c661a4ea48443b1641332256" />

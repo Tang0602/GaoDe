@@ -46,7 +46,12 @@ fun MyScreen() {
             PersonalizationCard()
             
             // 订单中心模块
-            OrderCenterCard()
+            OrderCenterCard(
+                onAllOrdersClick = {
+                    val intent = Intent(context, com.example.GaoDe.ui.orders.OrderListActivity::class.java)
+                    context.startActivity(intent)
+                }
+            )
             
             // 常用工具模块
             CommonToolsCard(
@@ -273,7 +278,9 @@ fun PersonalizationItem(
 }
 
 @Composable
-fun OrderCenterCard() {
+fun OrderCenterCard(
+    onAllOrdersClick: () -> Unit = {}
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -296,6 +303,7 @@ fun OrderCenterCard() {
                 OrderItem(
                     icon = Icons.Default.Assignment,
                     title = "全部订单",
+                    onClick = onAllOrdersClick,
                     modifier = Modifier.weight(1f)
                 )
                 
@@ -319,10 +327,12 @@ fun OrderCenterCard() {
 fun OrderItem(
     icon: ImageVector,
     title: String,
+    onClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier,
+        modifier = modifier
+            .clickable { onClick() },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(

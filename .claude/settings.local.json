@@ -10,7 +10,10 @@
       "Bash(rm:*)",
       "Bash(true)",
       "Bash(gradle:*)",
-      "Bash(dir)"
+      "Bash(dir)",
+      "Bash(dir:*)",
+      "Bash(curl:*)",
+      "Bash(chmod:*)"
     ],
     "deny": []
   }
