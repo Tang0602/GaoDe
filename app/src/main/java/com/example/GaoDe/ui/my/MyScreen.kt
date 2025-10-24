@@ -2,6 +2,7 @@ package com.example.GaoDe.ui.my
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
@@ -17,13 +18,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.content.Intent
 
 @Composable
 fun MyScreen() {
+    val context = LocalContext.current
+    
     Box(modifier = Modifier.fillMaxSize()) {
         // 主要内容区域
         Column(
@@ -44,7 +49,12 @@ fun MyScreen() {
             OrderCenterCard()
             
             // 常用工具模块
-            CommonToolsCard()
+            CommonToolsCard(
+                onFavoriteClick = {
+                    val intent = Intent(context, com.example.GaoDe.ui.favorites.FavoritePlacesActivity::class.java)
+                    context.startActivity(intent)
+                }
+            )
             
             // 我的车辆模块
             MyVehicleCard()
@@ -333,7 +343,9 @@ fun OrderItem(
 }
 
 @Composable
-fun CommonToolsCard() {
+fun CommonToolsCard(
+    onFavoriteClick: () -> Unit = {}
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -349,6 +361,7 @@ fun CommonToolsCard() {
                     icon = Icons.Default.Star,
                     iconColor = Color(0xFFFF9800),
                     title = "收藏夹",
+                    onClick = onFavoriteClick,
                     modifier = Modifier.weight(1f)
                 )
                 
@@ -368,10 +381,12 @@ fun ToolItem(
     icon: ImageVector,
     iconColor: Color,
     title: String,
+    onClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier,
+        modifier = modifier
+            .clickable { onClick() },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(

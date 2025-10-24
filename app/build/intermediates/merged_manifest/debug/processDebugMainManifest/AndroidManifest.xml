@@ -46,6 +46,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="com.example.GaoDe.ui.favorites.FavoritePlacesActivity"
+            android:exported="false"
+            android:theme="@style/Theme.GaoDe" >
+        </activity>
 
         <meta-data
             android:name="com.amap.api.v2.apikey"

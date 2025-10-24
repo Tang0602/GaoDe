@@ -9,7 +9,8 @@
       "Bash(gradle build)",
       "Bash(rm:*)",
       "Bash(true)",
-      "Bash(gradle:*)"
+      "Bash(gradle:*)",
+      "Bash(dir)"
     ],
     "deny": []
   }
