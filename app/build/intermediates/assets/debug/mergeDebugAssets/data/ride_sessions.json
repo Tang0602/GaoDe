@@ -1,0 +1,67 @@
+[
+  {
+    "sessionId": "ride_session_001",
+    "driverName": "田师傅",
+    "driverAvatar": null,
+    "orderType": "实时单",
+    "orderId": "GDC20251001001",
+    "estimatedPrice": "¥10.91",
+    "status": "TRIP_COMPLETED",
+    "createdAt": 1696185300000,
+    "lastMessageSummary": "司机即将到达提醒: 司机将在 2分钟内到达，请...",
+    "messages": [
+      {
+        "id": "msg_001",
+        "type": "ORDER_STATUS",
+        "content": "订单已创建: 订单号 GDC20251001001，费用预估 ¥10.91。",
+        "senderName": "系统",
+        "timestamp": 1696185300000,
+        "orderId": "GDC20251001001",
+        "amount": "¥10.91"
+      },
+      {
+        "id": "msg_002",
+        "type": "SYSTEM_NOTIFICATION",
+        "content": "司机即将到达提醒: 司机将在 2分钟内到达，请您做好准备。",
+        "senderName": "系统",
+        "timestamp": 1696185600000
+      },
+      {
+        "id": "msg_003",
+        "type": "DRIVER_MESSAGE",
+        "content": "好的，乘客您好，我已经到达您上车点，在 D口等您。",
+        "senderName": "田师傅",
+        "timestamp": 1696185660000
+      },
+      {
+        "id": "msg_004",
+        "type": "PASSENGER_MESSAGE",
+        "content": "好的，我马上出来，大概 1分钟。",
+        "senderName": "乘客",
+        "timestamp": 1696185720000
+      },
+      {
+        "id": "msg_005",
+        "type": "DRIVER_MESSAGE",
+        "content": "没问题，不用着急，我在这里等您。",
+        "senderName": "田师傅",
+        "timestamp": 1696185750000
+      },
+      {
+        "id": "msg_006",
+        "type": "SYSTEM_NOTIFICATION",
+        "content": "行程开始: 司机已确认乘客上车，行程正式开始。",
+        "senderName": "系统",
+        "timestamp": 1696185780000
+      },
+      {
+        "id": "msg_007",
+        "type": "SYSTEM_NOTIFICATION",
+        "content": "行程结束: 您已支付 ¥10.91，感谢使用高德打车。",
+        "senderName": "系统",
+        "timestamp": 1696187200000,
+        "amount": "¥10.91"
+      }
+    ]
+  }
+]

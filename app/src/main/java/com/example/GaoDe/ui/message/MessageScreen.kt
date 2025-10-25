@@ -1,6 +1,7 @@
 package com.example.GaoDe.ui.message
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,9 +18,13 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
+import android.content.Intent
+import com.example.GaoDe.ui.ride.RideChatActivity
 
 // 数据结构定义
 data class MessageInfo(
+    val id: String,
     val icon: ImageVector,
     val iconBackgroundColor: Color,
     val title: String,
@@ -36,10 +41,20 @@ sealed class MessageListItem {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MessageScreen() {
+    val context = LocalContext.current
+    
+    // 打车会话点击处理
+    val onRideChatClicked = { sessionId: String ->
+        val intent = Intent(context, RideChatActivity::class.java).apply {
+            putExtra("SESSION_ID", sessionId)
+        }
+        context.startActivity(intent)
+    }
     // 根据截图精确复刻的消息数据
     val messageItems = listOf(
         MessageListItem.MessageItem(
             MessageInfo(
+                id = "msg_location_comment",
                 icon = Icons.Default.Comment,
                 iconBackgroundColor = Color(0xFFFFA726),
                 title = "地点评论",
@@ -49,6 +64,7 @@ fun MessageScreen() {
         ),
         MessageListItem.MessageItem(
             MessageInfo(
+                id = "msg_notification",
                 icon = Icons.Default.NotificationImportant,
                 iconBackgroundColor = Color(0xFFEF5350),
                 title = "通知权限提醒",
@@ -59,6 +75,7 @@ fun MessageScreen() {
         MessageListItem.DateSeparator("两周前和长期未读消息"),
         MessageListItem.MessageItem(
             MessageInfo(
+                id = "msg_order_reminder",
                 icon = Icons.Default.Assignment,
                 iconBackgroundColor = Color(0xFFFFA726),
                 title = "订单提醒",
@@ -68,6 +85,7 @@ fun MessageScreen() {
         ),
         MessageListItem.MessageItem(
             MessageInfo(
+                id = "ride_session_001",
                 icon = Icons.Default.Person,
                 iconBackgroundColor = Color(0xFF42A5F5),
                 title = "打车会话",
@@ -77,6 +95,7 @@ fun MessageScreen() {
         ),
         MessageListItem.MessageItem(
             MessageInfo(
+                id = "msg_bus_info",
                 icon = Icons.Default.DirectionsBus,
                 iconBackgroundColor = Color(0xFF66BB6A),
                 title = "公共交通动态",
@@ -86,6 +105,7 @@ fun MessageScreen() {
         ),
         MessageListItem.MessageItem(
             MessageInfo(
+                id = "msg_benefits",
                 icon = Icons.Default.CardGiftcard,
                 iconBackgroundColor = Color(0xFFFF7043),
                 title = "天天领福利",
@@ -95,6 +115,7 @@ fun MessageScreen() {
         ),
         MessageListItem.MessageItem(
             MessageInfo(
+                id = "msg_sports",
                 icon = Icons.Default.DirectionsRun,
                 iconBackgroundColor = Color(0xFF66BB6A),
                 title = "高德运动",
@@ -104,6 +125,7 @@ fun MessageScreen() {
         ),
         MessageListItem.MessageItem(
             MessageInfo(
+                id = "msg_news",
                 icon = Icons.Default.Report,
                 iconBackgroundColor = Color(0xFFEF5350),
                 title = "高德快报",
@@ -113,6 +135,7 @@ fun MessageScreen() {
         ),
         MessageListItem.MessageItem(
             MessageInfo(
+                id = "msg_hotel",
                 icon = Icons.Default.Hotel,
                 iconBackgroundColor = Color(0xFF42A5F5),
                 title = "高德酒店",
@@ -165,7 +188,10 @@ fun MessageScreen() {
             items(messageItems) { item ->
                 when (item) {
                     is MessageListItem.MessageItem -> {
-                        MessageRow(message = item.messageInfo)
+                        MessageRow(
+                            message = item.messageInfo,
+                            onRideChatClicked = onRideChatClicked
+                        )
                     }
                     is MessageListItem.DateSeparator -> {
                         DateSeparator(text = item.text)
@@ -177,11 +203,20 @@ fun MessageScreen() {
 }
 
 @Composable
-fun MessageRow(message: MessageInfo) {
+fun MessageRow(
+    message: MessageInfo,
+    onRideChatClicked: (String) -> Unit = {}
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .clickable {
+                // 如果是打车会话消息，处理点击事件
+                if (message.id.startsWith("ride_")) {
+                    onRideChatClicked(message.id)
+                }
+            },
         verticalAlignment = Alignment.CenterVertically
     ) {
         // 左侧图标

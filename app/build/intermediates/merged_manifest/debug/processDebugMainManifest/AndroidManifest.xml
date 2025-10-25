@@ -56,6 +56,11 @@
             android:exported="false"
             android:theme="@style/Theme.GaoDe" >
         </activity>
+        <activity
+            android:name="com.example.GaoDe.ui.ride.RideChatActivity"
+            android:exported="false"
+            android:theme="@style/Theme.GaoDe" >
+        </activity>
 
         <meta-data
             android:name="com.amap.api.v2.apikey"
