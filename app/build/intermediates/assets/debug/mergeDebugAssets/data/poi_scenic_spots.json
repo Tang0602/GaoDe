@@ -80,10 +80,14 @@
     "rating": 4.4,
     "ratingText": "不错",
     "activityInfo": "1200+ 人去过",
-    "rankingInfo": null,
+    "rankingInfo": "洪山区生态公园 第1名",
     "serviceTags": ["免费开放", "生态环境", "休闲漫步"],
     "userQuote": "环境清幽，空气清新，是晨练和散步的好地方。",
-    "ticketInfo": null,
+    "ticketInfo": {
+      "ticketDescription": "免费开放",
+      "originalPrice": null,
+      "currentPrice": "免费"
+    },
     "logo": "南湖公园.jpg",
     "phone": "027-87654321"
   },

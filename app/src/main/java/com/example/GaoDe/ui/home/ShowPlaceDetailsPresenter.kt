@@ -75,7 +75,7 @@ class ShowPlaceDetailsPresenter(
                         timestamp = System.currentTimeMillis()
                     )
                 ),
-                photos = listOf("烧烤串.jpg", "烤羊肉.jpg")
+                photos = listOf()
             )
             
             "place_008" -> PlaceDetails(
@@ -91,7 +91,7 @@ class ShowPlaceDetailsPresenter(
                         timestamp = System.currentTimeMillis()
                     )
                 ),
-                photos = listOf("汉堡包.jpg", "薯条.jpg")
+                photos = listOf()
             )
             
             "place_011" -> PlaceDetails(
@@ -104,6 +104,22 @@ class ShowPlaceDetailsPresenter(
                         userName = "用户_ht789",
                         rating = 4.0f,
                         comment = "性价比很高，环境整洁，适合学生家长入住。",
+                        timestamp = System.currentTimeMillis()
+                    )
+                ),
+                photos = listOf()
+            )
+            
+            "place_012" -> PlaceDetails(
+                place = place,
+                businessHours = "全天接待",
+                facilities = listOf("度假型", "近地铁", "湖景房", "温泉SPA", "免费停车", "儿童乐园"),
+                reviews = listOf(
+                    Review(
+                        userId = "user_jl456",
+                        userName = "用户_jl456",
+                        rating = 5.0f,
+                        comment = "环境优美，服务一流，温泉设施很棒，适合度假。",
                         timestamp = System.currentTimeMillis()
                     )
                 ),
@@ -184,6 +200,38 @@ class ShowPlaceDetailsPresenter(
                         userName = "用户_hhl505",
                         rating = 5.0f,
                         comment = "江南三大名楼之一，历史悠久，景色壮观。",
+                        timestamp = System.currentTimeMillis()
+                    )
+                ),
+                photos = listOf()
+            )
+            
+            "place_018" -> PlaceDetails(
+                place = place,
+                businessHours = "全天开放",
+                facilities = listOf("生态公园", "免费开放", "生态环境", "休闲漫步", "洪山区生态公园 第1名"),
+                reviews = listOf(
+                    Review(
+                        userId = "user_nh606",
+                        userName = "用户_nh606",
+                        rating = 4.0f,
+                        comment = "环境清幽，空气清新，是晨练和散步的好地方。",
+                        timestamp = System.currentTimeMillis()
+                    )
+                ),
+                photos = listOf()
+            )
+            
+            "place_019" -> PlaceDetails(
+                place = place,
+                businessHours = "周一至周日 09:00-21:00",
+                facilities = listOf("4A景区", "官方售票", "海洋世界", "亲子娱乐", "武汉市海洋馆榜 第1名"),
+                reviews = listOf(
+                    Review(
+                        userId = "user_hy707",
+                        userName = "用户_hy707",
+                        rating = 5.0f,
+                        comment = "海洋动物种类丰富，表演精彩，孩子们很喜欢。",
                         timestamp = System.currentTimeMillis()
                     )
                 ),

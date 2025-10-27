@@ -179,8 +179,8 @@ fun PlaceDetailsContent(
         // Address Section
         AddressSection(placeDetails.place.address, placeDetails.place.phone)
         
-        // Menu Section (only for restaurants)
-        if (placeDetails.place.category == "餐饮") {
+        // Menu Section (only for 巴奴火锅)
+        if (placeDetails.place.id == "place_006") {
             Spacer(modifier = Modifier.height(24.dp))
             MenuSection(placeDetails.photos)
         }
@@ -267,23 +267,108 @@ fun PlaceMainInfo(placeDetails: PlaceDetails) {
                 color = Color.Gray
             )
             
-            Text(
-                text = when (placeDetails.place.id) {
-                    "place_006" -> "人均：¥148/人"
-                    "place_007" -> "人均：¥85/人"
-                    "place_008" -> "人均：¥35/人"
-                    "place_011" -> "房间：¥198起"
-                    "place_013" -> "房间：¥148起"
-                    "place_014" -> "房间：¥1288起"
-                    "place_015" -> "门票：¥229起"
-                    "place_016" -> "门票：¥25起"
-                    "place_017" -> "门票：¥70起"
-                    else -> "详询商家"
-                },
-                fontSize = 14.sp,
-                color = Color.Black,
-                fontWeight = FontWeight.Medium
-            )
+            // 只为有价格的地点显示价格
+            when (placeDetails.place.id) {
+                "place_006" -> {
+                    Text(
+                        text = "人均：¥148/人",
+                        fontSize = 14.sp,
+                        color = Color.Black,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+                "place_007" -> {
+                    Text(
+                        text = "人均：¥85/人",
+                        fontSize = 14.sp,
+                        color = Color.Black,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+                "place_008" -> {
+                    Text(
+                        text = "人均：¥35/人",
+                        fontSize = 14.sp,
+                        color = Color.Black,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+                "place_011" -> {
+                    Text(
+                        text = "房间：¥188起",
+                        fontSize = 14.sp,
+                        color = Color.Black,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+                "place_012" -> {
+                    Text(
+                        text = "房间：¥968起",
+                        fontSize = 14.sp,
+                        color = Color.Black,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+                "place_013" -> {
+                    Text(
+                        text = "房间：¥148起",
+                        fontSize = 14.sp,
+                        color = Color.Black,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+                "place_014" -> {
+                    Text(
+                        text = "房间：¥1388起",
+                        fontSize = 14.sp,
+                        color = Color.Black,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+                "place_015" -> {
+                    Text(
+                        text = "门票：¥229起",
+                        fontSize = 14.sp,
+                        color = Color.Black,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+                "place_016" -> {
+                    Text(
+                        text = "门票：¥25起",
+                        fontSize = 14.sp,
+                        color = Color.Black,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+                "place_017" -> {
+                    Text(
+                        text = "门票：¥70起",
+                        fontSize = 14.sp,
+                        color = Color.Black,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+                "place_018" -> {
+                    // 南湖花溪公园免费，不显示价格
+                }
+                "place_019" -> {
+                    Text(
+                        text = "门票：¥168起",
+                        fontSize = 14.sp,
+                        color = Color.Black,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+                else -> {
+                    Text(
+                        text = "欢迎咨询",
+                        fontSize = 14.sp,
+                        color = Color.Black,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
         }
     }
 }
@@ -373,11 +458,14 @@ fun TransportInfoSection(placeDetails: PlaceDetails) {
                 "place_007" -> "步行 890米 12分钟"
                 "place_008" -> "驾车 3.5公里 8分钟"
                 "place_011" -> "驾车 2.8公里 9分钟"
+                "place_012" -> "驾车 9.2公里 22分钟"
                 "place_013" -> "驾车 7.2公里 18分钟"
                 "place_014" -> "驾车 5.1公里 12分钟"
                 "place_015" -> "驾车 13.1公里 25分钟"
                 "place_016" -> "驾车 8.5公里 18分钟"
                 "place_017" -> "驾车 6.2公里 15分钟"
+                "place_018" -> "步行 5.8公里 12分钟"
+                "place_019" -> "驾车 18.6公里 35分钟"
                 else -> "驾车 5.0公里 15分钟"
             },
             fontSize = 14.sp,
