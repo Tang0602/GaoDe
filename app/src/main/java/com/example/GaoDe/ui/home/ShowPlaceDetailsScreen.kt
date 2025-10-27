@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,6 +23,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.foundation.Image
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import android.graphics.BitmapFactory
 import com.example.GaoDe.data.DataManager
 import com.example.GaoDe.model.PlaceDetails
 import com.google.accompanist.flowlayout.FlowRow
@@ -166,12 +172,24 @@ fun PlaceDetailsContent(
         Spacer(modifier = Modifier.height(16.dp))
         
         // Transport Info
-        TransportInfoSection()
+        TransportInfoSection(placeDetails)
         
         Spacer(modifier = Modifier.height(16.dp))
         
         // Address Section
         AddressSection(placeDetails.place.address, placeDetails.place.phone)
+        
+        // Menu Section (only for restaurants)
+        if (placeDetails.place.category == "餐饮") {
+            Spacer(modifier = Modifier.height(24.dp))
+            MenuSection(placeDetails.photos)
+        }
+        
+        // Reviews Section (only for 巴奴火锅)
+        if (placeDetails.place.id == "place_006") {
+            Spacer(modifier = Modifier.height(24.dp))
+            ReviewsSection(placeDetails.reviews)
+        }
         
         Spacer(modifier = Modifier.height(100.dp)) // Extra space for bottom bar
     }
@@ -250,10 +268,17 @@ fun PlaceMainInfo(placeDetails: PlaceDetails) {
             )
             
             Text(
-                text = when (placeDetails.place.category) {
-                    "酒店" -> "价格详询"
-                    "景点" -> "门票详询"
-                    else -> "人均：¥148/人"
+                text = when (placeDetails.place.id) {
+                    "place_006" -> "人均：¥148/人"
+                    "place_007" -> "人均：¥85/人"
+                    "place_008" -> "人均：¥35/人"
+                    "place_011" -> "房间：¥198起"
+                    "place_013" -> "房间：¥148起"
+                    "place_014" -> "房间：¥1288起"
+                    "place_015" -> "门票：¥229起"
+                    "place_016" -> "门票：¥25起"
+                    "place_017" -> "门票：¥70起"
+                    else -> "详询商家"
                 },
                 fontSize = 14.sp,
                 color = Color.Black,
@@ -331,7 +356,7 @@ fun BusinessHoursSection(businessHours: String) {
 }
 
 @Composable
-fun TransportInfoSection() {
+fun TransportInfoSection(placeDetails: PlaceDetails) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -343,7 +368,18 @@ fun TransportInfoSection() {
             modifier = Modifier.size(16.dp)
         )
         Text(
-            text = "驾车 4.2公里 16分钟",
+            text = when (placeDetails.place.id) {
+                "place_006" -> "驾车 4.2公里 16分钟"
+                "place_007" -> "步行 890米 12分钟"
+                "place_008" -> "驾车 3.5公里 8分钟"
+                "place_011" -> "驾车 2.8公里 9分钟"
+                "place_013" -> "驾车 7.2公里 18分钟"
+                "place_014" -> "驾车 5.1公里 12分钟"
+                "place_015" -> "驾车 13.1公里 25分钟"
+                "place_016" -> "驾车 8.5公里 18分钟"
+                "place_017" -> "驾车 6.2公里 15分钟"
+                else -> "驾车 5.0公里 15分钟"
+            },
             fontSize = 14.sp,
             color = Color.Gray
         )
@@ -383,7 +419,7 @@ fun AddressSection(address: String, phone: String?) {
                         )
                     }
                     Text(
-                        text = "群光广场 >",
+                        text = "商区位置 >",
                         fontSize = 12.sp,
                         color = Color.Gray
                     )
@@ -415,6 +451,298 @@ fun AddressSection(address: String, phone: String?) {
     }
 }
 
+
+@Composable
+fun MenuSection(photos: List<String>) {
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "菜品",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            )
+            
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = "查看全部",
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
+                Icon(
+                    Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    tint = Color.Gray,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        Text(
+            text = "菜单 (2)",
+            fontSize = 14.sp,
+            color = Color.Gray
+        )
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            val dishes = listOf(
+                "经典毛肚" to "经典毛肚.jpg",
+                "梅花肉" to "梅花肉.jpg"
+            )
+            
+            items(dishes) { (dishName, imageName) ->
+                DishItem(dishName = dishName, imageName = imageName)
+            }
+        }
+    }
+}
+
+@Composable
+fun DishItem(dishName: String, imageName: String) {
+    val context = LocalContext.current
+    val bitmap = remember(imageName) {
+        try {
+            val inputStream = context.assets.open("avatar/$imageName")
+            BitmapFactory.decodeStream(inputStream)
+        } catch (e: Exception) {
+            null
+        }
+    }
+    
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Surface(
+            modifier = Modifier.size(64.dp),
+            shape = RoundedCornerShape(8.dp),
+            color = Color(0xFFF5F5F5)
+        ) {
+            if (bitmap != null) {
+                Image(
+                    bitmap = bitmap.asImageBitmap(),
+                    contentDescription = dishName,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Text(
+                        text = "🍲",
+                        fontSize = 24.sp
+                    )
+                }
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(4.dp))
+        
+        Text(
+            text = dishName,
+            fontSize = 12.sp,
+            color = Color.Black
+        )
+    }
+}
+
+@Composable
+fun ReviewsSection(reviews: List<com.example.GaoDe.model.Review>) {
+    Column {
+        Text(
+            text = "用户评价 (52)",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.Black
+        )
+        
+        Spacer(modifier = Modifier.height(12.dp))
+        
+        FlowRow(
+            mainAxisSpacing = 8.dp,
+            crossAxisSpacing = 8.dp
+        ) {
+            val reviewTags = listOf(
+                "本地人评价 6",
+                "导航/现场评价 9", 
+                "服务优质 15",
+                "菜品美味 10",
+                "排队人少 2",
+                "价格合理 1",
+                "价格高 2"
+            )
+            
+            reviewTags.forEach { tag ->
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = Color(0xFFF5F5F5)
+                ) {
+                    Text(
+                        text = tag,
+                        fontSize = 12.sp,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        if (reviews.isNotEmpty()) {
+            ReviewCard(review = reviews.first())
+        }
+    }
+}
+
+@Composable
+fun ReviewCard(review: com.example.GaoDe.model.Review) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Surface(
+                    modifier = Modifier.size(40.dp),
+                    shape = CircleShape,
+                    color = Color(0xFFF5F5F5)
+                ) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        Icon(
+                            Icons.Default.Send,
+                            contentDescription = null,
+                            tint = Color.Gray,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+                
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = review.userName,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black
+                        )
+                        
+                        Surface(
+                            shape = RoundedCornerShape(8.dp),
+                            color = Color(0xFFFF9800)
+                        ) {
+                            Text(
+                                text = "高德达人",
+                                fontSize = 10.sp,
+                                color = Color.White,
+                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(4.dp))
+                    
+                    Text(
+                        text = "2025-10-07 · 高德地图",
+                        fontSize = 12.sp,
+                        color = Color.Gray
+                    )
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "${review.rating.toInt()}分",
+                            fontSize = 14.sp,
+                            color = Color(0xFF2196F3),
+                            fontWeight = FontWeight.Medium
+                        )
+                        
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(2.dp)
+                        ) {
+                            Text(
+                                text = "现场拍摄",
+                                fontSize = 12.sp,
+                                color = Color(0xFF2196F3)
+                            )
+                            Icon(
+                                Icons.Default.ChevronRight,
+                                contentDescription = null,
+                                tint = Color(0xFF2196F3),
+                                modifier = Modifier.size(12.dp)
+                            )
+                        }
+                    }
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Text(
+                            text = review.comment,
+                            fontSize = 14.sp,
+                            color = Color.Black,
+                            modifier = Modifier.weight(1f),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        
+                        Text(
+                            text = "全文",
+                            fontSize = 12.sp,
+                            color = Color(0xFF2196F3),
+                            modifier = Modifier.clickable { }
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    Text(
+                        text = "浏览 377",
+                        fontSize = 12.sp,
+                        color = Color.Gray
+                    )
+                }
+            }
+        }
+    }
+}
 
 @Composable
 fun BottomActionBar(

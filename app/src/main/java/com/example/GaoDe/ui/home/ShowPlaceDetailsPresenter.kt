@@ -65,13 +65,13 @@ class ShowPlaceDetailsPresenter(
             "place_007" -> PlaceDetails(
                 place = place,
                 businessHours = "周一至周日 18:00-2:00",
-                facilities = listOf("夜宵必备", "小腰", "羔羊肉串", "可订位", "氛围感拉满"),
+                facilities = listOf("V认证", "夜宵必备", "小腰", "羔羊肉串", "可订位"),
                 reviews = listOf(
                     Review(
                         userId = "user_muwo123",
                         userName = "用户_muwo123",
                         rating = 5.0f,
-                        comment = "晚上宵夜常来，烧烤很正宗，氛围感拉满",
+                        comment = "晚上宵夜常来，烧烤很正宗，氛围感拉满。",
                         timestamp = System.currentTimeMillis()
                     )
                 ),
@@ -81,13 +81,13 @@ class ShowPlaceDetailsPresenter(
             "place_008" -> PlaceDetails(
                 place = place,
                 businessHours = "周一至周日 00:00-24:00",
-                facilities = listOf("24小时营业", "免费停车", "儿童友好", "快速出餐"),
+                facilities = listOf("V认证", "儿童友好", "24小时营业", "免费停车"),
                 reviews = listOf(
                     Review(
                         userId = "user_mcd456",
                         userName = "用户_mcd456",
                         rating = 4.0f,
-                        comment = "适合带孩子来，玩具和餐点都很好",
+                        comment = "适合带孩子来，玩具和餐点都很好。",
                         timestamp = System.currentTimeMillis()
                     )
                 ),
@@ -96,104 +96,104 @@ class ShowPlaceDetailsPresenter(
             
             "place_011" -> PlaceDetails(
                 place = place,
-                businessHours = "全天",
-                facilities = listOf("经济型酒店", "性价比高", "近地铁", "免费WIFI", "24小时前台"),
+                businessHours = "全天接待",
+                facilities = listOf("经济型", "免费WiFi", "24小时前台", "华科大学区", "性价比高"),
                 reviews = listOf(
                     Review(
                         userId = "user_ht789",
                         userName = "用户_ht789",
                         rating = 4.0f,
-                        comment = "房间干净整洁，服务态度好，性价比很高",
+                        comment = "性价比很高，环境整洁，适合学生家长入住。",
                         timestamp = System.currentTimeMillis()
                     )
                 ),
-                photos = listOf("酒店房间.jpg", "酒店大堂.jpg")
+                photos = listOf()
             )
             
             "place_013" -> PlaceDetails(
                 place = place,
-                businessHours = "全天",
-                facilities = listOf("经济型酒店", "交通便利", "近火车站", "免费WIFI", "行李寄存"),
+                businessHours = "全天接待",
+                facilities = listOf("经济型", "近地铁", "交通便利", "免费WiFi", "接送服务"),
                 reviews = listOf(
                     Review(
                         userId = "user_rj101",
                         userName = "用户_rj101",
                         rating = 4.0f,
-                        comment = "位置很好找，离火车站很近，出行方便",
+                        comment = "交通方便，适合中转住宿，房间虽小但设施齐全。",
                         timestamp = System.currentTimeMillis()
                     )
                 ),
-                photos = listOf("如家房间.jpg", "如家前台.jpg")
+                photos = listOf()
             )
             
             "place_014" -> PlaceDetails(
                 place = place,
-                businessHours = "全天",
-                facilities = listOf("奢华型酒店", "设施一流", "商务中心", "健身房", "游泳池", "行政酒廊"),
+                businessHours = "全天接待",
+                facilities = listOf("奢华型", "近地铁", "行政酒廊", "健身中心", "室内泳池", "米其林餐厅"),
                 reviews = listOf(
                     Review(
                         userId = "user_hyatt202",
                         userName = "用户_hyatt202",
                         rating = 5.0f,
-                        comment = "服务非常专业，房间设施齐全，早餐丰富",
+                        comment = "奢华体验，服务无可挑剔，商务设施一流。",
                         timestamp = System.currentTimeMillis()
                     )
                 ),
-                photos = listOf("凯悦套房.jpg", "凯悦餐厅.jpg")
+                photos = listOf()
             )
             
             "place_015" -> PlaceDetails(
                 place = place,
                 businessHours = "周一至周日 09:00-22:00",
-                facilities = listOf("4A级景区", "大型游乐园", "过山车", "摩天轮", "适合全家", "停车场"),
+                facilities = listOf("4A景区", "官方售票", "周边游", "亲子户外", "武汉市游乐园榜 第1名"),
                 reviews = listOf(
                     Review(
                         userId = "user_hv303",
                         userName = "用户_hv303",
                         rating = 5.0f,
-                        comment = "游乐设施很刺激，带孩子来玩得很开心",
+                        comment = "设施齐全，游乐项目丰富，适合全家出游。",
                         timestamp = System.currentTimeMillis()
                     )
                 ),
-                photos = listOf("过山车.jpg", "摩天轮.jpg")
+                photos = listOf()
             )
             
             "place_016" -> PlaceDetails(
                 place = place,
                 businessHours = "周一至周日 06:00-18:00",
-                facilities = listOf("红色景点", "自然风光", "游船", "步道", "摄影胜地", "免费开放"),
+                facilities = listOf("红色景点", "免费参观", "红色教育", "自然风光", "武汉市自然风光榜 第2名"),
                 reviews = listOf(
                     Review(
                         userId = "user_dh404",
                         userName = "用户_dh404",
                         rating = 5.0f,
-                        comment = "风景优美，空气清新，是休闲散步的好地方",
+                        comment = "风景优美，湖光山色，是武汉市民休闲的好去处。",
                         timestamp = System.currentTimeMillis()
                     )
                 ),
-                photos = listOf("东湖美景.jpg", "湖边小径.jpg")
+                photos = listOf()
             )
             
             "place_017" -> PlaceDetails(
                 place = place,
                 businessHours = "周一至周日 08:00-18:00",
-                facilities = listOf("3A级景区", "江南名楼", "历史文化", "观景台", "诗词文化", "登楼眺望"),
+                facilities = listOf("3A景区", "官方售票", "文化古迹", "登高望远", "武汉市文化古迹榜 第1名"),
                 reviews = listOf(
                     Review(
                         userId = "user_hhl505",
                         userName = "用户_hhl505",
                         rating = 5.0f,
-                        comment = "登楼远眺长江，感受古人诗词意境，文化底蕴深厚",
+                        comment = "江南三大名楼之一，历史悠久，景色壮观。",
                         timestamp = System.currentTimeMillis()
                     )
                 ),
-                photos = listOf("黄鹤楼外景.jpg", "楼内文物.jpg")
+                photos = listOf()
             )
             
             else -> PlaceDetails(
                 place = place,
-                businessHours = "营业时间请咨询商家",
-                facilities = listOf("请联系商家了解详情"),
+                businessHours = "周一至周日 09:00-21:00",
+                facilities = listOf("欢迎咨询", "服务周到"),
                 reviews = emptyList(),
                 photos = emptyList()
             )
