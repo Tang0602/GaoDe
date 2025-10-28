@@ -38,25 +38,20 @@ import org.json.JSONObject
 fun PlanRouteScreen(
     startLocation: String = "我的位置",
     endLocation: String = "巴奴毛肚火锅（群光广场店）",
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    onTaxiClick: () -> Unit = {},
+    onPublicTransportClick: (String) -> Unit = {}
 ) {
     var routeOptions by remember { mutableStateOf<List<RouteOption>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var selectedTransportMode by remember { mutableStateOf("公共交通") }
     val context = LocalContext.current
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(endLocation) {
         withContext(Dispatchers.IO) {
             try {
-                val inputStream = context.assets.open("data/route_options.json")
-                val jsonString = inputStream.bufferedReader().use { it.readText() }
-                val jsonArray = JSONArray(jsonString)
-                val items = mutableListOf<RouteOption>()
-                
-                for (i in 0 until jsonArray.length()) {
-                    val jsonObject = jsonArray.getJSONObject(i)
-                    items.add(parseRouteOption(jsonObject))
-                }
+                // Generate dynamic route data based on destination
+                val items = generateRouteOptions(endLocation)
                 
                 withContext(Dispatchers.Main) {
                     routeOptions = items
@@ -100,7 +95,8 @@ fun PlanRouteScreen(
             // Content based on selected transport mode
             if (selectedTransportMode == "打车") {
                 TaxiAggregateView(
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
+                    onTaxiClick = onTaxiClick
                 )
             } else {
                 // Route Options List
@@ -111,7 +107,12 @@ fun PlanRouteScreen(
                     items(routeOptions) { route ->
                         RouteOptionCard(
                             route = route,
-                            onClick = { /* Handle route selection */ }
+                            onClick = { 
+                                when (route.transportationType) {
+                                    "打车" -> onTaxiClick()
+                                    else -> onPublicTransportClick(route.id)
+                                }
+                            }
                         )
                     }
                 }
@@ -532,7 +533,8 @@ private fun parseRouteOption(jsonObject: JSONObject): RouteOption {
 
 @Composable
 fun TaxiAggregateView(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onTaxiClick: () -> Unit = {}
 ) {
     var taxiCategories by remember { mutableStateOf<List<TaxiCategory>>(emptyList()) }
     var selectedCategory by remember { mutableStateOf("recommend") }
@@ -629,7 +631,8 @@ fun TaxiAggregateView(
         // Bottom action bar
         TaxiBottomActionBar(
             selectedCount = selectedCount,
-            estimatedPrice = "17.1-22元起"
+            estimatedPrice = generateTaxiPriceRange(),
+            onTaxiClick = onTaxiClick
         )
     }
 }
@@ -759,7 +762,8 @@ fun TaxiOptionsContent(
 @Composable
 fun TaxiBottomActionBar(
     selectedCount: Int,
-    estimatedPrice: String
+    estimatedPrice: String,
+    onTaxiClick: () -> Unit = {}
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -788,7 +792,7 @@ fun TaxiBottomActionBar(
             }
             
             Button(
-                onClick = { },
+                onClick = onTaxiClick,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFF2196F3)
                 ),
@@ -803,6 +807,91 @@ fun TaxiBottomActionBar(
             }
         }
     }
+}
+
+private fun generateRouteOptions(destination: String): List<RouteOption> {
+    // Calculate distance and price based on destination
+    val (distance, taxiPrice, busDuration) = when {
+        destination.contains("巴奴") || destination.contains("火锅") -> Triple("1.8公里", "14元", "1小时22分钟")
+        destination.contains("木屋") || destination.contains("烧烤") -> Triple("2.3公里", "18元", "1小时35分钟")
+        destination.contains("麦当劳") -> Triple("0.8公里", "9元", "35分钟")
+        destination.contains("老乡鸡") -> Triple("1.2公里", "12元", "45分钟")
+        destination.contains("汉庭") || destination.contains("如家") -> Triple("3.1公里", "22元", "1小时45分钟")
+        destination.contains("凯悦") -> Triple("4.2公里", "28元", "2小时10分钟")
+        destination.contains("欢乐谷") -> Triple("8.5公里", "35元", "2小时30分钟")
+        destination.contains("东湖") -> Triple("6.2公里", "30元", "2小时15分钟")
+        destination.contains("黄鹤楼") -> Triple("5.8公里", "28元", "2小时5分钟")
+        else -> Triple("2.5公里", "20元", "1小时30分钟")
+    }
+    
+    return listOf(
+        RouteOption(
+            id = "route_001",
+            transportationType = "公交",
+            duration = busDuration,
+            distance = distance,
+            price = "2元",
+            mainRoute = listOf(
+                RouteSegment("步行", "12", "walk", null),
+                RouteSegment("公交", "804路", "bus", "绿色"),
+                RouteSegment("步行", "14", "walk", null)
+            ),
+            details = "15站 · 2元 · 雄楚大道BRT元宝山站上车",
+            realTimeInfo = "804路 预计 20:23~20:33 到站",
+            tags = emptyList(),
+            isRecommended = true
+        ),
+        RouteOption(
+            id = "route_002",
+            transportationType = "混合",
+            duration = "1小时1分钟",
+            distance = distance,
+            price = "约8元",
+            mainRoute = listOf(
+                RouteSegment("打车", "打车 约8元", "taxi", "蓝色"),
+                RouteSegment("步行", "10", "walk", null),
+                RouteSegment("地铁", "轨道交通 5号线", "subway", "蓝色"),
+                RouteSegment("地铁", "轨道交通 11号线", "subway", "蓝色")
+            ),
+            details = "6站 · 12元 · 虎泉 (G2) 进站",
+            realTimeInfo = "轨道交通 11号线 首班发车约 8分钟/趟",
+            tags = listOf("限时特价", "打车混合"),
+            isRecommended = false
+        ),
+        RouteOption(
+            id = "route_003",
+            transportationType = "轨道交通",
+            duration = "58分钟",
+            distance = distance,
+            price = "4元",
+            mainRoute = listOf(
+                RouteSegment("步行", "31", "walk", null),
+                RouteSegment("地铁", "换乘两次轨道交通", "subway", "蓝色")
+            ),
+            details = "6站 · 4元 · 虎泉 (G1口) 进站",
+            realTimeInfo = "换乘等待约 8分钟",
+            tags = emptyList(),
+            isRecommended = false
+        ),
+        RouteOption(
+            id = "route_004",
+            transportationType = "打车",
+            duration = "33分钟",
+            distance = distance,
+            price = taxiPrice,
+            mainRoute = listOf(
+                RouteSegment("打车", "一口价 $taxiPrice", "taxi", "蓝色")
+            ),
+            details = "$distance · 更快更省心 · 上门接送",
+            realTimeInfo = "附近有车，预计 3分钟上车",
+            tags = listOf("少步行"),
+            isRecommended = false
+        )
+    )
+}
+
+private fun generateTaxiPriceRange(): String {
+    return "17.1-22元起"
 }
 
 private fun parseTaxiOption(jsonObject: JSONObject): TaxiOption {

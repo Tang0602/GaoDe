@@ -34,6 +34,8 @@ import com.example.GaoDe.ui.home.PlanRouteScreen
 import com.example.GaoDe.ui.message.MessageScreen
 import com.example.GaoDe.ui.my.MyScreen
 import com.example.GaoDe.ui.payment.PaymentSuccessScreen
+import com.example.GaoDe.ui.ride.TaxiSuccessScreen
+import com.example.GaoDe.ui.navigation.NavigationSuccessScreen
 import com.example.GaoDe.ui.theme.GaoDeTheme
 import androidx.compose.ui.unit.dp
 class MainActivity : ComponentActivity() {
@@ -63,6 +65,8 @@ sealed class Screen(val route: String, val icon: ImageVector, val label: String)
     object ScenicSpotResultsList : Screen("ScenicSpotResultsList", Icons.Filled.Place, "景点结果列表")
     object PlanRoute : Screen("PlanRoute", Icons.Filled.Place, "路线规划")
     object PaymentSuccess : Screen("PaymentSuccess", Icons.Filled.AccountCircle, "支付成功")
+    object TaxiSuccess : Screen("TaxiSuccess", Icons.Filled.AccountCircle, "打车成功")
+    object NavigationSuccess : Screen("NavigationSuccess", Icons.Filled.AccountCircle, "导航成功")
 }
 
 
@@ -189,6 +193,12 @@ fun MainScreen() {
                     endLocation = endName,
                     onBackClick = {
                         navController.popBackStack()
+                    },
+                    onTaxiClick = {
+                        navController.navigate("${Screen.TaxiSuccess.route}/${Screen.PlanRoute.route}/$endName")
+                    },
+                    onPublicTransportClick = { routeId ->
+                        navController.navigate("${Screen.NavigationSuccess.route}/${Screen.PlanRoute.route}/$endName")
                     }
                 )
             }
@@ -199,6 +209,41 @@ fun MainScreen() {
                     onConfirmClick = {
                         navController.navigate("$fromRoute/$category") {
                             popUpTo("$fromRoute/$category") {
+                                inclusive = true
+                            }
+                        }
+                    }
+                )
+            }
+            composable("${Screen.TaxiSuccess.route}/{fromRoute}/{endName}") { backStackEntry ->
+                val fromRoute = backStackEntry.arguments?.getString("fromRoute") ?: ""
+                val endName = backStackEntry.arguments?.getString("endName") ?: ""
+                TaxiSuccessScreen(
+                    onConfirmClick = {
+                        navController.navigate("$fromRoute/$endName") {
+                            popUpTo("$fromRoute/$endName") {
+                                inclusive = true
+                            }
+                        }
+                    },
+                    onContactDriverClick = {
+                        navController.navigate(Screen.Message.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                )
+            }
+            composable("${Screen.NavigationSuccess.route}/{fromRoute}/{endName}") { backStackEntry ->
+                val fromRoute = backStackEntry.arguments?.getString("fromRoute") ?: ""
+                val endName = backStackEntry.arguments?.getString("endName") ?: ""
+                NavigationSuccessScreen(
+                    onConfirmClick = {
+                        navController.navigate("$fromRoute/$endName") {
+                            popUpTo("$fromRoute/$endName") {
                                 inclusive = true
                             }
                         }
