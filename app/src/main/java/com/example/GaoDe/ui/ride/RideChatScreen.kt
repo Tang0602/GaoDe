@@ -35,6 +35,9 @@ fun RideChatScreen(
     onCallDriver: () -> Unit = {},
     onRateDriver: () -> Unit = {}
 ) {
+    var messageText by remember { mutableStateOf("") }
+    var messages by remember { mutableStateOf(listOf<ChatMessage>()) }
+    
     // 模拟会话数据
     val session = remember {
         RideSession(
@@ -90,6 +93,26 @@ fun RideChatScreen(
         )
     }
     
+    // 合并会话消息和用户发送的消息
+    val allMessages = remember(messages) {
+        session.messages + messages
+    }
+    
+    // 发送消息函数
+    val sendMessage = {
+        if (messageText.isNotBlank()) {
+            val newMessage = ChatMessage(
+                id = "user_msg_${System.currentTimeMillis()}",
+                type = ChatMessageType.PASSENGER_MESSAGE,
+                content = messageText,
+                senderName = "乘客",
+                timestamp = System.currentTimeMillis()
+            )
+            messages = messages + newMessage
+            messageText = ""
+        }
+    }
+    
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -139,9 +162,55 @@ fun RideChatScreen(
             state = rememberLazyListState(),
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            items(session.messages) { message ->
+            items(allMessages) { message ->
                 ChatMessageItem(message = message)
                 Spacer(modifier = Modifier.height(8.dp))
+            }
+        }
+        
+        // 底部输入框
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            color = Color.White,
+            shadowElevation = 8.dp
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedTextField(
+                    value = messageText,
+                    onValueChange = { messageText = it },
+                    placeholder = { Text("输入消息...", color = Color.Gray) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 8.dp),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Color(0xFF2196F3),
+                        unfocusedBorderColor = Color.Gray.copy(alpha = 0.3f)
+                    )
+                )
+                
+                Button(
+                    onClick = sendMessage,
+                    enabled = messageText.isNotBlank(),
+                    shape = CircleShape,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF2196F3),
+                        disabledContainerColor = Color.Gray.copy(alpha = 0.3f)
+                    ),
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Send,
+                        contentDescription = "发送",
+                        tint = Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
         }
     }
