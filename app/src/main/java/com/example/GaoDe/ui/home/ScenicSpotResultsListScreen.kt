@@ -37,7 +37,8 @@ import org.json.JSONObject
 fun ScenicSpotResultsListScreen(
     searchCategory: String = "景点",
     onBackClick: () -> Unit = {},
-    onScenicSpotClick: (String) -> Unit = {}
+    onScenicSpotClick: (String) -> Unit = {},
+    onOrderClick: (String) -> Unit = {}
 ) {
     var scenicSpotList by remember { mutableStateOf<List<ScenicSpotItem>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
@@ -95,7 +96,8 @@ fun ScenicSpotResultsListScreen(
                 items(scenicSpotList) { scenicSpot ->
                     ScenicSpotListItem(
                         scenicSpot = scenicSpot,
-                        onClick = { onScenicSpotClick(scenicSpot.id) }
+                        onClick = { onScenicSpotClick(scenicSpot.id) },
+                        onOrderClick = { onOrderClick(scenicSpot.id) }
                     )
                     Divider(
                         modifier = Modifier.padding(horizontal = 16.dp),
@@ -195,7 +197,8 @@ fun ScenicSpotTopBar(
 @Composable
 fun ScenicSpotListItem(
     scenicSpot: ScenicSpotItem,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onOrderClick: () -> Unit
 ) {
     val context = LocalContext.current
     var logoImageBitmap by remember { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
@@ -390,19 +393,40 @@ fun ScenicSpotListItem(
             
             // Ticket Price Section or Location Icon
             if (scenicSpot.ticketInfo != null) {
-                ScenicSpotTicketSection(ticketInfo = scenicSpot.ticketInfo!!)
+                ScenicSpotTicketSection(
+                    ticketInfo = scenicSpot.ticketInfo!!,
+                    onOrderClick = onOrderClick
+                )
             } else {
-                // Free scenic spot - show location icon
-                IconButton(
-                    onClick = { },
-                    modifier = Modifier.size(40.dp)
+                // Free scenic spot - show order button
+                Column(
+                    horizontalAlignment = Alignment.End
                 ) {
-                    Icon(
-                        Icons.Default.LocationOn,
-                        contentDescription = "定位",
-                        tint = Color(0xFF2196F3),
-                        modifier = Modifier.size(24.dp)
+                    Text(
+                        text = "免费",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF4CAF50)
                     )
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    Button(
+                        onClick = onOrderClick,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFFFC107)
+                        ),
+                        shape = RoundedCornerShape(4.dp),
+                        modifier = Modifier.width(60.dp).height(32.dp),
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = "订购",
+                            fontSize = 12.sp,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }
@@ -434,7 +458,8 @@ fun SpotLevelTag(spotLevel: String) {
 
 @Composable
 fun ScenicSpotTicketSection(
-    ticketInfo: TicketInfo
+    ticketInfo: TicketInfo,
+    onOrderClick: () -> Unit
 ) {
     Column(
         horizontalAlignment = Alignment.End
@@ -467,6 +492,25 @@ fun ScenicSpotTicketSection(
             fontWeight = FontWeight.Bold,
             color = Color(0xFFFF5722)
         )
+        
+        // Order Button
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(
+            onClick = onOrderClick,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFFFFC107)
+            ),
+            shape = RoundedCornerShape(4.dp),
+            modifier = Modifier.width(60.dp).height(32.dp),
+            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+        ) {
+            Text(
+                text = "订购",
+                fontSize = 12.sp,
+                color = Color.White,
+                fontWeight = FontWeight.Bold
+            )
+        }
     }
 }
 

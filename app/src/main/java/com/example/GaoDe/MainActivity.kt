@@ -33,6 +33,7 @@ import com.example.GaoDe.ui.home.ScenicSpotResultsListScreen
 import com.example.GaoDe.ui.home.PlanRouteScreen
 import com.example.GaoDe.ui.message.MessageScreen
 import com.example.GaoDe.ui.my.MyScreen
+import com.example.GaoDe.ui.payment.PaymentSuccessScreen
 import com.example.GaoDe.ui.theme.GaoDeTheme
 import androidx.compose.ui.unit.dp
 class MainActivity : ComponentActivity() {
@@ -61,6 +62,7 @@ sealed class Screen(val route: String, val icon: ImageVector, val label: String)
     object HotelResultsList : Screen("HotelResultsList", Icons.Filled.Place, "酒店结果列表")
     object ScenicSpotResultsList : Screen("ScenicSpotResultsList", Icons.Filled.Place, "景点结果列表")
     object PlanRoute : Screen("PlanRoute", Icons.Filled.Place, "路线规划")
+    object PaymentSuccess : Screen("PaymentSuccess", Icons.Filled.AccountCircle, "支付成功")
 }
 
 
@@ -160,6 +162,9 @@ fun MainScreen() {
                     },
                     onHotelClick = { hotelId ->
                         navController.navigate("${Screen.ShowPlaceDetails.route}/$hotelId")
+                    },
+                    onOrderClick = { hotelId ->
+                        navController.navigate("${Screen.PaymentSuccess.route}/${Screen.HotelResultsList.route}/$category")
                     }
                 )
             }
@@ -172,6 +177,9 @@ fun MainScreen() {
                     },
                     onScenicSpotClick = { scenicSpotId ->
                         navController.navigate("${Screen.ShowPlaceDetails.route}/$scenicSpotId")
+                    },
+                    onOrderClick = { scenicSpotId ->
+                        navController.navigate("${Screen.PaymentSuccess.route}/${Screen.ScenicSpotResultsList.route}/$category")
                     }
                 )
             }
@@ -181,6 +189,19 @@ fun MainScreen() {
                     endLocation = endName,
                     onBackClick = {
                         navController.popBackStack()
+                    }
+                )
+            }
+            composable("${Screen.PaymentSuccess.route}/{fromRoute}/{category}") { backStackEntry ->
+                val fromRoute = backStackEntry.arguments?.getString("fromRoute") ?: ""
+                val category = backStackEntry.arguments?.getString("category") ?: ""
+                PaymentSuccessScreen(
+                    onConfirmClick = {
+                        navController.navigate("$fromRoute/$category") {
+                            popUpTo("$fromRoute/$category") {
+                                inclusive = true
+                            }
+                        }
                     }
                 )
             }

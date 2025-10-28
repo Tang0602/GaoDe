@@ -37,7 +37,8 @@ import org.json.JSONObject
 fun HotelResultsListScreen(
     searchCategory: String = "酒店",
     onBackClick: () -> Unit = {},
-    onHotelClick: (String) -> Unit = {}
+    onHotelClick: (String) -> Unit = {},
+    onOrderClick: (String) -> Unit = {}
 ) {
     var hotelList by remember { mutableStateOf<List<HotelItem>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
@@ -95,7 +96,8 @@ fun HotelResultsListScreen(
                 items(hotelList) { hotel ->
                     HotelListItem(
                         hotel = hotel,
-                        onClick = { onHotelClick(hotel.id) }
+                        onClick = { onHotelClick(hotel.id) },
+                        onOrderClick = { onOrderClick(hotel.id) }
                     )
                     Divider(
                         modifier = Modifier.padding(horizontal = 16.dp),
@@ -213,7 +215,8 @@ fun HotelTopBar(
 @Composable
 fun HotelListItem(
     hotel: HotelItem,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onOrderClick: () -> Unit
 ) {
     val context = LocalContext.current
     var logoImageBitmap by remember { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
@@ -398,14 +401,18 @@ fun HotelListItem(
             Spacer(modifier = Modifier.width(12.dp))
             
             // Price Section
-            HotelPriceSection(priceInfo = hotel.priceInfo)
+            HotelPriceSection(
+                priceInfo = hotel.priceInfo,
+                onOrderClick = onOrderClick
+            )
         }
     }
 }
 
 @Composable
 fun HotelPriceSection(
-    priceInfo: HotelPriceInfo
+    priceInfo: HotelPriceInfo,
+    onOrderClick: () -> Unit
 ) {
     Column(
         horizontalAlignment = Alignment.End
@@ -451,6 +458,25 @@ fun HotelPriceSection(
                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                 )
             }
+        }
+        
+        // Order Button
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(
+            onClick = onOrderClick,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFFFFC107)
+            ),
+            shape = RoundedCornerShape(4.dp),
+            modifier = Modifier.width(60.dp).height(32.dp),
+            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+        ) {
+            Text(
+                text = "订购",
+                fontSize = 12.sp,
+                color = Color.White,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }
