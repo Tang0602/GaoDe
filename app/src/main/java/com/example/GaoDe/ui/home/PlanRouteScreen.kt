@@ -604,6 +604,10 @@ fun TaxiAggregateView(
                     estimatedPrice = "${locationInfo.economyPrice}-${locationInfo.economyPrice + 4}元起"
                     economyGroup = generateEconomyGroup(locationInfo.economyPrice)
                 }
+                "premium" -> {
+                    estimatedPrice = "${locationInfo.economyPrice + 8}-${locationInfo.economyPrice + 15}元起"
+                    economyGroup = generatePremiumComfortGroup(locationInfo.economyPrice + 8)
+                }
                 "specialCar" -> {
                     estimatedPrice = "${locationInfo.premiumPrice}-${locationInfo.premiumPrice + 6}元起"
                     economyGroup = generatePremiumGroup(locationInfo.premiumPrice)
@@ -1220,6 +1224,78 @@ private fun generateEconomyGroup(basePrice: Int): TaxiGroup {
     return TaxiGroup(
         title = "经济型",
         count = 14,
+        isAllSelected = false,
+        items = items
+    )
+}
+
+private fun generatePremiumComfortGroup(basePrice: Int): TaxiGroup {
+    val items = listOf(
+        TaxiOption(
+            id = "comfort_001",
+            type = "provider",
+            name = "舒适专车",
+            subtitle = "中级车型 舒适体验",
+            iconColor = "blue",
+            iconText = null,
+            price = "${basePrice}元",
+            priceRange = null,
+            actionText = null,
+            discount = "优享级服务",
+            tags = emptyList(),
+            isSelected = false,
+            logo = null
+        ),
+        TaxiOption(
+            id = "comfort_002",
+            type = "provider",
+            name = "滴滴优享",
+            subtitle = "中高级车型 品质保证",
+            iconColor = "orange",
+            iconText = null,
+            price = "${basePrice + 2}元",
+            priceRange = null,
+            actionText = null,
+            discount = "品质优选",
+            tags = emptyList(),
+            isSelected = false,
+            logo = null
+        ),
+        TaxiOption(
+            id = "comfort_003",
+            type = "provider",
+            name = "首汽优享",
+            subtitle = "B级车型 专业司机",
+            iconColor = "blue",
+            iconText = null,
+            price = "${basePrice + 1}元",
+            priceRange = null,
+            actionText = null,
+            discount = "国企服务",
+            tags = emptyList(),
+            isSelected = false,
+            logo = null
+        ),
+        TaxiOption(
+            id = "comfort_004",
+            type = "provider",
+            name = "曹操优享",
+            subtitle = "新能源B级车 绿色出行",
+            iconColor = "green",
+            iconText = null,
+            price = "${basePrice + 3}元",
+            priceRange = null,
+            actionText = null,
+            discount = "绿色优享",
+            tags = emptyList(),
+            isSelected = false,
+            logo = null
+        )
+    )
+
+    return TaxiGroup(
+        title = "优享",
+        count = 6,
         isAllSelected = false,
         items = items
     )

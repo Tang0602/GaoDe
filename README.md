@@ -575,6 +575,11 @@ app/src/main/
     - ✅ 修复多个"Unresolved reference: basePrice"编译错误
     - ✅ 将旧的basePrice引用更新为locationInfo.discountPrice/economyPrice/premiumPrice
     - ✅ 确保所有价格计算使用正确的数据源
+  - ✅ **优享车型修复**：
+    - ✅ 修复点击"优享"类别时没有切换车辆的问题
+    - ✅ 在LaunchedEffect中添加"premium"类别的处理逻辑
+    - ✅ 创建generatePremiumComfortGroup函数，提供优享级车辆：舒适专车、滴滴优享、首汽优享、曹操优享
+    - ✅ 设置优享车型价格为经济车价格+8到+15元的合理区间
 
 ### 下一步计划
 - 个性化设置详细页面
