@@ -1,5 +1,6 @@
 package com.example.GaoDe
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -16,6 +17,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -35,6 +37,7 @@ import com.example.GaoDe.ui.message.MessageScreen
 import com.example.GaoDe.ui.my.MyScreen
 import com.example.GaoDe.ui.payment.PaymentSuccessScreen
 import com.example.GaoDe.ui.ride.TaxiSuccessScreen
+import com.example.GaoDe.ui.ride.RideChatActivity
 import com.example.GaoDe.ui.navigation.NavigationSuccessScreen
 import com.example.GaoDe.ui.theme.GaoDeTheme
 import androidx.compose.ui.unit.dp
@@ -218,6 +221,7 @@ fun MainScreen() {
             composable("${Screen.TaxiSuccess.route}/{fromRoute}/{endName}") { backStackEntry ->
                 val fromRoute = backStackEntry.arguments?.getString("fromRoute") ?: ""
                 val endName = backStackEntry.arguments?.getString("endName") ?: ""
+                val context = LocalContext.current
                 TaxiSuccessScreen(
                     onConfirmClick = {
                         navController.navigate("$fromRoute/$endName") {
@@ -227,13 +231,11 @@ fun MainScreen() {
                         }
                     },
                     onContactDriverClick = {
-                        navController.navigate(Screen.Message.route) {
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-                            restoreState = true
+                        // 直接启动打车会话Activity
+                        val intent = Intent(context, com.example.GaoDe.ui.ride.RideChatActivity::class.java).apply {
+                            putExtra("SESSION_ID", "ride_session_001")
                         }
+                        context.startActivity(intent)
                     }
                 )
             }
