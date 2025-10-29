@@ -6,7 +6,7 @@ data class RideSession(
     val driverAvatar: String? = null,
     val orderType: String = "实时单",
     val orderId: String,
-    val estimatedPrice: String,
+    val estimatedPrice: String? = null,
     val status: RideStatus,
     val createdAt: Long,
     val lastMessageSummary: String,

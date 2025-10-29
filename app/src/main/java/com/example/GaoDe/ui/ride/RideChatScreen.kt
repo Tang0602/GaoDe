@@ -46,7 +46,6 @@ fun RideChatScreen(
             driverAvatar = null,
             orderType = "实时单",
             orderId = "GDC20251001001",
-            estimatedPrice = "¥10.91",
             status = RideStatus.TRIP_COMPLETED,
             createdAt = System.currentTimeMillis() - 2 * 60 * 60 * 1000,
             lastMessageSummary = "司机即将到达提醒: 司机将在 2分钟内到达，请您做好准备。",
@@ -54,11 +53,10 @@ fun RideChatScreen(
                 ChatMessage(
                     id = "msg_001",
                     type = ChatMessageType.ORDER_STATUS,
-                    content = "订单已创建: 订单号 GDC20251001001，费用预估 ¥10.91。",
+                    content = "订单已创建: 订单号 GDC20251001001。",
                     senderName = "系统",
                     timestamp = System.currentTimeMillis() - 30 * 60 * 1000,
-                    orderId = "GDC20251001001",
-                    amount = "¥10.91"
+                    orderId = "GDC20251001001"
                 ),
                 ChatMessage(
                     id = "msg_002",
@@ -81,14 +79,6 @@ fun RideChatScreen(
                     senderName = "乘客",
                     timestamp = System.currentTimeMillis() - 18 * 60 * 1000
                 ),
-                ChatMessage(
-                    id = "msg_005",
-                    type = ChatMessageType.SYSTEM_NOTIFICATION,
-                    content = "行程结束: 您已支付 ¥10.91，感谢使用高德打车。",
-                    senderName = "系统",
-                    timestamp = System.currentTimeMillis() - 10 * 60 * 1000,
-                    amount = "¥10.91"
-                )
             )
         )
     }
@@ -358,16 +348,6 @@ fun SystemMessageCard(message: ChatMessage, formattedTime: String) {
                     lineHeight = 20.sp
                 )
                 
-                // 金额信息（如果有）
-                message.amount?.let { amount ->
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = amount,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF2196F3)
-                    )
-                }
             }
         }
     }

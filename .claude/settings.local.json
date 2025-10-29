@@ -15,7 +15,8 @@
       "Bash(curl:*)",
       "Bash(chmod:*)",
       "Bash(.gradlew.bat build)",
-      "Bash(\"./gradlew\" compileDebugKotlin)"
+      "Bash(\"./gradlew\" compileDebugKotlin)",
+      "Bash(java:*)"
     ],
     "deny": []
   }
