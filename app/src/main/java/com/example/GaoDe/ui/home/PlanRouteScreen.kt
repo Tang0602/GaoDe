@@ -558,6 +558,7 @@ fun TaxiAggregateView(
     var aggregateOptions by remember { mutableStateOf<List<TaxiOption>>(emptyList()) }
     var economyGroup by remember { mutableStateOf<TaxiGroup?>(null) }
     var selectedCount by remember { mutableStateOf(32) }
+    var estimatedPrice by remember { mutableStateOf("17.1-22元起") }
     
     val context = LocalContext.current
     
@@ -586,7 +587,16 @@ fun TaxiAggregateView(
             TaxiCategorySidebar(
                 categories = taxiCategories,
                 selectedCategory = selectedCategory,
-                onCategorySelected = { selectedCategory = it },
+                onCategorySelected = { 
+                    selectedCategory = it
+                    // Update pricing based on selected category
+                    estimatedPrice = when (it) {
+                        "discountFast" -> generateTaxiPriceRange(0.8f) // 特惠快车最便宜
+                        "economy" -> generateTaxiPriceRange(1.0f)      // 经济车次之
+                        "specialCar" -> generateTaxiPriceRange(1.5f)   // 专车最贵
+                        else -> generateTaxiPriceRange()
+                    }
+                },
                 modifier = Modifier.width(100.dp)
             )
             
@@ -602,7 +612,7 @@ fun TaxiAggregateView(
         // Bottom action bar
         TaxiBottomActionBar(
             selectedCount = selectedCount,
-            estimatedPrice = generateTaxiPriceRange(),
+            estimatedPrice = estimatedPrice,
             onTaxiClick = onTaxiClick
         )
     }
@@ -697,36 +707,6 @@ fun TaxiOptionsContent(
             }
         }
         
-        // Floating tip
-        item {
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(16.dp),
-                    color = Color.Black.copy(alpha = 0.7f)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "上滑查看更多已选车型",
-                            fontSize = 12.sp,
-                            color = Color.White
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Icon(
-                            Icons.Default.KeyboardArrowUp,
-                            contentDescription = "上滑",
-                            tint = Color.White,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
-            }
-        }
     }
 }
 
@@ -750,7 +730,7 @@ fun TaxiBottomActionBar(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = "预估 $estimatedPrice",
+                    text = "已选车型",
                     fontSize = 16.sp,
                     color = Color.White,
                     fontWeight = FontWeight.Bold
@@ -1030,6 +1010,14 @@ private fun generateTaxiData(destination: String): TaxiData {
 
 private fun generateTaxiPriceRange(): String {
     return "17.1-22元起"
+}
+
+private fun generateTaxiPriceRange(multiplier: Float): String {
+    val baseMin = 17.1f
+    val baseMax = 22.0f
+    val adjustedMin = (baseMin * multiplier).toInt()
+    val adjustedMax = (baseMax * multiplier).toInt()
+    return "${adjustedMin}-${adjustedMax}元起"
 }
 
 private fun parseTaxiOption(jsonObject: JSONObject): TaxiOption {
