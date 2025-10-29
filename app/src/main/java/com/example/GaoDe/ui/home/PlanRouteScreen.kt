@@ -47,6 +47,15 @@ data class TaxiData(
     val economyGroup: TaxiGroup
 )
 
+data class LocationPricing(
+    val distance: String,
+    val discountPrice: Int,  // 特惠快车价格
+    val economyPrice: Int,   // 经济车价格  
+    val premiumPrice: Int,   // 专车价格
+    val busDuration: String,
+    val taxiDuration: String
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlanRouteScreen(
@@ -559,6 +568,7 @@ fun TaxiAggregateView(
     var economyGroup by remember { mutableStateOf<TaxiGroup?>(null) }
     var selectedCount by remember { mutableStateOf(32) }
     var estimatedPrice by remember { mutableStateOf("17.1-22元起") }
+    var currentLocationInfo by remember { mutableStateOf<LocationPricing?>(null) }
     
     val context = LocalContext.current
     
@@ -567,16 +577,40 @@ fun TaxiAggregateView(
             try {
                 // Generate dynamic taxi data based on destination
                 val dynamicTaxiData = generateTaxiData(destination)
-                // Use dynamic taxi data instead of JSON file
+                val locationInfo = getLocationPricing(destination)
                 
                 withContext(Dispatchers.Main) {
                     taxiCategories = dynamicTaxiData.categories
                     recommendOptions = dynamicTaxiData.recommendOptions
                     aggregateOptions = dynamicTaxiData.aggregateOptions
                     economyGroup = dynamicTaxiData.economyGroup
+                    currentLocationInfo = locationInfo
                 }
             } catch (e: Exception) {
                 // Handle error
+            }
+        }
+    }
+    
+    // Update content when category changes
+    LaunchedEffect(selectedCategory, currentLocationInfo) {
+        currentLocationInfo?.let { locationInfo ->
+            when (selectedCategory) {
+                "discountFast" -> {
+                    estimatedPrice = "${locationInfo.discountPrice}-${locationInfo.discountPrice + 3}元起"
+                    economyGroup = generateDiscountFastGroup(locationInfo.discountPrice)
+                }
+                "economy" -> {
+                    estimatedPrice = "${locationInfo.economyPrice}-${locationInfo.economyPrice + 4}元起"
+                    economyGroup = generateEconomyGroup(locationInfo.economyPrice)
+                }
+                "specialCar" -> {
+                    estimatedPrice = "${locationInfo.premiumPrice}-${locationInfo.premiumPrice + 6}元起"
+                    economyGroup = generatePremiumGroup(locationInfo.premiumPrice)
+                }
+                else -> {
+                    estimatedPrice = "${locationInfo.economyPrice}-${locationInfo.premiumPrice}元起"
+                }
             }
         }
     }
@@ -587,16 +621,7 @@ fun TaxiAggregateView(
             TaxiCategorySidebar(
                 categories = taxiCategories,
                 selectedCategory = selectedCategory,
-                onCategorySelected = { 
-                    selectedCategory = it
-                    // Update pricing based on selected category
-                    estimatedPrice = when (it) {
-                        "discountFast" -> generateTaxiPriceRange(0.8f) // 特惠快车最便宜
-                        "economy" -> generateTaxiPriceRange(1.0f)      // 经济车次之
-                        "specialCar" -> generateTaxiPriceRange(1.5f)   // 专车最贵
-                        else -> generateTaxiPriceRange()
-                    }
-                },
+                onCategorySelected = { selectedCategory = it },
                 modifier = Modifier.width(100.dp)
             )
             
@@ -842,18 +867,27 @@ private fun generateRouteOptions(destination: String): List<RouteOption> {
 }
 
 private fun generateTaxiData(destination: String): TaxiData {
-    // Get base price for destination
-    val (_, basePrice, _, _) = when {
-        destination.contains("巴奴") || destination.contains("火锅") -> Quadruple("4.2公里", 25, "1小时5分钟", "17分钟")
-        destination.contains("木屋") || destination.contains("烧烤") -> Quadruple("890米", 8, "25分钟", "5分钟")
-        destination.contains("麦当劳") -> Quadruple("1.5公里", 12, "35分钟", "8分钟")
-        destination.contains("老乡鸡") -> Quadruple("2.1公里", 16, "45分钟", "12分钟")
-        destination.contains("汉庭") || destination.contains("如家") -> Quadruple("3.8公里", 22, "1小时15分钟", "15分钟")
-        destination.contains("凯悦") -> Quadruple("6.5公里", 35, "1小时45分钟", "22分钟")
-        destination.contains("欢乐谷") -> Quadruple("13.1公里", 48, "2小时10分钟", "25分钟")
-        destination.contains("东湖") -> Quadruple("8.7公里", 40, "1小时55分钟", "28分钟")
-        destination.contains("黄鹤楼") -> Quadruple("5.8公里", 32, "1小时25分钟", "20分钟")
-        else -> Quadruple("3.5公里", 20, "1小时10分钟", "15分钟")
+    // Get distance and pricing info for destination with more detailed breakdown
+    val locationInfo = when {
+        destination.contains("巴奴") || destination.contains("火锅") -> 
+            LocationPricing("4.2公里", 19, 25, 38, "1小时5分钟", "17分钟")
+        destination.contains("木屋") || destination.contains("烧烤") -> 
+            LocationPricing("890米", 6, 8, 12, "25分钟", "5分钟")
+        destination.contains("麦当劳") -> 
+            LocationPricing("1.5公里", 9, 12, 18, "35分钟", "8分钟")
+        destination.contains("老乡鸡") -> 
+            LocationPricing("2.1公里", 12, 16, 24, "45分钟", "12分钟")
+        destination.contains("汉庭") || destination.contains("如家") -> 
+            LocationPricing("3.8公里", 16, 22, 33, "1小时15分钟", "15分钟")
+        destination.contains("凯悦") -> 
+            LocationPricing("6.5公里", 26, 35, 53, "1小时45分钟", "22分钟")
+        destination.contains("欢乐谷") -> 
+            LocationPricing("13.1公里", 36, 48, 72, "2小时10分钟", "25分钟")
+        destination.contains("东湖") -> 
+            LocationPricing("8.7公里", 30, 40, 60, "1小时55分钟", "28分钟")
+        destination.contains("黄鹤楼") -> 
+            LocationPricing("5.8公里", 24, 32, 48, "1小时25分钟", "20分钟")
+        else -> LocationPricing("3.5公里", 15, 20, 30, "1小时10分钟", "15分钟")
     }
 
     val categories = listOf(
@@ -877,7 +911,7 @@ private fun generateTaxiData(destination: String): TaxiData {
             subtitle = "信赖获评高路线",
             iconColor = "green",
             iconText = "顺",
-            price = "${basePrice - 3}元",
+            price = "${locationInfo.discountPrice - 3}元",
             priceRange = null,
             actionText = "去体验",
             discount = null,
@@ -895,8 +929,8 @@ private fun generateTaxiData(destination: String): TaxiData {
             subtitle = "拼成优享",
             iconColor = "blue",
             iconText = null,
-            price = "${basePrice + 5}.7元",
-            priceRange = "${basePrice + 8}-${basePrice + 12}元",
+            price = "${locationInfo.economyPrice + 5}.7元",
+            priceRange = "${locationInfo.economyPrice + 8}-${locationInfo.economyPrice + 12}元",
             actionText = null,
             discount = null,
             tags = emptyList(),
@@ -910,7 +944,7 @@ private fun generateTaxiData(destination: String): TaxiData {
             subtitle = null,
             iconColor = "orange",
             iconText = null,
-            price = "${basePrice}.1-${basePrice + 5}.2元",
+            price = "${locationInfo.discountPrice}.1-${locationInfo.discountPrice + 5}.2元",
             priceRange = null,
             actionText = null,
             discount = "限时特惠代金券",
@@ -928,7 +962,7 @@ private fun generateTaxiData(destination: String): TaxiData {
             subtitle = "敬业数码 隐私保护",
             iconColor = "orange",
             iconText = null,
-            price = "${basePrice}元",
+            price = "${locationInfo.economyPrice}元",
             priceRange = null,
             actionText = null,
             discount = "限量 已优惠2元",
@@ -943,7 +977,7 @@ private fun generateTaxiData(destination: String): TaxiData {
             subtitle = "敬业数码 隐私保护",
             iconColor = "blue",
             iconText = null,
-            price = "${basePrice}元",
+            price = "${locationInfo.economyPrice}元",
             priceRange = null,
             actionText = null,
             discount = "限量 已优惠2元",
@@ -958,7 +992,7 @@ private fun generateTaxiData(destination: String): TaxiData {
             subtitle = "敬业数码 隐私保护",
             iconColor = "green",
             iconText = null,
-            price = "${basePrice}元",
+            price = "${locationInfo.economyPrice}元",
             priceRange = null,
             actionText = null,
             discount = "限量 已优惠1元",
@@ -973,7 +1007,7 @@ private fun generateTaxiData(destination: String): TaxiData {
             subtitle = "敬业数码 隐私保护",
             iconColor = "purple",
             iconText = null,
-            price = "${basePrice}元",
+            price = "${locationInfo.economyPrice}元",
             priceRange = null,
             actionText = null,
             discount = "限量 已优惠1元",
@@ -988,7 +1022,7 @@ private fun generateTaxiData(destination: String): TaxiData {
             subtitle = "敬业数码 隐私保护",
             iconColor = "brown",
             iconText = null,
-            price = "${basePrice + 1}元",
+            price = "${locationInfo.economyPrice + 1}元",
             priceRange = null,
             actionText = null,
             discount = "限量 已优惠1元",
@@ -1006,6 +1040,261 @@ private fun generateTaxiData(destination: String): TaxiData {
     )
 
     return TaxiData(categories, recommendOptions, aggregateOptions, economyGroup)
+}
+
+private fun getLocationPricing(destination: String): LocationPricing {
+    return when {
+        destination.contains("巴奴") || destination.contains("火锅") -> 
+            LocationPricing("4.2公里", 19, 25, 38, "1小时5分钟", "17分钟")
+        destination.contains("木屋") || destination.contains("烧烤") -> 
+            LocationPricing("890米", 6, 8, 12, "25分钟", "5分钟")
+        destination.contains("麦当劳") -> 
+            LocationPricing("1.5公里", 9, 12, 18, "35分钟", "8分钟")
+        destination.contains("老乡鸡") -> 
+            LocationPricing("2.1公里", 12, 16, 24, "45分钟", "12分钟")
+        destination.contains("汉庭") || destination.contains("如家") -> 
+            LocationPricing("3.8公里", 16, 22, 33, "1小时15分钟", "15分钟")
+        destination.contains("凯悦") -> 
+            LocationPricing("6.5公里", 26, 35, 53, "1小时45分钟", "22分钟")
+        destination.contains("欢乐谷") -> 
+            LocationPricing("13.1公里", 36, 48, 72, "2小时10分钟", "25分钟")
+        destination.contains("东湖") -> 
+            LocationPricing("8.7公里", 30, 40, 60, "1小时55分钟", "28分钟")
+        destination.contains("黄鹤楼") -> 
+            LocationPricing("5.8公里", 24, 32, 48, "1小时25分钟", "20分钟")
+        else -> LocationPricing("3.5公里", 15, 20, 30, "1小时10分钟", "15分钟")
+    }
+}
+
+private fun generateDiscountFastGroup(basePrice: Int): TaxiGroup {
+    val items = listOf(
+        TaxiOption(
+            id = "discount_001",
+            type = "provider",
+            name = "快车普通",
+            subtitle = "舒适出行 价格优惠",
+            iconColor = "orange",
+            iconText = null,
+            price = "${basePrice}元",
+            priceRange = null,
+            actionText = null,
+            discount = "特惠减2元",
+            tags = emptyList(),
+            isSelected = false,
+            logo = null
+        ),
+        TaxiOption(
+            id = "discount_002",
+            type = "provider",
+            name = "东风出行",
+            subtitle = "本地品牌 服务贴心",
+            iconColor = "blue",
+            iconText = null,
+            price = "${basePrice + 1}元",
+            priceRange = null,
+            actionText = null,
+            discount = "新用户减3元",
+            tags = emptyList(),
+            isSelected = false,
+            logo = null
+        ),
+        TaxiOption(
+            id = "discount_003",
+            type = "provider",
+            name = "飞嘀打车",
+            subtitle = "快速响应 准时到达",
+            iconColor = "green",
+            iconText = null,
+            price = "${basePrice + 2}元",
+            priceRange = null,
+            actionText = null,
+            discount = "限时特惠",
+            tags = emptyList(),
+            isSelected = false,
+            logo = null
+        ),
+        TaxiOption(
+            id = "discount_004", 
+            type = "provider",
+            name = "曹操出行",
+            subtitle = "新能源 绿色出行",
+            iconColor = "green",
+            iconText = null,
+            price = "${basePrice + 1}元",
+            priceRange = null,
+            actionText = null,
+            discount = "环保优惠1元",
+            tags = emptyList(),
+            isSelected = false,
+            logo = null
+        )
+    )
+    
+    return TaxiGroup(
+        title = "特惠快车",
+        count = 8,
+        isAllSelected = false,
+        items = items
+    )
+}
+
+private fun generateEconomyGroup(basePrice: Int): TaxiGroup {
+    val items = listOf(
+        TaxiOption(
+            id = "eco_001",
+            type = "provider",
+            name = "T3出行",
+            subtitle = "合规运营 安全可靠",
+            iconColor = "orange",
+            iconText = null,
+            price = "${basePrice}元",
+            priceRange = null,
+            actionText = null,
+            discount = "优惠券减2元",
+            tags = emptyList(),
+            isSelected = false,
+            logo = null
+        ),
+        TaxiOption(
+            id = "eco_002",
+            type = "provider",
+            name = "神州专车",
+            subtitle = "专业司机 品质服务",
+            iconColor = "blue",
+            iconText = null,
+            price = "${basePrice + 2}元",
+            priceRange = null,
+            actionText = null,
+            discount = "品质保障",
+            tags = emptyList(),
+            isSelected = false,
+            logo = null
+        ),
+        TaxiOption(
+            id = "eco_003",
+            type = "provider",
+            name = "首汽约车",
+            subtitle = "国企背景 服务标准",
+            iconColor = "blue",
+            iconText = null,
+            price = "${basePrice + 1}元",
+            priceRange = null,
+            actionText = null,
+            discount = "会员优惠",
+            tags = emptyList(),
+            isSelected = false,
+            logo = null
+        ),
+        TaxiOption(
+            id = "eco_004",
+            type = "provider",
+            name = "嘀嗒出行",
+            subtitle = "顺风车服务 环保出行",
+            iconColor = "green",
+            iconText = null,
+            price = "${basePrice}元",
+            priceRange = null,
+            actionText = null,
+            discount = "拼车减3元",
+            tags = emptyList(),
+            isSelected = false,
+            logo = null
+        ),
+        TaxiOption(
+            id = "eco_005",
+            type = "provider",
+            name = "万顺叫车",
+            subtitle = "全国连锁 统一标准",
+            iconColor = "purple",
+            iconText = null,
+            price = "${basePrice + 3}元",
+            priceRange = null,
+            actionText = null,
+            discount = "新手优惠",
+            tags = emptyList(),
+            isSelected = false,
+            logo = null
+        )
+    )
+
+    return TaxiGroup(
+        title = "经济型",
+        count = 14,
+        isAllSelected = false,
+        items = items
+    )
+}
+
+private fun generatePremiumGroup(basePrice: Int): TaxiGroup {
+    val items = listOf(
+        TaxiOption(
+            id = "premium_001",
+            type = "provider",
+            name = "礼橙专车",
+            subtitle = "高端车型 尊享服务",
+            iconColor = "orange",
+            iconText = null,
+            price = "${basePrice}元",
+            priceRange = null,
+            actionText = null,
+            discount = "豪华升级",
+            tags = emptyList(),
+            isSelected = false,
+            logo = null
+        ),
+        TaxiOption(
+            id = "premium_002",
+            type = "provider",
+            name = "滴滴专车",
+            subtitle = "BBA车型 专业司机",
+            iconColor = "black",
+            iconText = null,
+            price = "${basePrice + 5}元",
+            priceRange = null,
+            actionText = null,
+            discount = "高端享受",
+            tags = emptyList(),
+            isSelected = false,
+            logo = null
+        ),
+        TaxiOption(
+            id = "premium_003",
+            type = "provider",
+            name = "AA专车",
+            subtitle = "商务车型 贵宾级服务",
+            iconColor = "blue",
+            iconText = null,
+            price = "${basePrice + 3}元",
+            priceRange = null,
+            actionText = null,
+            discount = "商务优选",
+            tags = emptyList(),
+            isSelected = false,
+            logo = null
+        ),
+        TaxiOption(
+            id = "premium_004",
+            type = "provider",
+            name = "易到用车",
+            subtitle = "奢华体验 专属服务",
+            iconColor = "gold",
+            iconText = null,
+            price = "${basePrice + 8}元",
+            priceRange = null,
+            actionText = null,
+            discount = "VIP专享",
+            tags = emptyList(),
+            isSelected = false,
+            logo = null
+        )
+    )
+
+    return TaxiGroup(
+        title = "专车",
+        count = 6,
+        isAllSelected = false,
+        items = items
+    )
 }
 
 private fun generateTaxiPriceRange(): String {
@@ -1373,6 +1662,9 @@ private fun getIconBackgroundColor(colorName: String): Color {
         "orange" -> Color(0xFFFF9800)
         "blue" -> Color(0xFF2196F3)
         "dark" -> Color(0xFF424242)
+        "black" -> Color(0xFF212121)
+        "purple" -> Color(0xFF9C27B0)
+        "gold" -> Color(0xFFFFD700)
         else -> Color(0xFF9E9E9E)
     }
 }
