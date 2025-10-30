@@ -634,6 +634,18 @@ fun TaxiAggregateView(
         }
     }
     
+    // Helper function to toggle group selection
+    val toggleGroupSelection = { groupIds: List<String> ->
+        val allSelected = groupIds.all { selectedTaxiIds.contains(it) }
+        selectedTaxiIds = if (allSelected) {
+            // Remove all group items from selection
+            selectedTaxiIds - groupIds.toSet()
+        } else {
+            // Add all group items to selection
+            selectedTaxiIds + groupIds.toSet()
+        }
+    }
+    
     Column(modifier = modifier) {
         Row(modifier = Modifier.weight(1f)) {
             // Left sidebar
@@ -651,6 +663,7 @@ fun TaxiAggregateView(
                 economyGroup = economyGroup,
                 selectedTaxiIds = selectedTaxiIds,
                 onTaxiToggle = toggleTaxiSelection,
+                onGroupToggle = toggleGroupSelection,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -731,6 +744,7 @@ fun TaxiOptionsContent(
     economyGroup: TaxiGroup?,
     selectedTaxiIds: Set<String>,
     onTaxiToggle: (String) -> Unit,
+    onGroupToggle: (List<String>) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -762,7 +776,8 @@ fun TaxiOptionsContent(
                 TaxiEconomyGroup(
                     group = group,
                     selectedTaxiIds = selectedTaxiIds,
-                    onTaxiToggle = onTaxiToggle
+                    onTaxiToggle = onTaxiToggle,
+                    onGroupToggle = onGroupToggle
                 )
             }
         }
@@ -825,13 +840,16 @@ private fun generateRouteOptions(destination: String): List<RouteOption> {
     val (distance, taxiPrice, busDuration, taxiDuration) = when {
         destination.contains("巴奴") || destination.contains("火锅") -> Quadruple("4.2公里", "25元", "1小时5分钟", "17分钟")
         destination.contains("木屋") || destination.contains("烧烤") -> Quadruple("890米", "起步价8元", "25分钟", "5分钟")
-        destination.contains("麦当劳") -> Quadruple("1.5公里", "12元", "35分钟", "8分钟")
+        destination.contains("麦当劳") -> Quadruple("3.5公里", "12元", "35分钟", "8分钟")
         destination.contains("老乡鸡") -> Quadruple("2.1公里", "16元", "45分钟", "12分钟")
-        destination.contains("汉庭") || destination.contains("如家") -> Quadruple("3.8公里", "22元", "1小时15分钟", "15分钟")
-        destination.contains("凯悦") -> Quadruple("6.5公里", "35元", "1小时45分钟", "22分钟")
+        destination.contains("汉庭") -> Quadruple("2.8公里", "22元", "1小时15分钟", "15分钟")
+        destination.contains("如家") -> Quadruple("7.2公里", "22元", "1小时15分钟", "15分钟")
+        destination.contains("凯悦") -> Quadruple("5.1公里", "35元", "1小时45分钟", "22分钟")
         destination.contains("欢乐谷") -> Quadruple("13.1公里", "48元", "2小时10分钟", "25分钟")
-        destination.contains("东湖") -> Quadruple("8.7公里", "40元", "1小时55分钟", "28分钟")
-        destination.contains("黄鹤楼") -> Quadruple("5.8公里", "32元", "1小时25分钟", "20分钟")
+        destination.contains("东湖") -> Quadruple("8.5公里", "40元", "1小时55分钟", "28分钟")
+        destination.contains("黄鹤楼") -> Quadruple("6.2公里", "32元", "1小时25分钟", "20分钟")
+        destination.contains("南湖") -> Quadruple("5.8公里", "30元", "1小时", "12分钟")
+        destination.contains("海昌") -> Quadruple("18.6公里", "55元", "2小时30分钟", "35分钟")
         else -> Quadruple("3.5公里", "20元", "1小时10分钟", "15分钟")
     }
     
@@ -1162,19 +1180,25 @@ private fun generateTaxiData(destination: String): TaxiData {
         destination.contains("木屋") || destination.contains("烧烤") -> 
             LocationPricing("890米", 6, 8, 12, "25分钟", "5分钟")
         destination.contains("麦当劳") -> 
-            LocationPricing("1.5公里", 9, 12, 18, "35分钟", "8分钟")
+            LocationPricing("3.5公里", 9, 12, 18, "35分钟", "8分钟")
         destination.contains("老乡鸡") -> 
             LocationPricing("2.1公里", 12, 16, 24, "45分钟", "12分钟")
-        destination.contains("汉庭") || destination.contains("如家") -> 
-            LocationPricing("3.8公里", 16, 22, 33, "1小时15分钟", "15分钟")
+        destination.contains("汉庭") -> 
+            LocationPricing("2.8公里", 16, 22, 33, "1小时15分钟", "15分钟")
+        destination.contains("如家") -> 
+            LocationPricing("7.2公里", 16, 22, 33, "1小时15分钟", "15分钟")
         destination.contains("凯悦") -> 
-            LocationPricing("6.5公里", 26, 35, 53, "1小时45分钟", "22分钟")
+            LocationPricing("5.1公里", 26, 35, 53, "1小时45分钟", "22分钟")
         destination.contains("欢乐谷") -> 
             LocationPricing("13.1公里", 36, 48, 72, "2小时10分钟", "25分钟")
         destination.contains("东湖") -> 
-            LocationPricing("8.7公里", 30, 40, 60, "1小时55分钟", "28分钟")
+            LocationPricing("8.5公里", 30, 40, 60, "1小时55分钟", "28分钟")
         destination.contains("黄鹤楼") -> 
-            LocationPricing("5.8公里", 24, 32, 48, "1小时25分钟", "20分钟")
+            LocationPricing("6.2公里", 24, 32, 48, "1小时25分钟", "20分钟")
+        destination.contains("南湖") -> 
+            LocationPricing("5.8公里", 22, 30, 45, "1小时", "12分钟")
+        destination.contains("海昌") -> 
+            LocationPricing("18.6公里", 42, 55, 82, "2小时30分钟", "35分钟")
         else -> LocationPricing("3.5公里", 15, 20, 30, "1小时10分钟", "15分钟")
     }
 
@@ -1337,19 +1361,21 @@ private fun getLocationPricing(destination: String): LocationPricing {
         destination.contains("木屋") || destination.contains("烧烤") -> 
             LocationPricing("890米", 6, 8, 12, "25分钟", "5分钟")
         destination.contains("麦当劳") -> 
-            LocationPricing("1.5公里", 9, 12, 18, "35分钟", "8分钟")
+            LocationPricing("3.5公里", 9, 12, 18, "35分钟", "8分钟")
         destination.contains("老乡鸡") -> 
             LocationPricing("2.1公里", 12, 16, 24, "45分钟", "12分钟")
-        destination.contains("汉庭") || destination.contains("如家") -> 
-            LocationPricing("3.8公里", 16, 22, 33, "1小时15分钟", "15分钟")
+        destination.contains("汉庭") -> 
+            LocationPricing("2.8公里", 16, 22, 33, "1小时15分钟", "15分钟")
+        destination.contains("如家") -> 
+            LocationPricing("7.2公里", 16, 22, 33, "1小时15分钟", "15分钟")
         destination.contains("凯悦") -> 
-            LocationPricing("6.5公里", 26, 35, 53, "1小时45分钟", "22分钟")
+            LocationPricing("5.1公里", 26, 35, 53, "1小时45分钟", "22分钟")
         destination.contains("欢乐谷") -> 
             LocationPricing("13.1公里", 36, 48, 72, "2小时10分钟", "25分钟")
         destination.contains("东湖") -> 
-            LocationPricing("8.7公里", 30, 40, 60, "1小时55分钟", "28分钟")
+            LocationPricing("8.5公里", 30, 40, 60, "1小时55分钟", "28分钟")
         destination.contains("黄鹤楼") -> 
-            LocationPricing("5.8公里", 24, 32, 48, "1小时25分钟", "20分钟")
+            LocationPricing("6.2公里", 24, 32, 48, "1小时25分钟", "20分钟")
         else -> LocationPricing("3.5公里", 15, 20, 30, "1小时10分钟", "15分钟")
     }
 }
@@ -1899,8 +1925,23 @@ fun TaxiAggregateCard(
 fun TaxiEconomyGroup(
     group: TaxiGroup,
     selectedTaxiIds: Set<String>,
-    onTaxiToggle: (String) -> Unit
+    onTaxiToggle: (String) -> Unit,
+    onGroupToggle: (List<String>) -> Unit = {}
 ) {
+    // Calculate if all items in the group are selected
+    val groupItemIds = group.items.map { it.id }
+    val isAllSelected = groupItemIds.all { selectedTaxiIds.contains(it) }
+    
+    val toggleAllSelection = {
+        if (isAllSelected) {
+            // If all selected, unselect all items in this group
+            onGroupToggle(groupItemIds)
+        } else {
+            // If not all selected, select all items in this group
+            onGroupToggle(groupItemIds)
+        }
+    }
+    
     Column {
         // Group header
         Row(
@@ -1917,15 +1958,18 @@ fun TaxiEconomyGroup(
                 color = Color.Black
             )
             
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.clickable { toggleAllSelection() }
+            ) {
                 Text(
                     text = "全选${group.title}",
                     fontSize = 14.sp,
                     color = Color.Gray
                 )
                 Checkbox(
-                    checked = group.isAllSelected,
-                    onCheckedChange = { },
+                    checked = isAllSelected,
+                    onCheckedChange = { toggleAllSelection() },
                     colors = CheckboxDefaults.colors(
                         uncheckedColor = Color.Gray
                     )

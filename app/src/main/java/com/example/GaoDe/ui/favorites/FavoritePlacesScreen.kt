@@ -24,6 +24,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
+import com.example.GaoDe.data.DataManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -212,6 +214,13 @@ fun QuickAccessItem(
 fun FavoritesListSection(
     onFavoriteClick: (Place) -> Unit
 ) {
+    val context = LocalContext.current
+    val dataManager = remember { DataManager(context) }
+    var favorites by remember { mutableStateOf<List<Favorite>>(emptyList()) }
+    
+    LaunchedEffect(Unit) {
+        favorites = dataManager.getFavorites()
+    }
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -233,53 +242,41 @@ fun FavoritesListSection(
             )
             
             Text(
-                text = "3",
+                text = "${favorites.size}",
                 fontSize = 14.sp,
                 color = Color.Gray
             )
         }
         
         // 收藏地点列表
-        val sampleFavorites = listOf(
-            Place(
-                id = "place_001",
-                name = "南湖花溪公园",
-                address = "武汉市洪山区南湖大道",
-                latitude = 30.5117,
-                longitude = 114.3489,
-                category = "公园"
-            ),
-            Place(
-                id = "place_002",
-                name = "黄鹤楼",
-                address = "武汉市武昌区蛇山之巅(地铁站)",
-                latitude = 30.5485,
-                longitude = 114.3070,
-                category = "景点"
-            ),
-            Place(
-                id = "place_003",
-                name = "东湖生态旅游风景区",
-                address = "武汉市武昌区沿湖大道16号",
-                latitude = 30.5519,
-                longitude = 114.3775,
-                category = "景点"
-            )
-        )
-        
-        sampleFavorites.forEachIndexed { index, place ->
-            FavoritePlaceItem(
-                place = place,
-                onPlaceClick = { onFavoriteClick(place) },
-                showActions = index == 1 // 只为黄鹤楼显示操作按钮
-            )
-            
-            if (index < sampleFavorites.lastIndex) {
-                HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 8.dp),
-                    color = Color(0xFFF0F0F0),
-                    thickness = 1.dp
+        if (favorites.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 40.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "还没有收藏任何地点",
+                    fontSize = 14.sp,
+                    color = Color.Gray
                 )
+            }
+        } else {
+            favorites.forEachIndexed { index, favorite ->
+                FavoritePlaceItem(
+                    place = favorite.place,
+                    onPlaceClick = { onFavoriteClick(favorite.place) },
+                    showActions = index == 1 // 只为第二个项目显示操作按钮
+                )
+                
+                if (index < favorites.lastIndex) {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 8.dp),
+                        color = Color(0xFFF0F0F0),
+                        thickness = 1.dp
+                    )
+                }
             }
         }
         
