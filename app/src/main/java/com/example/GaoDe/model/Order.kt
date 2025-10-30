@@ -11,7 +11,8 @@ data class Order(
     val createdAt: Long,
     val startLocation: String,
     val endLocation: String,
-    val isRealTime: Boolean = false
+    val isRealTime: Boolean = false,
+    val cancelReason: String? = null
 )
 
 enum class OrderType {

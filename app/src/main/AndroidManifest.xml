@@ -36,6 +36,18 @@
         </activity>
 
         <activity
+            android:name=".ui.orders.CancelledOrdersActivity"
+            android:exported="false"
+            android:theme="@style/Theme.GaoDe">
+        </activity>
+
+        <activity
+            android:name=".ui.themes.ThemeSkinActivity"
+            android:exported="false"
+            android:theme="@style/Theme.GaoDe">
+        </activity>
+
+        <activity
             android:name=".ui.ride.RideChatActivity"
             android:exported="false"
             android:theme="@style/Theme.GaoDe">

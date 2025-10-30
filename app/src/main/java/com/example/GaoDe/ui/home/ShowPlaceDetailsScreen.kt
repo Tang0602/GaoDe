@@ -457,6 +457,8 @@ fun TransportInfoSection(placeDetails: PlaceDetails) {
                 "place_006" -> "驾车 4.2公里 16分钟"
                 "place_007" -> "步行 890米 12分钟"
                 "place_008" -> "驾车 3.5公里 8分钟"
+                "place_009" -> "驾车 2.1公里 12分钟"
+                "place_010" -> "驾车 6.8公里 15分钟"
                 "place_011" -> "驾车 2.8公里 9分钟"
                 "place_012" -> "驾车 9.2公里 22分钟"
                 "place_013" -> "驾车 7.2公里 18分钟"

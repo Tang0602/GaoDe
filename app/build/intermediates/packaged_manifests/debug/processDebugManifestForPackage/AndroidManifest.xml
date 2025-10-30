@@ -57,6 +57,16 @@
             android:theme="@style/Theme.GaoDe" >
         </activity>
         <activity
+            android:name="com.example.GaoDe.ui.orders.CancelledOrdersActivity"
+            android:exported="false"
+            android:theme="@style/Theme.GaoDe" >
+        </activity>
+        <activity
+            android:name="com.example.GaoDe.ui.themes.ThemeSkinActivity"
+            android:exported="false"
+            android:theme="@style/Theme.GaoDe" >
+        </activity>
+        <activity
             android:name="com.example.GaoDe.ui.ride.RideChatActivity"
             android:exported="false"
             android:theme="@style/Theme.GaoDe" >

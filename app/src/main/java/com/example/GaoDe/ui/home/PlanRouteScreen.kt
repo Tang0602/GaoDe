@@ -842,6 +842,7 @@ private fun generateRouteOptions(destination: String): List<RouteOption> {
         destination.contains("木屋") || destination.contains("烧烤") -> Quadruple("890米", "起步价8元", "25分钟", "5分钟")
         destination.contains("麦当劳") -> Quadruple("3.5公里", "12元", "35分钟", "8分钟")
         destination.contains("老乡鸡") -> Quadruple("2.1公里", "16元", "45分钟", "12分钟")
+        destination.contains("金雁") -> Quadruple("6.8公里", "35元", "1小时20分钟", "15分钟")
         destination.contains("汉庭") -> Quadruple("2.8公里", "22元", "1小时15分钟", "15分钟")
         destination.contains("如家") -> Quadruple("7.2公里", "22元", "1小时15分钟", "15分钟")
         destination.contains("凯悦") -> Quadruple("5.1公里", "35元", "1小时45分钟", "22分钟")
@@ -1183,6 +1184,8 @@ private fun generateTaxiData(destination: String): TaxiData {
             LocationPricing("3.5公里", 9, 12, 18, "35分钟", "8分钟")
         destination.contains("老乡鸡") -> 
             LocationPricing("2.1公里", 12, 16, 24, "45分钟", "12分钟")
+        destination.contains("金雁") -> 
+            LocationPricing("6.8公里", 26, 35, 53, "1小时20分钟", "15分钟")
         destination.contains("汉庭") -> 
             LocationPricing("2.8公里", 16, 22, 33, "1小时15分钟", "15分钟")
         destination.contains("如家") -> 
@@ -1364,6 +1367,8 @@ private fun getLocationPricing(destination: String): LocationPricing {
             LocationPricing("3.5公里", 9, 12, 18, "35分钟", "8分钟")
         destination.contains("老乡鸡") -> 
             LocationPricing("2.1公里", 12, 16, 24, "45分钟", "12分钟")
+        destination.contains("金雁") -> 
+            LocationPricing("6.8公里", 26, 35, 53, "1小时20分钟", "15分钟")
         destination.contains("汉庭") -> 
             LocationPricing("2.8公里", 16, 22, 33, "1小时15分钟", "15分钟")
         destination.contains("如家") -> 

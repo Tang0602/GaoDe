@@ -43,12 +43,21 @@ fun MyScreen() {
             UserProfileHeader()
             
             // 个性化设置模块
-            PersonalizationCard()
+            PersonalizationCard(
+                onSkinClick = {
+                    val intent = Intent(context, com.example.GaoDe.ui.themes.ThemeSkinActivity::class.java)
+                    context.startActivity(intent)
+                }
+            )
             
             // 订单中心模块
             OrderCenterCard(
                 onAllOrdersClick = {
                     val intent = Intent(context, com.example.GaoDe.ui.orders.OrderListActivity::class.java)
+                    context.startActivity(intent)
+                },
+                onCancelledOrdersClick = {
+                    val intent = Intent(context, com.example.GaoDe.ui.orders.CancelledOrdersActivity::class.java)
                     context.startActivity(intent)
                 }
             )
@@ -192,7 +201,9 @@ fun UserProfileHeader() {
 
 
 @Composable
-fun PersonalizationCard() {
+fun PersonalizationCard(
+    onSkinClick: () -> Unit = {}
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -227,6 +238,7 @@ fun PersonalizationCard() {
                 iconColor = Color(0xFF4CAF50),
                 title = "皮肤",
                 subtitle = "经典主题",
+                onClick = onSkinClick,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -239,10 +251,11 @@ fun PersonalizationItem(
     iconColor: Color,
     title: String,
     subtitle: String,
+    onClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier,
+        modifier = modifier.clickable { onClick() },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
@@ -279,7 +292,8 @@ fun PersonalizationItem(
 
 @Composable
 fun OrderCenterCard(
-    onAllOrdersClick: () -> Unit = {}
+    onAllOrdersClick: () -> Unit = {},
+    onCancelledOrdersClick: () -> Unit = {}
 ) {
     Box(
         modifier = Modifier
@@ -310,6 +324,7 @@ fun OrderCenterCard(
                 OrderItem(
                     icon = Icons.Default.Cancel,
                     title = "退款/取消",
+                    onClick = onCancelledOrdersClick,
                     modifier = Modifier.weight(1f)
                 )
                 
