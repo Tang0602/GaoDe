@@ -244,9 +244,19 @@ fun MainScreen() {
                 val endName = backStackEntry.arguments?.getString("endName") ?: ""
                 NavigationSuccessScreen(
                     onConfirmClick = {
-                        navController.navigate("$fromRoute/$endName") {
-                            popUpTo("$fromRoute/$endName") {
-                                inclusive = true
+                        if (fromRoute == Screen.Home.route) {
+                            // 如果是从首页来的，返回首页
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(Screen.Home.route) {
+                                    inclusive = true
+                                }
+                            }
+                        } else {
+                            // 其他情况保持原逻辑
+                            navController.navigate("$fromRoute/$endName") {
+                                popUpTo("$fromRoute/$endName") {
+                                    inclusive = true
+                                }
                             }
                         }
                     }

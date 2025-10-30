@@ -566,7 +566,8 @@ fun TaxiAggregateView(
     var recommendOptions by remember { mutableStateOf<List<TaxiOption>>(emptyList()) }
     var aggregateOptions by remember { mutableStateOf<List<TaxiOption>>(emptyList()) }
     var economyGroup by remember { mutableStateOf<TaxiGroup?>(null) }
-    var selectedCount by remember { mutableStateOf(32) }
+    var selectedTaxiIds by remember { mutableStateOf<Set<String>>(emptySet()) }
+    var selectedCount by remember { mutableIntStateOf(0) }
     var estimatedPrice by remember { mutableStateOf("17.1-22元起") }
     var currentLocationInfo by remember { mutableStateOf<LocationPricing?>(null) }
     
@@ -619,6 +620,20 @@ fun TaxiAggregateView(
         }
     }
     
+    // Update selected count when selection changes
+    LaunchedEffect(selectedTaxiIds) {
+        selectedCount = selectedTaxiIds.size
+    }
+    
+    // Helper function to toggle taxi selection
+    val toggleTaxiSelection = { taxiId: String ->
+        selectedTaxiIds = if (selectedTaxiIds.contains(taxiId)) {
+            selectedTaxiIds - taxiId
+        } else {
+            selectedTaxiIds + taxiId
+        }
+    }
+    
     Column(modifier = modifier) {
         Row(modifier = Modifier.weight(1f)) {
             // Left sidebar
@@ -634,6 +649,8 @@ fun TaxiAggregateView(
                 recommendOptions = recommendOptions,
                 aggregateOptions = aggregateOptions,
                 economyGroup = economyGroup,
+                selectedTaxiIds = selectedTaxiIds,
+                onTaxiToggle = toggleTaxiSelection,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -712,6 +729,8 @@ fun TaxiOptionsContent(
     recommendOptions: List<TaxiOption>,
     aggregateOptions: List<TaxiOption>,
     economyGroup: TaxiGroup?,
+    selectedTaxiIds: Set<String>,
+    onTaxiToggle: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -721,18 +740,30 @@ fun TaxiOptionsContent(
     ) {
         // Recommendation options
         items(recommendOptions) { option ->
-            TaxiRecommendationCard(option = option)
+            TaxiRecommendationCard(
+                option = option,
+                isSelected = selectedTaxiIds.contains(option.id),
+                onToggle = { onTaxiToggle(option.id) }
+            )
         }
         
         // Aggregate options
         items(aggregateOptions) { option ->
-            TaxiAggregateCard(option = option)
+            TaxiAggregateCard(
+                option = option,
+                isSelected = selectedTaxiIds.contains(option.id),
+                onToggle = { onTaxiToggle(option.id) }
+            )
         }
         
         // Economy group
         economyGroup?.let { group ->
             item {
-                TaxiEconomyGroup(group = group)
+                TaxiEconomyGroup(
+                    group = group,
+                    selectedTaxiIds = selectedTaxiIds,
+                    onTaxiToggle = onTaxiToggle
+                )
             }
         }
         
@@ -790,7 +821,7 @@ fun TaxiBottomActionBar(
 }
 
 private fun generateRouteOptions(destination: String): List<RouteOption> {
-    // Calculate distance and price based on destination - match card distances
+    // Calculate distance and price based on destination
     val (distance, taxiPrice, busDuration, taxiDuration) = when {
         destination.contains("巴奴") || destination.contains("火锅") -> Quadruple("4.2公里", "25元", "1小时5分钟", "17分钟")
         destination.contains("木屋") || destination.contains("烧烤") -> Quadruple("890米", "起步价8元", "25分钟", "5分钟")
@@ -804,53 +835,117 @@ private fun generateRouteOptions(destination: String): List<RouteOption> {
         else -> Quadruple("3.5公里", "20元", "1小时10分钟", "15分钟")
     }
     
+    // Generate different route combinations based on destination
+    return when {
+        // 近距离地点：主要公交直达或少量步行
+        destination.contains("木屋") || destination.contains("麦当劳") -> generateNearbyRoutes(distance, taxiPrice, taxiDuration)
+        // 中距离地点：多种交通方式组合
+        destination.contains("老乡鸡") || destination.contains("汉庭") || destination.contains("如家") -> generateMidDistanceRoutes(distance, taxiPrice, busDuration, taxiDuration)
+        // 远距离地点：需要换乘的复杂路线
+        destination.contains("凯悦") || destination.contains("欢乐谷") || destination.contains("东湖") || destination.contains("黄鹤楼") -> generateLongDistanceRoutes(distance, taxiPrice, busDuration, taxiDuration)
+        // 火锅店等特定地点：复合交通方式
+        destination.contains("巴奴") || destination.contains("火锅") -> generateComplexRoutes(distance, taxiPrice, busDuration, taxiDuration)
+        // 默认路线
+        else -> generateDefaultRoutes(distance, taxiPrice, busDuration, taxiDuration)
+    }
+}
+
+private fun generateNearbyRoutes(distance: String, taxiPrice: String, taxiDuration: String): List<RouteOption> {
     return listOf(
         RouteOption(
             id = "route_001",
             transportationType = "公交",
-            duration = busDuration,
+            duration = "18分钟",
             distance = distance,
             price = "2元",
             mainRoute = listOf(
-                RouteSegment("步行", "12", "walk", null),
-                RouteSegment("公交", "804路", "bus", "绿色"),
-                RouteSegment("步行", "14", "walk", null)
+                RouteSegment("步行", "3分钟", "walk", null),
+                RouteSegment("公交", "586路", "bus", "绿色")
             ),
-            details = "15站 · 2元 · 雄楚大道BRT元宝山站上车",
-            realTimeInfo = "804路 预计 20:23~20:33 到站",
+            details = "3站 · 2元 · 广八路公交站上车",
+            realTimeInfo = "586路 预计 2分钟到站",
+            tags = listOf("少步行"),
+            isRecommended = true
+        ),
+        RouteOption(
+            id = "route_002",
+            transportationType = "步行",
+            duration = "12分钟",
+            distance = distance,
+            price = null,
+            mainRoute = listOf(
+                RouteSegment("步行", "12分钟", "walk", null)
+            ),
+            details = "全程步行 · 无红绿灯",
+            realTimeInfo = null,
+            tags = listOf("健康出行"),
+            isRecommended = false
+        ),
+        RouteOption(
+            id = "route_003",
+            transportationType = "打车",
+            duration = taxiDuration,
+            distance = distance,
+            price = taxiPrice,
+            mainRoute = listOf(
+                RouteSegment("打车", "一口价 $taxiPrice", "taxi", "蓝色")
+            ),
+            details = "$distance · 上门接送",
+            realTimeInfo = "附近有车，预计 1分钟上车",
+            tags = listOf("最快"),
+            isRecommended = false
+        )
+    )
+}
+
+private fun generateMidDistanceRoutes(distance: String, taxiPrice: String, busDuration: String, taxiDuration: String): List<RouteOption> {
+    return listOf(
+        RouteOption(
+            id = "route_001",
+            transportationType = "公交",
+            duration = "42分钟",
+            distance = distance,
+            price = "2元",
+            mainRoute = listOf(
+                RouteSegment("步行", "8分钟", "walk", null),
+                RouteSegment("公交", "702路", "bus", "绿色"),
+                RouteSegment("步行", "5分钟", "walk", null)
+            ),
+            details = "8站 · 2元 · 雄楚大道公交站上车",
+            realTimeInfo = "702路 预计 5分钟到站",
             tags = emptyList(),
             isRecommended = true
         ),
         RouteOption(
             id = "route_002",
-            transportationType = "混合",
-            duration = "1小时1分钟",
+            transportationType = "地铁",
+            duration = "35分钟",
             distance = distance,
-            price = "约8元",
+            price = "3元",
             mainRoute = listOf(
-                RouteSegment("打车", "打车 约8元", "taxi", "蓝色"),
-                RouteSegment("步行", "10", "walk", null),
-                RouteSegment("地铁", "轨道交通 5号线", "subway", "蓝色"),
-                RouteSegment("地铁", "轨道交通 11号线", "subway", "蓝色")
+                RouteSegment("步行", "12分钟", "walk", null),
+                RouteSegment("地铁", "2号线", "subway", "蓝色"),
+                RouteSegment("步行", "8分钟", "walk", null)
             ),
-            details = "6站 · 12元 · 虎泉 (G2) 进站",
-            realTimeInfo = "轨道交通 11号线 首班发车约 8分钟/趟",
-            tags = listOf("限时特价", "打车混合"),
+            details = "4站 · 3元 · 虎泉站 (B口) 进站",
+            realTimeInfo = "2号线 首班发车约 4分钟",
+            tags = listOf("地铁直达"),
             isRecommended = false
         ),
         RouteOption(
             id = "route_003",
-            transportationType = "轨道交通",
-            duration = "58分钟",
+            transportationType = "混合",
+            duration = "38分钟",
             distance = distance,
-            price = "4元",
+            price = "约10元",
             mainRoute = listOf(
-                RouteSegment("步行", "31", "walk", null),
-                RouteSegment("地铁", "换乘两次轨道交通", "subway", "蓝色")
+                RouteSegment("打车", "打车 6元", "taxi", "蓝色"),
+                RouteSegment("地铁", "2号线", "subway", "蓝色"),
+                RouteSegment("步行", "5分钟", "walk", null)
             ),
-            details = "6站 · 4元 · 虎泉 (G1口) 进站",
-            realTimeInfo = "换乘等待约 8分钟",
-            tags = emptyList(),
+            details = "3站 · 打车+地铁 · 螃蟹岬站进站",
+            realTimeInfo = "2号线 首班发车约 3分钟",
+            tags = listOf("少步行", "混合模式"),
             isRecommended = false
         ),
         RouteOption(
@@ -864,7 +959,196 @@ private fun generateRouteOptions(destination: String): List<RouteOption> {
             ),
             details = "$distance · 更快更省心 · 上门接送",
             realTimeInfo = "附近有车，预计 3分钟上车",
-            tags = listOf("少步行"),
+            tags = listOf("最快"),
+            isRecommended = false
+        )
+    )
+}
+
+private fun generateLongDistanceRoutes(distance: String, taxiPrice: String, busDuration: String, taxiDuration: String): List<RouteOption> {
+    return listOf(
+        RouteOption(
+            id = "route_001",
+            transportationType = "地铁",
+            duration = "1小时15分钟",
+            distance = distance,
+            price = "5元",
+            mainRoute = listOf(
+                RouteSegment("步行", "15分钟", "walk", null),
+                RouteSegment("地铁", "2号线", "subway", "蓝色"),
+                RouteSegment("地铁", "4号线", "subway", "绿色"),
+                RouteSegment("步行", "12分钟", "walk", null)
+            ),
+            details = "地铁换乘 · 中南路站换乘 · 5元",
+            realTimeInfo = "换乘等待约 5分钟",
+            tags = listOf("换乘1次"),
+            isRecommended = true
+        ),
+        RouteOption(
+            id = "route_002",
+            transportationType = "公交",
+            duration = busDuration,
+            distance = distance,
+            price = "4元",
+            mainRoute = listOf(
+                RouteSegment("步行", "8分钟", "walk", null),
+                RouteSegment("公交", "538路", "bus", "绿色"),
+                RouteSegment("公交", "413路", "bus", "蓝色"),
+                RouteSegment("步行", "10分钟", "walk", null)
+            ),
+            details = "公交换乘 · 中南路站换乘 · 4元",
+            realTimeInfo = "538路 预计 12分钟到站",
+            tags = listOf("换乘1次"),
+            isRecommended = false
+        ),
+        RouteOption(
+            id = "route_003",
+            transportationType = "混合",
+            duration = "1小时8分钟",
+            distance = distance,
+            price = "约15元",
+            mainRoute = listOf(
+                RouteSegment("打车", "打车 10元", "taxi", "蓝色"),
+                RouteSegment("地铁", "4号线", "subway", "绿色"),
+                RouteSegment("步行", "8分钟", "walk", null)
+            ),
+            details = "打车+地铁 · 王家湾站进站 · 约15元",
+            realTimeInfo = "4号线 首班发车约 6分钟",
+            tags = listOf("少步行", "混合模式"),
+            isRecommended = false
+        ),
+        RouteOption(
+            id = "route_004",
+            transportationType = "打车",
+            duration = taxiDuration,
+            distance = distance,
+            price = taxiPrice,
+            mainRoute = listOf(
+                RouteSegment("打车", "一口价 $taxiPrice", "taxi", "蓝色")
+            ),
+            details = "$distance · 高速直达 · 上门接送",
+            realTimeInfo = "附近有车，预计 5分钟上车",
+            tags = listOf("最快", "直达"),
+            isRecommended = false
+        )
+    )
+}
+
+private fun generateComplexRoutes(distance: String, taxiPrice: String, busDuration: String, taxiDuration: String): List<RouteOption> {
+    return listOf(
+        RouteOption(
+            id = "route_001",
+            transportationType = "公交",
+            duration = busDuration,
+            distance = distance,
+            price = "2元",
+            mainRoute = listOf(
+                RouteSegment("步行", "12分钟", "walk", null),
+                RouteSegment("公交", "804路", "bus", "绿色"),
+                RouteSegment("步行", "8分钟", "walk", null)
+            ),
+            details = "15站 · 2元 · 雄楚大道BRT元宝山站上车",
+            realTimeInfo = "804路 预计 8分钟到站",
+            tags = listOf("BRT快速公交"),
+            isRecommended = true
+        ),
+        RouteOption(
+            id = "route_002",
+            transportationType = "混合",
+            duration = "58分钟",
+            distance = distance,
+            price = "约12元",
+            mainRoute = listOf(
+                RouteSegment("打车", "打车 8元", "taxi", "蓝色"),
+                RouteSegment("步行", "3分钟", "walk", null),
+                RouteSegment("地铁", "5号线", "subway", "蓝色"),
+                RouteSegment("地铁", "11号线", "subway", "紫色")
+            ),
+            details = "地铁换乘 · 宝通寺站换乘 · 12元",
+            realTimeInfo = "地铁首班发车约 5分钟",
+            tags = listOf("限时特价", "混合模式"),
+            isRecommended = false
+        ),
+        RouteOption(
+            id = "route_003",
+            transportationType = "地铁",
+            duration = "52分钟",
+            distance = distance,
+            price = "4元",
+            mainRoute = listOf(
+                RouteSegment("步行", "18分钟", "walk", null),
+                RouteSegment("地铁", "5号线", "subway", "蓝色"),
+                RouteSegment("地铁", "11号线", "subway", "紫色"),
+                RouteSegment("步行", "6分钟", "walk", null)
+            ),
+            details = "地铁换乘 · 宝通寺站换乘 · 4元",
+            realTimeInfo = "换乘等待约 3分钟",
+            tags = listOf("换乘1次"),
+            isRecommended = false
+        ),
+        RouteOption(
+            id = "route_004",
+            transportationType = "打车",
+            duration = taxiDuration,
+            distance = distance,
+            price = taxiPrice,
+            mainRoute = listOf(
+                RouteSegment("打车", "一口价 $taxiPrice", "taxi", "蓝色")
+            ),
+            details = "$distance · 避开拥堵路段 · 上门接送",
+            realTimeInfo = "附近有车，预计 3分钟上车",
+            tags = listOf("最快", "智能路线"),
+            isRecommended = false
+        )
+    )
+}
+
+private fun generateDefaultRoutes(distance: String, taxiPrice: String, busDuration: String, taxiDuration: String): List<RouteOption> {
+    return listOf(
+        RouteOption(
+            id = "route_001",
+            transportationType = "公交",
+            duration = "45分钟",
+            distance = distance,
+            price = "2元",
+            mainRoute = listOf(
+                RouteSegment("步行", "10分钟", "walk", null),
+                RouteSegment("公交", "518路", "bus", "绿色"),
+                RouteSegment("步行", "6分钟", "walk", null)
+            ),
+            details = "9站 · 2元 · 珞喻路公交站上车",
+            realTimeInfo = "518路 预计 8分钟到站",
+            tags = emptyList(),
+            isRecommended = true
+        ),
+        RouteOption(
+            id = "route_002",
+            transportationType = "地铁",
+            duration = "38分钟",
+            distance = distance,
+            price = "3元",
+            mainRoute = listOf(
+                RouteSegment("步行", "15分钟", "walk", null),
+                RouteSegment("地铁", "2号线", "subway", "蓝色"),
+                RouteSegment("步行", "8分钟", "walk", null)
+            ),
+            details = "5站 · 3元 · 虎泉站进站",
+            realTimeInfo = "2号线 首班发车约 6分钟",
+            tags = listOf("地铁直达"),
+            isRecommended = false
+        ),
+        RouteOption(
+            id = "route_003",
+            transportationType = "打车",
+            duration = taxiDuration,
+            distance = distance,
+            price = taxiPrice,
+            mainRoute = listOf(
+                RouteSegment("打车", "一口价 $taxiPrice", "taxi", "蓝色")
+            ),
+            details = "$distance · 更快更省心 · 上门接送",
+            realTimeInfo = "附近有车，预计 4分钟上车",
+            tags = listOf("便捷"),
             isRecommended = false
         )
     )
@@ -1412,9 +1696,15 @@ private fun parseTaxiOption(jsonObject: JSONObject): TaxiOption {
 }
 
 @Composable
-fun TaxiRecommendationCard(option: TaxiOption) {
+fun TaxiRecommendationCard(
+    option: TaxiOption,
+    isSelected: Boolean = false,
+    onToggle: () -> Unit = {}
+) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onToggle() },
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
@@ -1489,14 +1779,31 @@ fun TaxiRecommendationCard(option: TaxiOption) {
                     }
                 }
             }
+            
+            Spacer(modifier = Modifier.width(8.dp))
+            
+            // Checkbox
+            Checkbox(
+                checked = isSelected,
+                onCheckedChange = { onToggle() },
+                colors = CheckboxDefaults.colors(
+                    checkedColor = Color(0xFF2196F3)
+                )
+            )
         }
     }
 }
 
 @Composable
-fun TaxiAggregateCard(option: TaxiOption) {
+fun TaxiAggregateCard(
+    option: TaxiOption,
+    isSelected: Boolean = false,
+    onToggle: () -> Unit = {}
+) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onToggle() },
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
@@ -1578,8 +1885,8 @@ fun TaxiAggregateCard(option: TaxiOption) {
             
             // Checkbox
             Checkbox(
-                checked = option.isSelected,
-                onCheckedChange = { },
+                checked = isSelected,
+                onCheckedChange = { onToggle() },
                 colors = CheckboxDefaults.colors(
                     checkedColor = Color(0xFF2196F3)
                 )
@@ -1589,7 +1896,11 @@ fun TaxiAggregateCard(option: TaxiOption) {
 }
 
 @Composable  
-fun TaxiEconomyGroup(group: TaxiGroup) {
+fun TaxiEconomyGroup(
+    group: TaxiGroup,
+    selectedTaxiIds: Set<String>,
+    onTaxiToggle: (String) -> Unit
+) {
     Column {
         // Group header
         Row(
@@ -1624,16 +1935,26 @@ fun TaxiEconomyGroup(group: TaxiGroup) {
         
         // Group items
         group.items.forEach { item ->
-            TaxiProviderCard(option = item)
+            TaxiProviderCard(
+                option = item,
+                isSelected = selectedTaxiIds.contains(item.id),
+                onToggle = { onTaxiToggle(item.id) }
+            )
             Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }
 
 @Composable
-fun TaxiProviderCard(option: TaxiOption) {
+fun TaxiProviderCard(
+    option: TaxiOption,
+    isSelected: Boolean = false,
+    onToggle: () -> Unit = {}
+) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onToggle() },
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
@@ -1721,8 +2042,8 @@ fun TaxiProviderCard(option: TaxiOption) {
             
             // Checkbox
             Checkbox(
-                checked = option.isSelected,
-                onCheckedChange = { },
+                checked = isSelected,
+                onCheckedChange = { onToggle() },
                 colors = CheckboxDefaults.colors(
                     checkedColor = Color(0xFF2196F3)
                 )

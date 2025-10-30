@@ -837,6 +837,25 @@ fun BottomActionBar(
     placeDetails: PlaceDetails,
     onRouteClick: (String) -> Unit
 ) {
+    val context = LocalContext.current
+    val dataManager = remember { DataManager(context) }
+    var isFavorited by remember { mutableStateOf(dataManager.isPlaceFavorited(placeDetails.place.id)) }
+    var favoriteCount by remember { mutableIntStateOf(dataManager.getFavorites().size) }
+    
+    val toggleFavorite = {
+        if (isFavorited) {
+            if (dataManager.removeFromFavorites(placeDetails.place.id)) {
+                isFavorited = false
+                favoriteCount = dataManager.getFavorites().size
+            }
+        } else {
+            if (dataManager.addToFavorites(placeDetails.place)) {
+                isFavorited = true
+                favoriteCount = dataManager.getFavorites().size
+            }
+        }
+    }
+    
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = Color.White,
@@ -854,9 +873,11 @@ fun BottomActionBar(
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 ActionButton(
-                    icon = Icons.Default.Favorite,
+                    icon = if (isFavorited) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                     text = "收藏",
-                    badge = "222"
+                    badge = favoriteCount.toString(),
+                    isSelected = isFavorited,
+                    onClick = toggleFavorite
                 )
                 ActionButton(
                     icon = Icons.Default.Share,
@@ -910,17 +931,19 @@ fun BottomActionBar(
 fun ActionButton(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     text: String,
-    badge: String? = null
+    badge: String? = null,
+    isSelected: Boolean = false,
+    onClick: () -> Unit = {}
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.clickable { }
+        modifier = Modifier.clickable { onClick() }
     ) {
         Box {
             Icon(
                 icon,
                 contentDescription = text,
-                tint = Color.Gray,
+                tint = if (isSelected) Color(0xFFFF5722) else Color.Gray,
                 modifier = Modifier.size(24.dp)
             )
             
@@ -945,7 +968,7 @@ fun ActionButton(
         Text(
             text = text,
             fontSize = 10.sp,
-            color = Color.Gray
+            color = if (isSelected) Color(0xFFFF5722) else Color.Gray
         )
     }
 }

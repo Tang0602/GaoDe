@@ -358,7 +358,7 @@ fun SheetContent(
         
         Spacer(modifier = Modifier.height(16.dp))
         
-        HomeWorkButtons()
+        HomeWorkButtons(navController = navController)
         
         Spacer(modifier = Modifier.height(24.dp))
     }
@@ -427,7 +427,7 @@ fun QuickActionItem(action: QuickAction) {
 }
 
 @Composable
-fun HomeWorkButtons() {
+fun HomeWorkButtons(navController: NavController) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -435,7 +435,11 @@ fun HomeWorkButtons() {
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Surface(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .clickable {
+                    navController.navigate("${Screen.NavigationSuccess.route}/${Screen.Home.route}/回家")
+                },
             color = Color.White,
             shape = RoundedCornerShape(12.dp),
             shadowElevation = 2.dp
@@ -461,7 +465,11 @@ fun HomeWorkButtons() {
         }
         
         Surface(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .weight(1f)
+                .clickable {
+                    navController.navigate("${Screen.NavigationSuccess.route}/${Screen.Home.route}/去单位")
+                },
             color = Color.White,
             shape = RoundedCornerShape(12.dp),
             shadowElevation = 2.dp
