@@ -40,3 +40,15 @@ captures/
 
 # NDK
 obj/
+
+# Large SDK files (comment out if needed for building)
+app/libs/*.jar
+app/src/main/jniLibs/
+
+# Large image files - keep only essential ones
+UIReference/
+*.png
+*.jpg
+*.jpeg
+*.gif
+app/src/main/assets/avatar/*.jpg
