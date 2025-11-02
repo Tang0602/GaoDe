@@ -26,8 +26,6 @@ data class ThemeSkin(
     val name: String,
     val description: String,
     val price: String? = null,
-    val isActive: Boolean = false,
-    val isSpecial: Boolean = false,
     val backgroundColor: List<Color>,
     val icon: String
 )
@@ -38,6 +36,10 @@ fun ThemeSkinScreen(
     onNavigateBack: () -> Unit = {}
 ) {
     var selectedSkinId by remember { mutableStateOf("classic") }
+    var activeSkinId by remember { mutableStateOf("classic") }
+    var purchasedSkins by remember { mutableStateOf(setOf("classic")) }
+    var showPurchaseDialog by remember { mutableStateOf(false) }
+    var purchasingSkinId by remember { mutableStateOf("") }
     
     // 简化的皮肤数据
     val themeSkins = remember {
@@ -46,7 +48,6 @@ fun ThemeSkinScreen(
                 id = "classic",
                 name = "经典主题",
                 description = "默认主题",
-                isActive = true,
                 backgroundColor = listOf(Color(0xFF2196F3)),
                 icon = "🗺️"
             ),
@@ -108,10 +109,36 @@ fun ThemeSkinScreen(
                 SimpleSkinCard(
                     skin = skin,
                     isSelected = selectedSkinId == skin.id,
-                    onSkinSelected = { selectedSkinId = skin.id }
+                    isActive = activeSkinId == skin.id,
+                    isPurchased = purchasedSkins.contains(skin.id),
+                    onSkinSelected = { selectedSkinId = skin.id },
+                    onPurchase = { 
+                        purchasingSkinId = skin.id
+                        showPurchaseDialog = true 
+                    },
+                    onApply = { 
+                        activeSkinId = skin.id
+                    }
                 )
             }
         }
+    }
+    
+    // 购买成功对话框
+    if (showPurchaseDialog) {
+        PurchaseSuccessDialog(
+            skinName = themeSkins.find { it.id == purchasingSkinId }?.name ?: "",
+            onConfirm = { 
+                showPurchaseDialog = false
+                purchasingSkinId = ""
+            },
+            onApplyImmediately = {
+                purchasedSkins = purchasedSkins + purchasingSkinId
+                activeSkinId = purchasingSkinId
+                showPurchaseDialog = false
+                purchasingSkinId = ""
+            }
+        )
     }
 }
 
@@ -120,7 +147,11 @@ fun ThemeSkinScreen(
 fun SimpleSkinCard(
     skin: ThemeSkin,
     isSelected: Boolean,
-    onSkinSelected: () -> Unit
+    isActive: Boolean,
+    isPurchased: Boolean,
+    onSkinSelected: () -> Unit,
+    onPurchase: () -> Unit = {},
+    onApply: () -> Unit = {}
 ) {
     Card(
         modifier = Modifier
@@ -174,9 +205,9 @@ fun SimpleSkinCard(
                 )
             }
             
-            // 状态或价格
+            // 状态或操作按钮
             when {
-                skin.isActive -> {
+                isActive -> {
                     Text(
                         text = "使用中",
                         fontSize = 14.sp,
@@ -184,13 +215,30 @@ fun SimpleSkinCard(
                         fontWeight = FontWeight.Medium
                     )
                 }
-                skin.price != null -> {
+                !isPurchased && skin.price != null -> {
                     Text(
                         text = skin.price,
                         fontSize = 14.sp,
                         color = Color(0xFFFF9800),
-                        fontWeight = FontWeight.Medium
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.clickable { onPurchase() }
                     )
+                }
+                isPurchased -> {
+                    Button(
+                        onClick = onApply,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF2196F3)
+                        ),
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier.height(32.dp)
+                    ) {
+                        Text(
+                            text = "使用",
+                            fontSize = 12.sp,
+                            color = Color.White
+                        )
+                    }
                 }
                 else -> {
                     Icon(
@@ -202,6 +250,74 @@ fun SimpleSkinCard(
             }
         }
     }
+}
+
+@Composable
+fun PurchaseSuccessDialog(
+    skinName: String,
+    onConfirm: () -> Unit,
+    onApplyImmediately: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onConfirm,
+        title = {
+            Text(
+                text = "购买成功",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            )
+        },
+        text = {
+            Column {
+                Text(
+                    text = "恭喜您成功购买了「$skinName」皮肤！",
+                    fontSize = 16.sp,
+                    color = Color.Black
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "您可以立即切换使用，或稍后在皮肤列表中切换。",
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
+            }
+        },
+        confirmButton = {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Button(
+                    onClick = onConfirm,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFF5F5F5)
+                    ),
+                    shape = RoundedCornerShape(20.dp)
+                ) {
+                    Text(
+                        text = "确定",
+                        color = Color.Black,
+                        fontSize = 14.sp
+                    )
+                }
+                Button(
+                    onClick = onApplyImmediately,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF2196F3)
+                    ),
+                    shape = RoundedCornerShape(20.dp)
+                ) {
+                    Text(
+                        text = "立即切换",
+                        color = Color.White,
+                        fontSize = 14.sp
+                    )
+                }
+            }
+        },
+        shape = RoundedCornerShape(16.dp),
+        containerColor = Color.White
+    )
 }
 
 // Activity用于在Android中启动这个Screen
