@@ -1,0 +1,42 @@
+# Android build files
+app/build/
+build/
+.gradle/
+
+# IDE files
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Local configuration files
+local.properties
+
+# Keystore files
+*.jks
+*.keystore
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Cache directories
+.cxx/
+.externalNativeBuild/
+captures/
+
+# NDK
+obj/
