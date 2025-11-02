@@ -16,7 +16,11 @@
       "Bash(chmod:*)",
       "Bash(.gradlew.bat build)",
       "Bash(\"./gradlew\" compileDebugKotlin)",
-      "Bash(java:*)"
+      "Bash(java:*)",
+      "Bash(git rm:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git filter-branch:*)"
     ],
     "deny": []
   }
