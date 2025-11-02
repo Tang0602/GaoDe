@@ -38,7 +38,8 @@ import com.example.GaoDe.ui.home.ShowPlaceDetailsPresenter
 fun ShowPlaceDetailsScreen(
     placeId: String,
     onBackClick: () -> Unit = {},
-    onRouteClick: (String) -> Unit = {}
+    onRouteClick: (String) -> Unit = {},
+    onShareClick: (String, String) -> Unit = { _, _ -> }
 ) {
     var placeDetails by remember { mutableStateOf<PlaceDetails?>(null) }
     var isLoading by remember { mutableStateOf(true) }
@@ -137,7 +138,8 @@ fun ShowPlaceDetailsScreen(
                 // Bottom Action Bar
                 BottomActionBar(
                     placeDetails = placeDetails!!,
-                    onRouteClick = onRouteClick
+                    onRouteClick = onRouteClick,
+                    onShareClick = onShareClick
                 )
             }
         }
@@ -837,12 +839,14 @@ fun ReviewCard(review: com.example.GaoDe.model.Review) {
 @Composable
 fun BottomActionBar(
     placeDetails: PlaceDetails,
-    onRouteClick: (String) -> Unit
+    onRouteClick: (String) -> Unit,
+    onShareClick: (String, String) -> Unit = { _, _ -> }
 ) {
     val context = LocalContext.current
     val dataManager = remember { DataManager(context) }
     var isFavorited by remember { mutableStateOf(dataManager.isPlaceFavorited(placeDetails.place.id)) }
     var favoriteCount by remember { mutableIntStateOf(dataManager.getFavorites().size) }
+    var showShareDialog by remember { mutableStateOf(false) }
     
     val toggleFavorite = {
         if (isFavorited) {
@@ -883,7 +887,8 @@ fun BottomActionBar(
                 )
                 ActionButton(
                     icon = Icons.Default.Share,
-                    text = "分享"
+                    text = "分享",
+                    onClick = { showShareDialog = true }
                 )
                 ActionButton(
                     icon = Icons.Default.DirectionsCar,
@@ -927,6 +932,120 @@ fun BottomActionBar(
             }
         }
     }
+    
+    // 分享联系人选择对话框
+    if (showShareDialog) {
+        ShareContactDialog(
+            placeName = placeDetails.place.name,
+            onDismiss = { showShareDialog = false },
+            onShareToContact = { contactId, contactName ->
+                onShareClick(contactId, "${placeDetails.place.name} - ${placeDetails.place.address}")
+                showShareDialog = false
+            }
+        )
+    }
+}
+
+@Composable
+fun ShareContactDialog(
+    placeName: String,
+    onDismiss: () -> Unit,
+    onShareToContact: (String, String) -> Unit
+) {
+    val context = LocalContext.current
+    
+    // 联系人数据
+    val contacts = listOf(
+        "dad" to Pair("爸爸", "friend_1.jpg"),
+        "mom" to Pair("妈妈", "friend_2.jpg")
+    )
+    
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "分享地点",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            )
+        },
+        text = {
+            Column {
+                Text(
+                    text = "将「$placeName」分享给：",
+                    fontSize = 16.sp,
+                    color = Color.Black,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                
+                // 联系人列表
+                contacts.forEach { (contactId, contactInfo) ->
+                    val (contactName, avatarFileName) = contactInfo
+                    
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onShareToContact(contactId, contactName) }
+                            .padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // 头像
+                        val bitmap = remember(avatarFileName) {
+                            try {
+                                val inputStream = context.assets.open("avatar/$avatarFileName")
+                                BitmapFactory.decodeStream(inputStream)
+                            } catch (e: Exception) {
+                                null
+                            }
+                        }
+                        
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFFF5F5F5)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (bitmap != null) {
+                                Image(
+                                    bitmap = bitmap.asImageBitmap(),
+                                    contentDescription = contactName,
+                                    modifier = Modifier.size(40.dp),
+                                    contentScale = ContentScale.Crop
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Default.Person,
+                                    contentDescription = null,
+                                    tint = Color.Gray,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        }
+                        
+                        Spacer(modifier = Modifier.width(12.dp))
+                        
+                        Text(
+                            text = contactName,
+                            fontSize = 16.sp,
+                            color = Color.Black
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(
+                    text = "取消",
+                    color = Color.Gray
+                )
+            }
+        },
+        shape = RoundedCornerShape(16.dp),
+        containerColor = Color.White
+    )
 }
 
 @Composable

@@ -9,6 +9,7 @@ import java.io.File
 class DataManager(private val context: Context) {
     private val gson = Gson()
     private val favoritesFile = File(context.filesDir, "favorites.json")
+    private val sharedMessagesFile = File(context.filesDir, "shared_messages.json")
     
     fun getPlaces(): List<Place> {
         return loadFromAssets("data/places.json", object : TypeToken<List<Place>>() {})
@@ -87,6 +88,44 @@ class DataManager(private val context: Context) {
     
     fun getRoutes(): List<Route> {
         return loadFromAssets("data/routes.json", object : TypeToken<List<Route>>() {})
+    }
+    
+    // 分享消息管理
+    data class SharedMessage(
+        val id: String,
+        val contactId: String,
+        val contactName: String,
+        val message: String,
+        val timestamp: Long
+    )
+    
+    fun getSharedMessages(): List<SharedMessage> {
+        return if (sharedMessagesFile.exists()) {
+            val jsonString = sharedMessagesFile.readText()
+            gson.fromJson(jsonString, object : TypeToken<List<SharedMessage>>() {}.type) ?: emptyList()
+        } else {
+            emptyList()
+        }
+    }
+    
+    fun addSharedMessage(contactId: String, contactName: String, message: String): Boolean {
+        val messages = getSharedMessages().toMutableList()
+        val newMessage = SharedMessage(
+            id = "shared_${System.currentTimeMillis()}",
+            contactId = contactId,
+            contactName = contactName,
+            message = message,
+            timestamp = System.currentTimeMillis()
+        )
+        messages.add(0, newMessage) // 添加到列表开头
+        
+        val jsonString = gson.toJson(messages)
+        sharedMessagesFile.writeText(jsonString)
+        return true
+    }
+    
+    fun getMessagesForContact(contactId: String): List<SharedMessage> {
+        return getSharedMessages().filter { it.contactId == contactId }
     }
     
     private fun <T> loadFromAssets(fileName: String, typeToken: TypeToken<T>): T {

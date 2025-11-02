@@ -1,5 +1,6 @@
 package com.example.GaoDe.ui.message
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -9,27 +10,38 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalContext
 import android.content.Intent
+import android.graphics.BitmapFactory
 import com.example.GaoDe.ui.ride.RideChatActivity
 
 // 数据结构定义
 data class MessageInfo(
     val id: String,
-    val icon: ImageVector,
+    val icon: ImageVector?,
     val iconBackgroundColor: Color,
     val title: String,
     val subtitle: String,
-    val timestamp: String
+    val timestamp: String,
+    val avatarFileName: String? = null
+)
+
+// 联系人数据
+data class Contact(
+    val id: String,
+    val name: String,
+    val avatarFileName: String
 )
 
 // 列表项类型
@@ -42,6 +54,12 @@ sealed class MessageListItem {
 @Composable
 fun MessageScreen() {
     val context = LocalContext.current
+    val dataManager = remember { com.example.GaoDe.data.DataManager(context) }
+    
+    // 使用LaunchedEffect来定期刷新消息
+    LaunchedEffect(Unit) {
+        // 组件首次加载时获取最新消息
+    }
     
     // 打车会话点击处理
     val onRideChatClicked = { sessionId: String ->
@@ -50,8 +68,40 @@ fun MessageScreen() {
         }
         context.startActivity(intent)
     }
-    // 根据截图精确复刻的消息数据
+    // 联系人列表
+    val contacts = listOf(
+        Contact(id = "dad", name = "爸爸", avatarFileName = "friend_1.jpg"),
+        Contact(id = "mom", name = "妈妈", avatarFileName = "friend_2.jpg")
+    )
+    
+    // 动态生成联系人消息，包含最新分享的消息
+    val dadMessages = dataManager.getMessagesForContact("dad")
+    val momMessages = dataManager.getMessagesForContact("mom")
+    
     val messageItems = listOf(
+        MessageListItem.MessageItem(
+            MessageInfo(
+                id = "contact_dad",
+                icon = null,
+                iconBackgroundColor = Color.Transparent,
+                title = "爸爸",
+                subtitle = if (dadMessages.isNotEmpty()) "您分享了地点: ${dadMessages.first().message.substringBefore(" - ")}" else "点击查看聊天记录",
+                timestamp = "2025/10/07",
+                avatarFileName = "friend_1.jpg"
+            )
+        ),
+        MessageListItem.MessageItem(
+            MessageInfo(
+                id = "contact_mom",
+                icon = null,
+                iconBackgroundColor = Color.Transparent,
+                title = "妈妈",
+                subtitle = if (momMessages.isNotEmpty()) "您分享了地点: ${momMessages.first().message.substringBefore(" - ")}" else "点击查看聊天记录",
+                timestamp = "2025/10/07",
+                avatarFileName = "friend_2.jpg"
+            )
+        ),
+        MessageListItem.DateSeparator("系统消息"),
         MessageListItem.MessageItem(
             MessageInfo(
                 id = "msg_location_comment",
@@ -207,6 +257,8 @@ fun MessageRow(
     message: MessageInfo,
     onRideChatClicked: (String) -> Unit = {}
 ) {
+    val context = LocalContext.current
+    
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -219,20 +271,59 @@ fun MessageRow(
             },
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 左侧图标
-        Box(
-            modifier = Modifier
-                .size(48.dp)
-                .clip(CircleShape)
-                .background(message.iconBackgroundColor),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = message.icon,
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(24.dp)
-            )
+        // 左侧图标或头像
+        if (message.avatarFileName != null) {
+            // 显示联系人头像
+            val bitmap = remember(message.avatarFileName) {
+                try {
+                    val inputStream = context.assets.open("avatar/${message.avatarFileName}")
+                    BitmapFactory.decodeStream(inputStream)
+                } catch (e: Exception) {
+                    null
+                }
+            }
+            
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFFF5F5F5)),
+                contentAlignment = Alignment.Center
+            ) {
+                if (bitmap != null) {
+                    Image(
+                        bitmap = bitmap.asImageBitmap(),
+                        contentDescription = message.title,
+                        modifier = Modifier.size(48.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = null,
+                        tint = Color.Gray,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+        } else {
+            // 显示系统消息图标
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(message.iconBackgroundColor),
+                contentAlignment = Alignment.Center
+            ) {
+                message.icon?.let { icon ->
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
         }
         
         Spacer(modifier = Modifier.width(12.dp))

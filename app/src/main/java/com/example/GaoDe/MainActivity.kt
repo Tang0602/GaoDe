@@ -138,6 +138,7 @@ fun MainScreen() {
             }
             composable("${Screen.ShowPlaceDetails.route}/{placeId}") { backStackEntry ->
                 val placeId = backStackEntry.arguments?.getString("placeId") ?: ""
+                val context = LocalContext.current
                 ShowPlaceDetailsScreen(
                     placeId = placeId,
                     onBackClick = {
@@ -145,6 +146,12 @@ fun MainScreen() {
                     },
                     onRouteClick = { placeName ->
                         navController.navigate("${Screen.PlanRoute.route}/$placeName")
+                    },
+                    onShareClick = { contactId, message ->
+                        // 处理分享逻辑
+                        val dataManager = com.example.GaoDe.data.DataManager(context)
+                        val contactName = if (contactId == "dad") "爸爸" else "妈妈"
+                        dataManager.addSharedMessage(contactId, contactName, message)
                     }
                 )
             }
