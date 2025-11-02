@@ -1,0 +1,79 @@
+{
+  "clusters": {
+    "光谷区域": {
+      "center": {"latitude": 30.5184, "longitude": 114.4088},
+      "radius": "5km",
+      "places": ["place_006", "place_007", "place_009", "place_010", "place_011", "place_014", "place_015"],
+      "description": "武汉光谷高新技术开发区，科技企业聚集地"
+    },
+    "东湖风景区": {
+      "center": {"latitude": 30.5525, "longitude": 114.3715},
+      "radius": "3km", 
+      "places": ["place_012", "place_016", "place_018"],
+      "description": "武汉东湖风景名胜区，自然风光优美"
+    },
+    "武昌中心区": {
+      "center": {"latitude": 30.5442, "longitude": 114.2950},
+      "radius": "4km",
+      "places": ["place_017"],
+      "description": "武昌区中心地带，历史文化区域"
+    },
+    "汉口中心区": {
+      "center": {"latitude": 30.5881, "longitude": 114.2652},
+      "radius": "3km",
+      "places": ["place_008"],
+      "description": "汉口商业中心区，繁华商圈"
+    },
+    "火车站区域": {
+      "center": {"latitude": 30.5089, "longitude": 114.4267},
+      "radius": "2km",
+      "places": ["place_013"],
+      "description": "武汉火车站周边区域，交通枢纽"
+    },
+    "远郊区域": {
+      "center": {"latitude": 30.6089, "longitude": 114.1842},
+      "radius": "8km",
+      "places": ["place_019"],
+      "description": "武汉远郊区域，特色景点"
+    }
+  },
+  
+  "travel_routes": {
+    "光谷一日游": {
+      "places": ["place_007", "place_006", "place_015", "place_010"],
+      "duration": "8小时",
+      "theme": "美食+娱乐+住宿",
+      "description": "光谷区域精华一日游路线"
+    },
+    "东湖自然之旅": {
+      "places": ["place_016", "place_012", "place_018"],
+      "duration": "6小时", 
+      "theme": "自然风光+度假",
+      "description": "东湖风景区深度游"
+    },
+    "历史文化游": {
+      "places": ["place_017", "place_008"],
+      "duration": "4小时",
+      "theme": "历史文化+美食",
+      "description": "武汉历史文化景点游览"
+    }
+  },
+  
+  "category_distribution": {
+    "restaurants": {
+      "光谷区域": ["place_006", "place_007", "place_009"],
+      "汉口中心区": ["place_008"]
+    },
+    "hotels": {
+      "光谷区域": ["place_010", "place_011", "place_014"],
+      "东湖风景区": ["place_012"],
+      "火车站区域": ["place_013"]
+    },
+    "attractions": {
+      "光谷区域": ["place_015"],
+      "东湖风景区": ["place_016", "place_018"],
+      "武昌中心区": ["place_017"],
+      "远郊区域": ["place_019"]
+    }
+  }
+}
