@@ -78,9 +78,20 @@ fun ParentChatScreen(
                     id = sharedMsg.id,
                     content = sharedMsg.message,
                     timestamp = sharedMsg.timestamp,
-                    // 判断消息发送者：如果消息ID以"default_"开头，说明是预设消息（来自联系人）
-                    // 如果以"shared_"开头，说明是用户发送的消息
-                    isFromUser = sharedMsg.id.startsWith("shared_"),
+                    // 判断消息发送者：
+                    // 1. 如果消息ID以"shared_"开头，说明是用户发送的消息
+                    // 2. 如果消息ID以"msg_"开头，需要查看原始消息的发送者
+                    // 3. 其他情况（如"default_"开头）是联系人发送的消息
+                    isFromUser = when {
+                        sharedMsg.id.startsWith("shared_") -> true
+                        sharedMsg.id.startsWith("msg_") -> {
+                            // 从原始messages.json数据判断发送者
+                            val originalMessages = dataManager.getMessages()
+                            val originalMsg = originalMessages.find { it.id == sharedMsg.id }
+                            originalMsg?.senderId == "user_001"
+                        }
+                        else -> false  // default消息来自联系人
+                    },
                     messageType = if (sharedMsg.message.contains("位置:") || sharedMsg.message.contains("地点:")) 
                         ChatMessageType.LOCATION else ChatMessageType.TEXT
                 )

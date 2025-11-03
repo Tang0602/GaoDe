@@ -35,5 +35,96 @@
     "messageType": "LOCATION",
     "isRead": false,
     "attachmentUrl": "location://39.9042,116.3974"
+  },
+  {
+    "id": "msg_005",
+    "senderId": "dad",
+    "receiverId": "user_001",
+    "content": "儿子，今天路上堵不堵？我准备去你那里",
+    "timestamp": 1698826000000,
+    "messageType": "TEXT",
+    "isRead": true
+  },
+  {
+    "id": "msg_006",
+    "senderId": "user_001",
+    "receiverId": "dad",
+    "content": "爸，现在还好，不过建议你避开三环，走四环比较顺畅",
+    "timestamp": 1698826120000,
+    "messageType": "TEXT",
+    "isRead": true
+  },
+  {
+    "id": "msg_007",
+    "senderId": "dad",
+    "receiverId": "user_001",
+    "content": "好的，那我大概6点能到。晚饭你妈已经准备好了",
+    "timestamp": 1698826200000,
+    "messageType": "TEXT",
+    "isRead": true
+  },
+  {
+    "id": "msg_008",
+    "senderId": "mom",
+    "receiverId": "user_001",
+    "content": "宝贝，记得多吃点蔬菜，别总吃外卖",
+    "timestamp": 1698826300000,
+    "messageType": "TEXT",
+    "isRead": true
+  },
+  {
+    "id": "msg_009",
+    "senderId": "user_001",
+    "receiverId": "mom",
+    "content": "知道了妈，我会注意饮食的。你和爸身体都还好吧？",
+    "timestamp": 1698826420000,
+    "messageType": "TEXT",
+    "isRead": true
+  },
+  {
+    "id": "msg_010",
+    "senderId": "mom",
+    "receiverId": "user_001",
+    "content": "我们都很好，就是想你了。这个周末回家吃饭吧",
+    "timestamp": 1698826500000,
+    "messageType": "TEXT",
+    "isRead": false
+  },
+  {
+    "id": "msg_011",
+    "senderId": "dad",
+    "receiverId": "user_001",
+    "content": "我给你发个定位，这里新开了一家不错的餐厅",
+    "timestamp": 1698826600000,
+    "messageType": "LOCATION",
+    "isRead": false,
+    "attachmentUrl": "location://39.9156,116.3974"
+  },
+  {
+    "id": "msg_012",
+    "senderId": "user_001",
+    "receiverId": "dad",
+    "content": "好的爸，改天我们一起去试试",
+    "timestamp": 1698826720000,
+    "messageType": "TEXT",
+    "isRead": false
+  },
+  {
+    "id": "msg_013",
+    "senderId": "mom",
+    "receiverId": "user_001",
+    "content": "天气转凉了，记得多穿点衣服，别感冒了",
+    "timestamp": 1698826800000,
+    "messageType": "TEXT",
+    "isRead": false
+  },
+  {
+    "id": "msg_014",
+    "senderId": "user_001",
+    "receiverId": "mom",
+    "content": "好的妈，我会注意的。你们也要保重身体",
+    "timestamp": 1698826920000,
+    "messageType": "TEXT",
+    "isRead": false
   }
 ]
