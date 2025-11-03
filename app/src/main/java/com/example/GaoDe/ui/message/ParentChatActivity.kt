@@ -71,16 +71,20 @@ fun ParentChatScreen(
     // Load existing messages and convert to chat format
     LaunchedEffect(contactId) {
         val sharedMessages = dataManager.getMessagesForContact(contactId)
-        chatMessages = sharedMessages.map { sharedMsg ->
-            ChatMessage(
-                id = sharedMsg.id,
-                content = sharedMsg.message,
-                timestamp = sharedMsg.timestamp,
-                isFromUser = true,
-                messageType = if (sharedMsg.message.contains("位置:") || sharedMsg.message.contains("地点:")) 
-                    ChatMessageType.LOCATION else ChatMessageType.TEXT
-            )
-        }
+        chatMessages = sharedMessages
+            .sortedBy { it.timestamp } // 按时间排序，最新的在后面
+            .map { sharedMsg ->
+                ChatMessage(
+                    id = sharedMsg.id,
+                    content = sharedMsg.message,
+                    timestamp = sharedMsg.timestamp,
+                    // 判断消息发送者：如果消息ID以"default_"开头，说明是预设消息（来自联系人）
+                    // 如果以"shared_"开头，说明是用户发送的消息
+                    isFromUser = sharedMsg.id.startsWith("shared_"),
+                    messageType = if (sharedMsg.message.contains("位置:") || sharedMsg.message.contains("地点:")) 
+                        ChatMessageType.LOCATION else ChatMessageType.TEXT
+                )
+            }
     }
     
     // Load contact avatar
