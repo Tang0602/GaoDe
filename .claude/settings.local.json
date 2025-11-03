@@ -21,7 +21,9 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git filter-branch:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(.gradlew assembleDebug)",
+      "Bash(cmd:*)"
     ],
     "deny": []
   }

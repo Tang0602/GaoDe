@@ -267,6 +267,30 @@ fun MessageRow(
                 // 如果是打车会话消息，处理点击事件
                 if (message.id.startsWith("ride_")) {
                     onRideChatClicked(message.id)
+                } else if (message.id.startsWith("contact_")) {
+                    // 处理联系人点击事件
+                    val contactId = when (message.id) {
+                        "contact_dad" -> "dad"
+                        "contact_mom" -> "mom"
+                        else -> return@clickable
+                    }
+                    val contactName = when (contactId) {
+                        "dad" -> "爸爸"
+                        "mom" -> "妈妈"
+                        else -> return@clickable
+                    }
+                    val avatarFile = when (contactId) {
+                        "dad" -> "friend_1.jpg"
+                        "mom" -> "friend_2.jpg"
+                        else -> return@clickable
+                    }
+                    
+                    val intent = Intent(context, ParentChatActivity::class.java).apply {
+                        putExtra("CONTACT_ID", contactId)
+                        putExtra("CONTACT_NAME", contactName)
+                        putExtra("AVATAR_FILE", avatarFile)
+                    }
+                    context.startActivity(intent)
                 }
             },
         verticalAlignment = Alignment.CenterVertically
