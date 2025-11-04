@@ -5,9 +5,12 @@ import com.example.GaoDe.model.*
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
 
 class DataManager(private val context: Context) {
     private val gson = Gson()
+    private val prettyGson = com.google.gson.GsonBuilder().setPrettyPrinting().create()
     private val favoritesFile = File(context.filesDir, "favorites.json")
     private val sharedMessagesFile = File(context.filesDir, "shared_messages.json")
     
@@ -184,7 +187,8 @@ class DataManager(private val context: Context) {
         val userMessages = existingMessages.toMutableList()
         userMessages.add(0, newMessage)
         
-        val jsonString = gson.toJson(userMessages)
+        // 使用格式化的JSON保存
+        val jsonString = prettyGson.toJson(userMessages)
         sharedMessagesFile.writeText(jsonString)
         return true
     }
