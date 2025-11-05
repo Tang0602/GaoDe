@@ -70,7 +70,7 @@ def update_chat_history(action_type):
         return False
 
 def ChatWithMomCheck():
-    """Check if successfully viewing chat with mom"""
+    """Check if successfully entered mom's specific chat interface"""
     try:
         result = subprocess.run(['adb', 'exec-out', 'uiautomator', 'dump', '/dev/stdout'], 
                               capture_output=True, text=True, encoding='utf-8', errors='ignore')
@@ -81,33 +81,32 @@ def ChatWithMomCheck():
             if ui_dump is None:
                 ui_dump = ""
             
-            # Check for chat with mom UI elements
-            chat_indicators = [
-                '妈妈', '聊天记录', '对话', '消息',
-                '聊天', '妈妈的消息', '与妈妈聊天'
-            ]
+            # Must have "妈妈" in the interface AND chat interface elements
+            has_mom = '妈妈' in ui_dump
+            has_chat_interface = any(element in ui_dump for element in ['发送', '输入框', '对话框', '消息输入'])
             
-            found_indicators = [indicator for indicator in chat_indicators if indicator in ui_dump]
-            
-            if found_indicators:
+            if has_mom and has_chat_interface:
                 print(f"SUCCESS: Found UI elements")
-                if update_chat_history("View Chat with Mom"):
+                if update_chat_history("Enter Mom's Chat Interface"):
                     return True
                 else:
                     print("X Chat history update failed")
                     return False
             else:
-                print("X Chat with mom elements not found in UI")
+                if not has_mom:
+                    print("X Mom identifier not found in UI")
+                else:
+                    print("X Chat interface elements not found in UI")
                 return False
         else:
             print(f"UI detection failed: {result.stderr}")
             return False
             
     except Exception as e:
-        print(f"Chat detection failed: {e}")
+        print(f"Chat interface detection failed: {e}")
         return False
 
 if __name__ == "__main__":
-    print("Starting detection: View Chat with Mom")
+    print("Starting detection: Enter Mom's Chat Interface")
     result = ChatWithMomCheck()
     print(f"Detection result: {'PASS' if result else 'FAIL'}")
