@@ -71,7 +71,7 @@ def update_skin_history(action_type):
         return False
 
 def SkinPurchaseCheck():
-    """Check if Melody skin purchase and change is successful"""
+    """Check if Melody skin was purchased AND applied successfully"""
     try:
         result = subprocess.run(['adb', 'exec-out', 'uiautomator', 'dump', '/dev/stdout'], 
                               capture_output=True, text=True, encoding='utf-8', errors='ignore')
@@ -82,15 +82,11 @@ def SkinPurchaseCheck():
             if ui_dump is None:
                 ui_dump = ""
             
-            # Check for skin purchase and change elements
-            skin_indicators = [
-                '美乐蒂', '皮肤', '购买', '更换',
-                '我的皮肤', '主题', '卡通', '应用皮肤'
-            ]
+            # Must be in skin settings AND Melody skin is currently active/applied
+            in_skin_settings = '我的皮肤' in ui_dump or '皮肤设置' in ui_dump
+            has_melody_active = ('美乐蒂' in ui_dump and '使用中' in ui_dump) or '美乐蒂皮肤已应用' in ui_dump
             
-            found_indicators = [indicator for indicator in skin_indicators if indicator in ui_dump]
-            
-            if found_indicators:
+            if in_skin_settings and has_melody_active:
                 print(f"SUCCESS: Found UI elements")
                 if update_skin_history("Purchase and Apply Melody Skin"):
                     return True
@@ -98,7 +94,10 @@ def SkinPurchaseCheck():
                     print("X Skin history update failed")
                     return False
             else:
-                print("X Skin purchase elements not found in UI")
+                if not in_skin_settings:
+                    print("X Not in skin settings interface")
+                else:
+                    print("X Melody skin not currently active/applied")
                 return False
         else:
             print(f"UI detection failed: {result.stderr}")
