@@ -27,7 +27,10 @@
       "Bash(adb exec-out run-as:*)",
       "Bash(del *.json)",
       "Bash(python:*)",
-      "Bash(adb push:*)"
+      "Bash(adb push:*)",
+      "Bash(move eval_4_fixed.py eval_4.py)",
+      "Bash(mv:*)",
+      "Bash(adb exec-out:*)"
     ],
     "deny": []
   }
