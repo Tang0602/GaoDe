@@ -71,7 +71,7 @@ def update_navigation_history(navigation_action):
         return False
 
 def NavigationToNanhuCheck():
-    """Check if navigation to Nanhu Huating Park with optimal time route is successful"""
+    """Check if clicked on public transport 12-minute optimal time route"""
     try:
         result = subprocess.run(['adb', 'exec-out', 'uiautomator', 'dump', '/dev/stdout'], 
                               capture_output=True, text=True, encoding='utf-8', errors='ignore')
@@ -82,15 +82,12 @@ def NavigationToNanhuCheck():
             if ui_dump is None:
                 ui_dump = ""
             
-            # Check for navigation and route planning UI elements
-            navigation_indicators = [
-                '南湖花亭公园', '最优时间', '路线规划', '导航',
-                '时间最短', '路线方案', '开始导航', '公园'
-            ]
+            # Check for destination, public transport, and time elements (more flexible matching)
+            has_destination = any(dest in ui_dump for dest in ['南湖花亭公园', '南湖', '花亭公园'])
+            has_public_transport = any(transport in ui_dump for transport in ['公共交通', '公交', '地铁'])
+            has_time_route = any(time in ui_dump for time in ['12分钟', '12 分钟', '12min', '最优时间'])
             
-            found_indicators = [indicator for indicator in navigation_indicators if indicator in ui_dump]
-            
-            if found_indicators:
+            if has_destination and has_public_transport and has_time_route:
                 print(f"SUCCESS: Found UI elements")
                 if update_navigation_history("Navigate to Nanhu Huating Park - Optimal Time Route"):
                     return True
@@ -98,7 +95,12 @@ def NavigationToNanhuCheck():
                     print("X Navigation history update failed")
                     return False
             else:
-                print("X Navigation elements not found in UI")
+                if not has_destination:
+                    print("X Destination not found in UI")
+                elif not has_public_transport:
+                    print("X Public transport option not found in UI")
+                else:
+                    print("X Optimal time route not found in UI")
                 return False
         else:
             print(f"UI detection failed: {result.stderr}")
