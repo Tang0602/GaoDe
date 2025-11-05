@@ -82,15 +82,12 @@ def RideToHaichangCheck():
             if ui_dump is None:
                 ui_dump = ""
             
-            # Check for ride completion and messaging UI elements
-            ride_indicators = [
-                '武汉海昌极地公园', '我到了', '发送消息', '司机',
-                '打车', '到达', '极地公园', '海昌', '聊天'
-            ]
+            # Check if we're in chat interface with driver after completing ride
+            in_driver_chat = '田师傅' in ui_dump and any(chat_elem in ui_dump for chat_elem in ['聊天', '发送', '消息'])
+            has_arrival_message = '我到了' in ui_dump
             
-            found_indicators = [indicator for indicator in ride_indicators if indicator in ui_dump]
-            
-            if found_indicators:
+            # Must be in chat with specific driver and have sent arrival message
+            if in_driver_chat and has_arrival_message:
                 print(f"SUCCESS: Found UI elements")
                 if update_ride_history("Ride to Haichang Polar Park and Message Driver"):
                     return True
@@ -98,7 +95,10 @@ def RideToHaichangCheck():
                     print("X Ride history update failed")
                     return False
             else:
-                print("X Ride completion elements not found in UI")
+                if not in_driver_chat:
+                    print("X Not in chat interface with driver Tian Shifu")
+                else:
+                    print("X Arrival message not found")
                 return False
         else:
             print(f"UI detection failed: {result.stderr}")
