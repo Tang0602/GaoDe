@@ -71,7 +71,7 @@ def update_share_history(action_type):
         return False
 
 def HotelShareCheck():
-    """Check if hotel location sharing to mom is successful"""
+    """Check if hotel location was shared to mom (click selection completes share)"""
     try:
         result = subprocess.run(['adb', 'exec-out', 'uiautomator', 'dump', '/dev/stdout'], 
                               capture_output=True, text=True, encoding='utf-8', errors='ignore')
@@ -82,15 +82,11 @@ def HotelShareCheck():
             if ui_dump is None:
                 ui_dump = ""
             
-            # Check for hotel sharing elements
-            share_indicators = [
-                '如家酒店', '分享', '妈妈', '位置',
-                '分享位置', '发送', '分享给', '位置信息'
-            ]
+            # Must have both hotel info AND mom selected (clicking mom completes the share)
+            has_hotel = '如家酒店' in ui_dump
+            has_mom_selected = '妈妈' in ui_dump
             
-            found_indicators = [indicator for indicator in share_indicators if indicator in ui_dump]
-            
-            if found_indicators:
+            if has_hotel and has_mom_selected:
                 print(f"SUCCESS: Found UI elements")
                 if update_share_history("Share Rujia Hotel Location to Mom"):
                     return True
@@ -98,7 +94,10 @@ def HotelShareCheck():
                     print("X Hotel share history update failed")
                     return False
             else:
-                print("X Hotel sharing elements not found in UI")
+                if not has_hotel:
+                    print("X Hotel information not found in UI")
+                else:
+                    print("X Mom selection not found in UI")
                 return False
         else:
             print(f"UI detection failed: {result.stderr}")
