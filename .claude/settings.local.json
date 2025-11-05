@@ -24,7 +24,10 @@
       "Bash(git push:*)",
       "Bash(.gradlew assembleDebug)",
       "Bash(cmd:*)",
-      "Bash(adb exec-out run-as:*)"
+      "Bash(adb exec-out run-as:*)",
+      "Bash(del *.json)",
+      "Bash(python:*)",
+      "Bash(adb push:*)"
     ],
     "deny": []
   }
