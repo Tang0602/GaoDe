@@ -1,77 +1,114 @@
 import subprocess
 import json
 import os
+import base64
 from datetime import datetime
 
-def update_huanghelou_route_history(action_type, destination):
-    """更新去黄鹤楼路线规划历史记录"""
+def update_ride_history(action_type):
+    """Update ride to Wuhan Happy Valley history to device storage"""
     try:
         timestamp = int(datetime.now().timestamp() * 1000)
-        route_record = {
-            "id": f"route_{timestamp}",
+        ride_record = {
+            "id": f"happy_valley_ride_{timestamp}",
             "action": action_type,
-            "destination": destination,
+            "destination": "武汉欢乐谷",
+            "rideType": "经济型打车",
             "timestamp": timestamp,
             "formattedTime": datetime.fromtimestamp(timestamp / 1000).strftime("%Y-%m-%d %H:%M:%S"),
-            "routeOptions": 4,
-            "transportModes": ["公交", "打车+地铁", "轨道交通", "打车"],
+            "page": "Ride to Happy Valley",
             "success": True
         }
         
-        history_file = os.path.join(os.path.dirname(__file__), '13_黄鹤楼路线历史.json')
+        device_file_path = 'files/13_happy_valley_ride_history.json'
         history_records = []
         
-        if os.path.exists(history_file):
-            try:
-                with open(history_file, 'r', encoding='utf-8') as f:
-                    history_records = json.load(f)
-            except json.JSONDecodeError:
-                history_records = []
+        try:
+            result = subprocess.run(['adb', 'exec-out', 'run-as', 'com.example.GaoDe', 'cat', device_file_path],
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8', errors='ignore')
+            if result.returncode == 0 and result.stdout and result.stdout.strip():
+                try:
+                    history_records = json.loads(result.stdout)
+                except json.JSONDecodeError:
+                    history_records = []
+        except Exception:
+            history_records = []
         
-        history_records.append(route_record)
+        history_records.append(ride_record)
         
-        with open(history_file, 'w', encoding='utf-8') as f:
+        temp_file = os.path.join(os.path.dirname(__file__), 'temp_happy_valley13.json')
+        with open(temp_file, 'w', encoding='utf-8') as f:
             json.dump(history_records, f, ensure_ascii=False, indent=2)
         
-        print(f"✅ 黄鹤楼路线历史记录已更新: {action_type} - {destination}")
-        return True
+        with open(temp_file, 'r', encoding='utf-8') as f:
+            json_content = f.read()
+        
+        json_bytes = json_content.encode('utf-8')
+        json_b64 = base64.b64encode(json_bytes).decode('ascii')
+        
+        create_result = subprocess.run(['adb', 'exec-out', 'run-as', 'com.example.GaoDe', 
+                                      'sh', '-c', f'echo "{json_b64}" | base64 -d > {device_file_path}'],
+                                     capture_output=True, text=True)
+        
+        os.remove(temp_file)
+        
+        if create_result.returncode == 0:
+            verify_result = subprocess.run(['adb', 'exec-out', 'run-as', 'com.example.GaoDe', 
+                                          'test', '-f', device_file_path],
+                                         capture_output=True, text=True)
+            
+            if verify_result.returncode == 0:
+                print(f"Happy Valley ride history updated to device storage: {action_type}")
+                return True
+            else:
+                print("File creation verification failed")
+                return False
+        else:
+            print(f"Failed to create file: {create_result.stderr}")
+            return False
         
     except Exception as e:
-        print(f"更新黄鹤楼路线历史失败: {e}")
+        print(f"Failed to update Happy Valley ride history: {e}")
         return False
 
-def HuanghelouRouteCheck():
-    """检测是否成功规划去黄鹤楼的路线"""
+def HappyValleyRideCheck():
+    """Check if ride to Happy Valley with economy car is successful"""
     try:
-        result = subprocess.run(['adb', 'exec-out', 'uiautomator', 'dump', '/dev/stdout'], capture_output=True, text=True, encoding='utf-8', errors='ignore')
+        result = subprocess.run(['adb', 'exec-out', 'uiautomator', 'dump', '/dev/stdout'], 
+                              capture_output=True, text=True, encoding='utf-8', errors='ignore')
         
         if result.returncode == 0:
             ui_dump = result.stdout
             
-            route_indicators = [
-                '黄鹤楼', '路线规划', '打车', '公交', '地铁', '步行',
-                '5号线', '11号线', '804路', '一口价', '换乘',
-                '约', '分钟', '元起', '站'
+            if ui_dump is None:
+                ui_dump = ""
+            
+            # Check for Happy Valley ride with economy car elements
+            ride_indicators = [
+                '武汉欢乐谷', '经济型', '打车', '叫车',
+                '欢乐谷', '经济', '确认用车', '快车'
             ]
             
-            found_indicators = [indicator for indicator in route_indicators if indicator in ui_dump]
+            found_indicators = [indicator for indicator in ride_indicators if indicator in ui_dump]
             
             if found_indicators:
-                print(f"✓ 在UI中找到黄鹤楼路线规划元素: {', '.join(found_indicators)}")
-                update_huanghelou_route_history("规划去黄鹤楼的路线", "黄鹤楼")
-                return True
+                print(f"SUCCESS: Found UI elements")
+                if update_ride_history("Ride to Happy Valley with Economy Car"):
+                    return True
+                else:
+                    print("X Happy Valley ride history update failed")
+                    return False
             else:
-                print("✗ 未在UI中找到黄鹤楼路线规划元素")
+                print("X Happy Valley economy ride elements not found in UI")
                 return False
         else:
-            print(f"UI检测失败: {result.stderr}")
+            print(f"UI detection failed: {result.stderr}")
             return False
             
     except Exception as e:
-        print(f"黄鹤楼路线规划检测失败: {e}")
+        print(f"Happy Valley ride detection failed: {e}")
         return False
 
 if __name__ == "__main__":
-    print("开始检测：规划去黄鹤楼的路线")
-    result = HuanghelouRouteCheck()
-    print(f"检测结果: {'通过' if result else '失败'}")
+    print("Starting detection: Ride to Happy Valley with Economy Car")
+    result = HappyValleyRideCheck()
+    print(f"Detection result: {'PASS' if result else 'FAIL'}")

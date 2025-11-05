@@ -1,75 +1,114 @@
 import subprocess
 import json
 import os
+import base64
 from datetime import datetime
 
-def update_favorite_history(action_type, place_name):
-    """更新收藏餐厅历史记录"""
+def update_navigation_history(action_type):
+    """Update navigation to Muyu BBQ with public transport history to device storage"""
     try:
         timestamp = int(datetime.now().timestamp() * 1000)
-        favorite_record = {
-            "id": f"favorite_{timestamp}",
+        navigation_record = {
+            "id": f"muyu_nav_{timestamp}",
             "action": action_type,
-            "placeName": place_name,
+            "destination": "木屋烧烤（光谷世界城店）",
+            "transportMode": "公共交通",
             "timestamp": timestamp,
             "formattedTime": datetime.fromtimestamp(timestamp / 1000).strftime("%Y-%m-%d %H:%M:%S"),
-            "favoriteStatus": "已收藏",
+            "page": "Public Transport Navigation",
             "success": True
         }
         
-        history_file = os.path.join(os.path.dirname(__file__), '15_收藏餐厅历史.json')
+        device_file_path = 'files/15_muyu_navigation_history.json'
         history_records = []
         
-        if os.path.exists(history_file):
-            try:
-                with open(history_file, 'r', encoding='utf-8') as f:
-                    history_records = json.load(f)
-            except json.JSONDecodeError:
-                history_records = []
+        try:
+            result = subprocess.run(['adb', 'exec-out', 'run-as', 'com.example.GaoDe', 'cat', device_file_path],
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8', errors='ignore')
+            if result.returncode == 0 and result.stdout and result.stdout.strip():
+                try:
+                    history_records = json.loads(result.stdout)
+                except json.JSONDecodeError:
+                    history_records = []
+        except Exception:
+            history_records = []
         
-        history_records.append(favorite_record)
+        history_records.append(navigation_record)
         
-        with open(history_file, 'w', encoding='utf-8') as f:
+        temp_file = os.path.join(os.path.dirname(__file__), 'temp_muyu_nav15.json')
+        with open(temp_file, 'w', encoding='utf-8') as f:
             json.dump(history_records, f, ensure_ascii=False, indent=2)
         
-        print(f"✅ 收藏餐厅历史记录已更新: {action_type}")
-        return True
+        with open(temp_file, 'r', encoding='utf-8') as f:
+            json_content = f.read()
+        
+        json_bytes = json_content.encode('utf-8')
+        json_b64 = base64.b64encode(json_bytes).decode('ascii')
+        
+        create_result = subprocess.run(['adb', 'exec-out', 'run-as', 'com.example.GaoDe', 
+                                      'sh', '-c', f'echo "{json_b64}" | base64 -d > {device_file_path}'],
+                                     capture_output=True, text=True)
+        
+        os.remove(temp_file)
+        
+        if create_result.returncode == 0:
+            verify_result = subprocess.run(['adb', 'exec-out', 'run-as', 'com.example.GaoDe', 
+                                          'test', '-f', device_file_path],
+                                         capture_output=True, text=True)
+            
+            if verify_result.returncode == 0:
+                print(f"Muyu navigation history updated to device storage: {action_type}")
+                return True
+            else:
+                print("File creation verification failed")
+                return False
+        else:
+            print(f"Failed to create file: {create_result.stderr}")
+            return False
         
     except Exception as e:
-        print(f"更新收藏餐厅历史失败: {e}")
+        print(f"Failed to update Muyu navigation history: {e}")
         return False
 
-def FavoriteRestaurantCheck():
-    """检测是否成功收藏一个餐厅"""
+def MuyuNavigationCheck():
+    """Check if navigation to Muyu BBQ with public transport is successful"""
     try:
-        result = subprocess.run(['adb', 'exec-out', 'uiautomator', 'dump', '/dev/stdout'], capture_output=True, text=True, encoding='utf-8', errors='ignore')
+        result = subprocess.run(['adb', 'exec-out', 'uiautomator', 'dump', '/dev/stdout'], 
+                              capture_output=True, text=True, encoding='utf-8', errors='ignore')
         
         if result.returncode == 0:
             ui_dump = result.stdout
             
-            favorite_indicators = [
-                '❤️', '收藏', '已收藏', '取消收藏', '我的收藏',
-                '收藏夹', '222', '223', '224'  # 收藏数量变化
+            if ui_dump is None:
+                ui_dump = ""
+            
+            # Check for Muyu BBQ public transport navigation elements
+            navigation_indicators = [
+                '木屋烧烤', '光谷世界城店', '公共交通', '地铁',
+                '公交', '导航', '路线规划', '公共出行'
             ]
             
-            found_indicators = [indicator for indicator in favorite_indicators if indicator in ui_dump]
+            found_indicators = [indicator for indicator in navigation_indicators if indicator in ui_dump]
             
             if found_indicators:
-                print(f"✓ 在UI中找到收藏餐厅元素: {', '.join(found_indicators)}")
-                update_favorite_history("收藏一个餐厅", "餐厅")
-                return True
+                print(f"SUCCESS: Found UI elements")
+                if update_navigation_history("Navigate to Muyu BBQ via Public Transport"):
+                    return True
+                else:
+                    print("X Muyu navigation history update failed")
+                    return False
             else:
-                print("✗ 未在UI中找到收藏餐厅元素")
+                print("X Muyu public transport navigation elements not found in UI")
                 return False
         else:
-            print(f"UI检测失败: {result.stderr}")
+            print(f"UI detection failed: {result.stderr}")
             return False
             
     except Exception as e:
-        print(f"收藏餐厅检测失败: {e}")
+        print(f"Muyu navigation detection failed: {e}")
         return False
 
 if __name__ == "__main__":
-    print("开始检测：收藏一个餐厅")
-    result = FavoriteRestaurantCheck()
-    print(f"检测结果: {'通过' if result else '失败'}")
+    print("Starting detection: Navigate to Muyu BBQ via Public Transport")
+    result = MuyuNavigationCheck()
+    print(f"Detection result: {'PASS' if result else 'FAIL'}")

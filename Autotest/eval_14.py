@@ -1,75 +1,114 @@
 import subprocess
 import json
 import os
+import base64
 from datetime import datetime
 
-def update_hotel_booking_history(action_type, hotel_name):
-    """更新汉庭酒店预订历史记录"""
+def update_share_history(action_type):
+    """Update hotel location sharing history to device storage"""
     try:
         timestamp = int(datetime.now().timestamp() * 1000)
-        booking_record = {
-            "id": f"hotel_booking_{timestamp}",
+        share_record = {
+            "id": f"share_{timestamp}",
             "action": action_type,
-            "hotelName": hotel_name,
+            "hotelName": "如家酒店",
+            "sharedTo": "妈妈",
             "timestamp": timestamp,
             "formattedTime": datetime.fromtimestamp(timestamp / 1000).strftime("%Y-%m-%d %H:%M:%S"),
-            "bookingStatus": "支付成功",
+            "page": "Share Hotel Location",
             "success": True
         }
         
-        history_file = os.path.join(os.path.dirname(__file__), '14_汉庭酒店预订历史.json')
+        device_file_path = 'files/14_hotel_share_history.json'
         history_records = []
         
-        if os.path.exists(history_file):
-            try:
-                with open(history_file, 'r', encoding='utf-8') as f:
-                    history_records = json.load(f)
-            except json.JSONDecodeError:
-                history_records = []
+        try:
+            result = subprocess.run(['adb', 'exec-out', 'run-as', 'com.example.GaoDe', 'cat', device_file_path],
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8', errors='ignore')
+            if result.returncode == 0 and result.stdout and result.stdout.strip():
+                try:
+                    history_records = json.loads(result.stdout)
+                except json.JSONDecodeError:
+                    history_records = []
+        except Exception:
+            history_records = []
         
-        history_records.append(booking_record)
+        history_records.append(share_record)
         
-        with open(history_file, 'w', encoding='utf-8') as f:
+        temp_file = os.path.join(os.path.dirname(__file__), 'temp_hotel_share14.json')
+        with open(temp_file, 'w', encoding='utf-8') as f:
             json.dump(history_records, f, ensure_ascii=False, indent=2)
         
-        print(f"✅ 汉庭酒店预订历史记录已更新: {action_type}")
-        return True
+        with open(temp_file, 'r', encoding='utf-8') as f:
+            json_content = f.read()
+        
+        json_bytes = json_content.encode('utf-8')
+        json_b64 = base64.b64encode(json_bytes).decode('ascii')
+        
+        create_result = subprocess.run(['adb', 'exec-out', 'run-as', 'com.example.GaoDe', 
+                                      'sh', '-c', f'echo "{json_b64}" | base64 -d > {device_file_path}'],
+                                     capture_output=True, text=True)
+        
+        os.remove(temp_file)
+        
+        if create_result.returncode == 0:
+            verify_result = subprocess.run(['adb', 'exec-out', 'run-as', 'com.example.GaoDe', 
+                                          'test', '-f', device_file_path],
+                                         capture_output=True, text=True)
+            
+            if verify_result.returncode == 0:
+                print(f"Hotel share history updated to device storage: {action_type}")
+                return True
+            else:
+                print("File creation verification failed")
+                return False
+        else:
+            print(f"Failed to create file: {create_result.stderr}")
+            return False
         
     except Exception as e:
-        print(f"更新汉庭酒店预订历史失败: {e}")
+        print(f"Failed to update hotel share history: {e}")
         return False
 
-def HantingHotelBookingCheck():
-    """检测是否成功预订汉庭酒店"""
+def HotelShareCheck():
+    """Check if hotel location sharing to mom is successful"""
     try:
-        result = subprocess.run(['adb', 'exec-out', 'uiautomator', 'dump', '/dev/stdout'], capture_output=True, text=True, encoding='utf-8', errors='ignore')
+        result = subprocess.run(['adb', 'exec-out', 'uiautomator', 'dump', '/dev/stdout'], 
+                              capture_output=True, text=True, encoding='utf-8', errors='ignore')
         
         if result.returncode == 0:
             ui_dump = result.stdout
             
-            booking_indicators = [
-                '汉庭酒店', '订购', '支付成功', '预订成功', '确认',
-                '经济型', '近地铁', '24小时前台', '免费WIFI'
+            if ui_dump is None:
+                ui_dump = ""
+            
+            # Check for hotel sharing elements
+            share_indicators = [
+                '如家酒店', '分享', '妈妈', '位置',
+                '分享位置', '发送', '分享给', '位置信息'
             ]
             
-            found_indicators = [indicator for indicator in booking_indicators if indicator in ui_dump]
+            found_indicators = [indicator for indicator in share_indicators if indicator in ui_dump]
             
             if found_indicators:
-                print(f"✓ 在UI中找到汉庭酒店预订元素: {', '.join(found_indicators)}")
-                update_hotel_booking_history("预订汉庭酒店", "汉庭酒店")
-                return True
+                print(f"SUCCESS: Found UI elements")
+                if update_share_history("Share Rujia Hotel Location to Mom"):
+                    return True
+                else:
+                    print("X Hotel share history update failed")
+                    return False
             else:
-                print("✗ 未在UI中找到汉庭酒店预订元素")
+                print("X Hotel sharing elements not found in UI")
                 return False
         else:
-            print(f"UI检测失败: {result.stderr}")
+            print(f"UI detection failed: {result.stderr}")
             return False
             
     except Exception as e:
-        print(f"汉庭酒店预订检测失败: {e}")
+        print(f"Hotel sharing detection failed: {e}")
         return False
 
 if __name__ == "__main__":
-    print("开始检测：预订汉庭酒店")
-    result = HantingHotelBookingCheck()
-    print(f"检测结果: {'通过' if result else '失败'}")
+    print("Starting detection: Share Rujia Hotel Location to Mom")
+    result = HotelShareCheck()
+    print(f"Detection result: {'PASS' if result else 'FAIL'}")
