@@ -1,77 +1,113 @@
 import subprocess
 import json
 import os
+import base64
 from datetime import datetime
 
-def update_profile_history(action_type):
-    """更新个人中心访问历史记录"""
+def update_chat_history(action_type):
+    """Update chat history to device storage"""
     try:
         timestamp = int(datetime.now().timestamp() * 1000)
-        profile_record = {
-            "id": f"profile_{timestamp}",
+        chat_record = {
+            "id": f"chat_{timestamp}",
             "action": action_type,
+            "contact": "妈妈",
             "timestamp": timestamp,
             "formattedTime": datetime.fromtimestamp(timestamp / 1000).strftime("%Y-%m-%d %H:%M:%S"),
-            "page": "个人中心",
+            "page": "Chat with Mom",
             "success": True
         }
         
-        history_file = os.path.join(os.path.dirname(__file__), '6_个人中心历史.json')
+        device_file_path = 'files/6_chat_history.json'
         history_records = []
         
-        if os.path.exists(history_file):
-            try:
-                with open(history_file, 'r', encoding='utf-8') as f:
-                    history_records = json.load(f)
-            except json.JSONDecodeError:
-                history_records = []
+        try:
+            result = subprocess.run(['adb', 'exec-out', 'run-as', 'com.example.GaoDe', 'cat', device_file_path],
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8', errors='ignore')
+            if result.returncode == 0 and result.stdout and result.stdout.strip():
+                try:
+                    history_records = json.loads(result.stdout)
+                except json.JSONDecodeError:
+                    history_records = []
+        except Exception:
+            history_records = []
         
-        history_records.append(profile_record)
+        history_records.append(chat_record)
         
-        with open(history_file, 'w', encoding='utf-8') as f:
+        temp_file = os.path.join(os.path.dirname(__file__), 'temp_chat6.json')
+        with open(temp_file, 'w', encoding='utf-8') as f:
             json.dump(history_records, f, ensure_ascii=False, indent=2)
         
-        print(f"✅ 个人中心历史记录已更新: {action_type}")
-        return True
+        with open(temp_file, 'r', encoding='utf-8') as f:
+            json_content = f.read()
+        
+        json_bytes = json_content.encode('utf-8')
+        json_b64 = base64.b64encode(json_bytes).decode('ascii')
+        
+        create_result = subprocess.run(['adb', 'exec-out', 'run-as', 'com.example.GaoDe', 
+                                      'sh', '-c', f'echo "{json_b64}" | base64 -d > {device_file_path}'],
+                                     capture_output=True, text=True)
+        
+        os.remove(temp_file)
+        
+        if create_result.returncode == 0:
+            verify_result = subprocess.run(['adb', 'exec-out', 'run-as', 'com.example.GaoDe', 
+                                          'test', '-f', device_file_path],
+                                         capture_output=True, text=True)
+            
+            if verify_result.returncode == 0:
+                print(f"Chat history updated to device storage: {action_type}")
+                return True
+            else:
+                print("File creation verification failed")
+                return False
+        else:
+            print(f"Failed to create file: {create_result.stderr}")
+            return False
         
     except Exception as e:
-        print(f"更新个人中心历史失败: {e}")
+        print(f"Failed to update chat history: {e}")
         return False
 
-def ProfilePageCheck():
-    """检测是否成功查看个人中心"""
+def ChatWithMomCheck():
+    """Check if successfully viewing chat with mom"""
     try:
-        # 检查UI中是否存在个人中心页面元素
         result = subprocess.run(['adb', 'exec-out', 'uiautomator', 'dump', '/dev/stdout'], 
-                              capture_output=True, text=True)
+                              capture_output=True, text=True, encoding='utf-8', errors='ignore')
         
         if result.returncode == 0:
             ui_dump = result.stdout
             
-            # 检查个人中心页面特有的UI元素
-            profile_indicators = [
-                '语音包', '车标', '皮肤', '全部订单', '退款', '取消',
-                '待评价', '收藏夹', '语音包', '添加爱车', '点这里'
+            if ui_dump is None:
+                ui_dump = ""
+            
+            # Check for chat with mom UI elements
+            chat_indicators = [
+                '妈妈', '聊天记录', '对话', '消息',
+                '聊天', '妈妈的消息', '与妈妈聊天'
             ]
             
-            found_indicators = [indicator for indicator in profile_indicators if indicator in ui_dump]
+            found_indicators = [indicator for indicator in chat_indicators if indicator in ui_dump]
             
             if found_indicators:
-                print(f"✓ 在UI中找到个人中心元素: {', '.join(found_indicators)}")
-                update_profile_history("查看个人中心")
-                return True
+                print(f"SUCCESS: Found UI elements")
+                if update_chat_history("View Chat with Mom"):
+                    return True
+                else:
+                    print("X Chat history update failed")
+                    return False
             else:
-                print("✗ 未在UI中找到个人中心元素")
+                print("X Chat with mom elements not found in UI")
                 return False
         else:
-            print(f"UI检测失败: {result.stderr}")
+            print(f"UI detection failed: {result.stderr}")
             return False
             
     except Exception as e:
-        print(f"个人中心检测失败: {e}")
+        print(f"Chat detection failed: {e}")
         return False
 
 if __name__ == "__main__":
-    print("开始检测：查看个人中心")
-    result = ProfilePageCheck()
-    print(f"检测结果: {'通过' if result else '失败'}")
+    print("Starting detection: View Chat with Mom")
+    result = ChatWithMomCheck()
+    print(f"Detection result: {'PASS' if result else 'FAIL'}")

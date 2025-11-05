@@ -43,8 +43,7 @@ def update_huanghelou_route_history(action_type, destination):
 def HuanghelouRouteCheck():
     """检测是否成功规划去黄鹤楼的路线"""
     try:
-        result = subprocess.run(['adb', 'exec-out', 'uiautomator', 'dump', '/dev/stdout'], 
-                              capture_output=True, text=True)
+        result = subprocess.run(['adb', 'exec-out', 'uiautomator', 'dump', '/dev/stdout'], capture_output=True, text=True, encoding='utf-8', errors='ignore')
         
         if result.returncode == 0:
             ui_dump = result.stdout

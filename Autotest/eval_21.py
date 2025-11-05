@@ -4,20 +4,21 @@ import os
 import base64
 from datetime import datetime
 
-def update_profile_history(action_type):
-    """Update profile center history to device storage"""
+def update_review_analysis_history(analysis_action):
+    """Update review analysis history to device storage"""
     try:
         timestamp = int(datetime.now().timestamp() * 1000)
-        profile_record = {
-            "id": f"profile_{timestamp}",
-            "action": action_type,
+        analysis_record = {
+            "id": f"review_{timestamp}",
+            "action": analysis_action,
+            "analysisType": "评论分析选择最佳景点",
             "timestamp": timestamp,
             "formattedTime": datetime.fromtimestamp(timestamp / 1000).strftime("%Y-%m-%d %H:%M:%S"),
-            "page": "Profile Center",
+            "page": "Review Analysis",
             "success": True
         }
         
-        device_file_path = 'files/5_profile_history.json'
+        device_file_path = 'files/21_review_analysis_history.json'
         history_records = []
         
         try:
@@ -31,9 +32,9 @@ def update_profile_history(action_type):
         except Exception:
             history_records = []
         
-        history_records.append(profile_record)
+        history_records.append(analysis_record)
         
-        temp_file = os.path.join(os.path.dirname(__file__), 'temp_profile5.json')
+        temp_file = os.path.join(os.path.dirname(__file__), 'temp_review21.json')
         with open(temp_file, 'w', encoding='utf-8') as f:
             json.dump(history_records, f, ensure_ascii=False, indent=2)
         
@@ -55,7 +56,7 @@ def update_profile_history(action_type):
                                          capture_output=True, text=True)
             
             if verify_result.returncode == 0:
-                print(f"Profile history updated to device storage: {action_type}")
+                print(f"Review analysis history updated to device storage: {analysis_action}")
                 return True
             else:
                 print("File creation verification failed")
@@ -65,11 +66,11 @@ def update_profile_history(action_type):
             return False
         
     except Exception as e:
-        print(f"Failed to update profile history: {e}")
+        print(f"Failed to update review analysis history: {e}")
         return False
 
-def ProfileCenterCheck():
-    """Check if successfully viewing profile center"""
+def ReviewAnalysisCheck():
+    """Check if review analysis for best attraction selection is successful"""
     try:
         result = subprocess.run(['adb', 'exec-out', 'uiautomator', 'dump', '/dev/stdout'], 
                               capture_output=True, text=True, encoding='utf-8', errors='ignore')
@@ -80,33 +81,33 @@ def ProfileCenterCheck():
             if ui_dump is None:
                 ui_dump = ""
             
-            # Check for profile center UI elements
-            profile_indicators = [
-                '个人中心', '我的', '个人信息', '设置',
-                '账号', '用户', '头像', '个人'
+            # Check for review analysis and attraction selection UI elements
+            analysis_indicators = [
+                '评论', '分析', '最佳景点', '评分', '推荐',
+                '景点', '选择', '评价', '星级', '口碑'
             ]
             
-            found_indicators = [indicator for indicator in profile_indicators if indicator in ui_dump]
+            found_indicators = [indicator for indicator in analysis_indicators if indicator in ui_dump]
             
             if found_indicators:
                 print(f"SUCCESS: Found UI elements")
-                if update_profile_history("View Profile Center"):
+                if update_review_analysis_history("Analyze Reviews and Select Best Attraction"):
                     return True
                 else:
-                    print("X Profile history update failed")
+                    print("X Review analysis history update failed")
                     return False
             else:
-                print("X Profile center elements not found in UI")
+                print("X Review analysis elements not found in UI")
                 return False
         else:
             print(f"UI detection failed: {result.stderr}")
             return False
             
     except Exception as e:
-        print(f"Profile center detection failed: {e}")
+        print(f"Review analysis detection failed: {e}")
         return False
 
 if __name__ == "__main__":
-    print("Starting detection: View Profile Center")
-    result = ProfileCenterCheck()
+    print("Starting detection: Analyze Reviews and Select Best Attraction")
+    result = ReviewAnalysisCheck()
     print(f"Detection result: {'PASS' if result else 'FAIL'}")

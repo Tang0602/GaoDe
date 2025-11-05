@@ -4,20 +4,21 @@ import os
 import base64
 from datetime import datetime
 
-def update_profile_history(action_type):
-    """Update profile center history to device storage"""
+def update_hotel_booking_history(booking_action):
+    """Update hotel booking history to device storage"""
     try:
         timestamp = int(datetime.now().timestamp() * 1000)
-        profile_record = {
-            "id": f"profile_{timestamp}",
-            "action": action_type,
+        booking_record = {
+            "id": f"hotel_{timestamp}",
+            "action": booking_action,
+            "hotelType": "最贵的酒店",
             "timestamp": timestamp,
             "formattedTime": datetime.fromtimestamp(timestamp / 1000).strftime("%Y-%m-%d %H:%M:%S"),
-            "page": "Profile Center",
+            "page": "Hotel Booking",
             "success": True
         }
         
-        device_file_path = 'files/5_profile_history.json'
+        device_file_path = 'files/19_hotel_booking_history.json'
         history_records = []
         
         try:
@@ -31,9 +32,9 @@ def update_profile_history(action_type):
         except Exception:
             history_records = []
         
-        history_records.append(profile_record)
+        history_records.append(booking_record)
         
-        temp_file = os.path.join(os.path.dirname(__file__), 'temp_profile5.json')
+        temp_file = os.path.join(os.path.dirname(__file__), 'temp_hotel19.json')
         with open(temp_file, 'w', encoding='utf-8') as f:
             json.dump(history_records, f, ensure_ascii=False, indent=2)
         
@@ -55,7 +56,7 @@ def update_profile_history(action_type):
                                          capture_output=True, text=True)
             
             if verify_result.returncode == 0:
-                print(f"Profile history updated to device storage: {action_type}")
+                print(f"Hotel booking history updated to device storage: {booking_action}")
                 return True
             else:
                 print("File creation verification failed")
@@ -65,11 +66,11 @@ def update_profile_history(action_type):
             return False
         
     except Exception as e:
-        print(f"Failed to update profile history: {e}")
+        print(f"Failed to update hotel booking history: {e}")
         return False
 
-def ProfileCenterCheck():
-    """Check if successfully viewing profile center"""
+def ExpensiveHotelBookingCheck():
+    """Check if most expensive hotel booking is successful"""
     try:
         result = subprocess.run(['adb', 'exec-out', 'uiautomator', 'dump', '/dev/stdout'], 
                               capture_output=True, text=True, encoding='utf-8', errors='ignore')
@@ -80,33 +81,33 @@ def ProfileCenterCheck():
             if ui_dump is None:
                 ui_dump = ""
             
-            # Check for profile center UI elements
-            profile_indicators = [
-                '个人中心', '我的', '个人信息', '设置',
-                '账号', '用户', '头像', '个人'
+            # Check for hotel booking and price sorting UI elements
+            hotel_indicators = [
+                '最贵', '价格排序', '酒店预订', '豪华酒店',
+                '五星级', '预订', '高价', '排序', '酒店'
             ]
             
-            found_indicators = [indicator for indicator in profile_indicators if indicator in ui_dump]
+            found_indicators = [indicator for indicator in hotel_indicators if indicator in ui_dump]
             
             if found_indicators:
                 print(f"SUCCESS: Found UI elements")
-                if update_profile_history("View Profile Center"):
+                if update_hotel_booking_history("Find and Book Most Expensive Hotel"):
                     return True
                 else:
-                    print("X Profile history update failed")
+                    print("X Hotel booking history update failed")
                     return False
             else:
-                print("X Profile center elements not found in UI")
+                print("X Hotel booking elements not found in UI")
                 return False
         else:
             print(f"UI detection failed: {result.stderr}")
             return False
             
     except Exception as e:
-        print(f"Profile center detection failed: {e}")
+        print(f"Hotel booking detection failed: {e}")
         return False
 
 if __name__ == "__main__":
-    print("Starting detection: View Profile Center")
-    result = ProfileCenterCheck()
+    print("Starting detection: Find and Book Most Expensive Hotel")
+    result = ExpensiveHotelBookingCheck()
     print(f"Detection result: {'PASS' if result else 'FAIL'}")

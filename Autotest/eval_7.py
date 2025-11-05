@@ -42,8 +42,7 @@ def ParentChatPageCheck():
     """检测是否成功查看与爸妈的聊天界面"""
     try:
         # 检查UI中是否存在家人聊天页面元素
-        result = subprocess.run(['adb', 'exec-out', 'uiautomator', 'dump', '/dev/stdout'], 
-                              capture_output=True, text=True)
+        result = subprocess.run(['adb', 'exec-out', 'uiautomator', 'dump', '/dev/stdout'], capture_output=True, text=True, encoding='utf-8', errors='ignore')
         
         if result.returncode == 0:
             ui_dump = result.stdout

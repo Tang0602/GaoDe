@@ -131,7 +131,7 @@ def check_message_ui_elements():
             found_indicators = [indicator for indicator in message_indicators if indicator in ui_dump]
             
             if found_indicators:
-                print(f"SUCCESS: Found message page elements in UI: {', '.join(found_indicators)}")
+                print(f"SUCCESS: Found UI elements")
                 if update_navigation_history("点击消息页面"):
                     return True
                 else:

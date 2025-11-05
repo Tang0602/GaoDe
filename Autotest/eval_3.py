@@ -96,7 +96,7 @@ def FoodSearchCheck():
             found_indicators = [indicator for indicator in food_indicators if indicator in ui_dump]
             
             if found_indicators:
-                print(f"SUCCESS: Found food search result elements in UI: {', '.join(found_indicators)}")
+                print(f"SUCCESS: Found UI elements")
                 if update_food_search_history("Food"):
                     return True
                 else:

@@ -72,20 +72,24 @@ def HomePageNavigationCheck():
     """Check if successfully returned to home page"""
     try:
         result = subprocess.run(['adb', 'exec-out', 'uiautomator', 'dump', '/dev/stdout'], 
-                              capture_output=True, text=True)
+                              capture_output=True, text=True, encoding='utf-8', errors='ignore')
         
         if result.returncode == 0:
             ui_dump = result.stdout
             
+            if ui_dump is None:
+                ui_dump = ""
+            
+            # Check for actual Chinese UI elements in home page
             home_indicators = [
-                'Wuhan Station', 'Gaode Map', 'Bus', 'Metro', 'Cycling', 
-                'Taxi', 'Walking', 'Book Hotel', 'Home', 'Office'
+                '武汉站', '公交', '地铁', '骑行', 
+                '打车', '步行', '订酒店', '回家', '去单位'
             ]
             
             found_indicators = [indicator for indicator in home_indicators if indicator in ui_dump]
             
             if found_indicators:
-                print(f"SUCCESS: Found home page elements in UI: {', '.join(found_indicators)}")
+                print(f"SUCCESS: Found home page elements in UI")
                 if update_home_navigation_history("Return to Home"):
                     return True
                 else:

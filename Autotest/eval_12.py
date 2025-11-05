@@ -44,8 +44,7 @@ def update_banu_selection_history(action_type, place_name):
 def BanuHotpotSelectionCheck():
     """检测是否成功搜索并选择巴奴火锅"""
     try:
-        result = subprocess.run(['adb', 'exec-out', 'uiautomator', 'dump', '/dev/stdout'], 
-                              capture_output=True, text=True)
+        result = subprocess.run(['adb', 'exec-out', 'uiautomator', 'dump', '/dev/stdout'], capture_output=True, text=True, encoding='utf-8', errors='ignore')
         
         if result.returncode == 0:
             ui_dump = result.stdout

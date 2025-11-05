@@ -42,8 +42,7 @@ def update_hotel_booking_history(action_type, hotel_name):
 def HantingHotelBookingCheck():
     """检测是否成功预订汉庭酒店"""
     try:
-        result = subprocess.run(['adb', 'exec-out', 'uiautomator', 'dump', '/dev/stdout'], 
-                              capture_output=True, text=True)
+        result = subprocess.run(['adb', 'exec-out', 'uiautomator', 'dump', '/dev/stdout'], capture_output=True, text=True, encoding='utf-8', errors='ignore')
         
         if result.returncode == 0:
             ui_dump = result.stdout

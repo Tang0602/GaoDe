@@ -4,20 +4,21 @@ import os
 import base64
 from datetime import datetime
 
-def update_profile_history(action_type):
-    """Update profile center history to device storage"""
+def update_multi_route_history(route_action):
+    """Update multi-point route planning history to device storage"""
     try:
         timestamp = int(datetime.now().timestamp() * 1000)
-        profile_record = {
-            "id": f"profile_{timestamp}",
-            "action": action_type,
+        route_record = {
+            "id": f"multi_route_{timestamp}",
+            "action": route_action,
+            "routeType": "多地点复合路线",
             "timestamp": timestamp,
             "formattedTime": datetime.fromtimestamp(timestamp / 1000).strftime("%Y-%m-%d %H:%M:%S"),
-            "page": "Profile Center",
+            "page": "Multi-point Route Planning",
             "success": True
         }
         
-        device_file_path = 'files/5_profile_history.json'
+        device_file_path = 'files/20_multi_route_history.json'
         history_records = []
         
         try:
@@ -31,9 +32,9 @@ def update_profile_history(action_type):
         except Exception:
             history_records = []
         
-        history_records.append(profile_record)
+        history_records.append(route_record)
         
-        temp_file = os.path.join(os.path.dirname(__file__), 'temp_profile5.json')
+        temp_file = os.path.join(os.path.dirname(__file__), 'temp_multi_route20.json')
         with open(temp_file, 'w', encoding='utf-8') as f:
             json.dump(history_records, f, ensure_ascii=False, indent=2)
         
@@ -55,7 +56,7 @@ def update_profile_history(action_type):
                                          capture_output=True, text=True)
             
             if verify_result.returncode == 0:
-                print(f"Profile history updated to device storage: {action_type}")
+                print(f"Multi-route history updated to device storage: {route_action}")
                 return True
             else:
                 print("File creation verification failed")
@@ -65,11 +66,11 @@ def update_profile_history(action_type):
             return False
         
     except Exception as e:
-        print(f"Failed to update profile history: {e}")
+        print(f"Failed to update multi-route history: {e}")
         return False
 
-def ProfileCenterCheck():
-    """Check if successfully viewing profile center"""
+def MultiPointRouteCheck():
+    """Check if multi-point route planning is successful"""
     try:
         result = subprocess.run(['adb', 'exec-out', 'uiautomator', 'dump', '/dev/stdout'], 
                               capture_output=True, text=True, encoding='utf-8', errors='ignore')
@@ -80,33 +81,33 @@ def ProfileCenterCheck():
             if ui_dump is None:
                 ui_dump = ""
             
-            # Check for profile center UI elements
-            profile_indicators = [
-                '个人中心', '我的', '个人信息', '设置',
-                '账号', '用户', '头像', '个人'
+            # Check for multi-point route planning UI elements
+            route_indicators = [
+                '多地点', '复合路线', '路线规划', '添加途经点',
+                '多点导航', '途经', '规划路线', '多个地点'
             ]
             
-            found_indicators = [indicator for indicator in profile_indicators if indicator in ui_dump]
+            found_indicators = [indicator for indicator in route_indicators if indicator in ui_dump]
             
             if found_indicators:
                 print(f"SUCCESS: Found UI elements")
-                if update_profile_history("View Profile Center"):
+                if update_multi_route_history("Plan Multi-Point Composite Route"):
                     return True
                 else:
-                    print("X Profile history update failed")
+                    print("X Multi-route history update failed")
                     return False
             else:
-                print("X Profile center elements not found in UI")
+                print("X Multi-point route elements not found in UI")
                 return False
         else:
             print(f"UI detection failed: {result.stderr}")
             return False
             
     except Exception as e:
-        print(f"Profile center detection failed: {e}")
+        print(f"Multi-point route detection failed: {e}")
         return False
 
 if __name__ == "__main__":
-    print("Starting detection: View Profile Center")
-    result = ProfileCenterCheck()
+    print("Starting detection: Plan Multi-Point Composite Route")
+    result = MultiPointRouteCheck()
     print(f"Detection result: {'PASS' if result else 'FAIL'}")

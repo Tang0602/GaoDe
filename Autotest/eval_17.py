@@ -4,20 +4,22 @@ import os
 import base64
 from datetime import datetime
 
-def update_profile_history(action_type):
-    """Update profile center history to device storage"""
+def update_navigation_history(navigation_action):
+    """Update navigation history to device storage"""
     try:
         timestamp = int(datetime.now().timestamp() * 1000)
-        profile_record = {
-            "id": f"profile_{timestamp}",
-            "action": action_type,
+        navigation_record = {
+            "id": f"nav_{timestamp}",
+            "action": navigation_action,
+            "destination": "南湖花亭公园",
+            "routeType": "最优时间",
             "timestamp": timestamp,
             "formattedTime": datetime.fromtimestamp(timestamp / 1000).strftime("%Y-%m-%d %H:%M:%S"),
-            "page": "Profile Center",
+            "page": "Navigation",
             "success": True
         }
         
-        device_file_path = 'files/5_profile_history.json'
+        device_file_path = 'files/17_navigation_history.json'
         history_records = []
         
         try:
@@ -31,9 +33,9 @@ def update_profile_history(action_type):
         except Exception:
             history_records = []
         
-        history_records.append(profile_record)
+        history_records.append(navigation_record)
         
-        temp_file = os.path.join(os.path.dirname(__file__), 'temp_profile5.json')
+        temp_file = os.path.join(os.path.dirname(__file__), 'temp_navigation17.json')
         with open(temp_file, 'w', encoding='utf-8') as f:
             json.dump(history_records, f, ensure_ascii=False, indent=2)
         
@@ -55,7 +57,7 @@ def update_profile_history(action_type):
                                          capture_output=True, text=True)
             
             if verify_result.returncode == 0:
-                print(f"Profile history updated to device storage: {action_type}")
+                print(f"Navigation history updated to device storage: {navigation_action}")
                 return True
             else:
                 print("File creation verification failed")
@@ -65,11 +67,11 @@ def update_profile_history(action_type):
             return False
         
     except Exception as e:
-        print(f"Failed to update profile history: {e}")
+        print(f"Failed to update navigation history: {e}")
         return False
 
-def ProfileCenterCheck():
-    """Check if successfully viewing profile center"""
+def NavigationToNanhuCheck():
+    """Check if navigation to Nanhu Huating Park with optimal time route is successful"""
     try:
         result = subprocess.run(['adb', 'exec-out', 'uiautomator', 'dump', '/dev/stdout'], 
                               capture_output=True, text=True, encoding='utf-8', errors='ignore')
@@ -80,33 +82,33 @@ def ProfileCenterCheck():
             if ui_dump is None:
                 ui_dump = ""
             
-            # Check for profile center UI elements
-            profile_indicators = [
-                '个人中心', '我的', '个人信息', '设置',
-                '账号', '用户', '头像', '个人'
+            # Check for navigation and route planning UI elements
+            navigation_indicators = [
+                '南湖花亭公园', '最优时间', '路线规划', '导航',
+                '时间最短', '路线方案', '开始导航', '公园'
             ]
             
-            found_indicators = [indicator for indicator in profile_indicators if indicator in ui_dump]
+            found_indicators = [indicator for indicator in navigation_indicators if indicator in ui_dump]
             
             if found_indicators:
                 print(f"SUCCESS: Found UI elements")
-                if update_profile_history("View Profile Center"):
+                if update_navigation_history("Navigate to Nanhu Huating Park - Optimal Time Route"):
                     return True
                 else:
-                    print("X Profile history update failed")
+                    print("X Navigation history update failed")
                     return False
             else:
-                print("X Profile center elements not found in UI")
+                print("X Navigation elements not found in UI")
                 return False
         else:
             print(f"UI detection failed: {result.stderr}")
             return False
             
     except Exception as e:
-        print(f"Profile center detection failed: {e}")
+        print(f"Navigation detection failed: {e}")
         return False
 
 if __name__ == "__main__":
-    print("Starting detection: View Profile Center")
-    result = ProfileCenterCheck()
+    print("Starting detection: Navigate to Nanhu Huating Park - Optimal Time Route")
+    result = NavigationToNanhuCheck()
     print(f"Detection result: {'PASS' if result else 'FAIL'}")
