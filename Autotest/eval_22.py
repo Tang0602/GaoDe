@@ -81,15 +81,13 @@ def RestaurantFilterCheck():
             if ui_dump is None:
                 ui_dump = ""
             
-            # Check for restaurant filtering and selection UI elements
-            filter_indicators = [
-                '筛选', '餐厅', '最优', '综合', '评分',
-                '价格', '距离', '排序', '美食', '推荐'
-            ]
+            # Check for comprehensive restaurant filtering and selection
+            has_filter_interface = any(filter_elem in ui_dump for filter_elem in ['筛选', '过滤', '排序', '条件'])
+            has_restaurant_info = any(rest in ui_dump for rest in ['餐厅', '美食', '饭店', '菜系'])
+            has_multiple_criteria = sum(1 for criteria in ['评分', '价格', '距离', '人气', '口味'] if criteria in ui_dump) >= 2
+            has_selection_made = any(select in ui_dump for select in ['选择', '确定', '预订', '已选择', '查看详情'])
             
-            found_indicators = [indicator for indicator in filter_indicators if indicator in ui_dump]
-            
-            if found_indicators:
+            if has_filter_interface and has_restaurant_info and has_multiple_criteria and has_selection_made:
                 print(f"SUCCESS: Found UI elements")
                 if update_restaurant_filter_history("Comprehensive Filter for Best Restaurant"):
                     return True
@@ -97,7 +95,14 @@ def RestaurantFilterCheck():
                     print("X Restaurant filter history update failed")
                     return False
             else:
-                print("X Restaurant filter elements not found in UI")
+                if not has_filter_interface:
+                    print("X Filter interface not found")
+                elif not has_restaurant_info:
+                    print("X Restaurant information not found")
+                elif not has_multiple_criteria:
+                    print("X Multiple filter criteria not found")
+                else:
+                    print("X Restaurant selection not made")
                 return False
         else:
             print(f"UI detection failed: {result.stderr}")

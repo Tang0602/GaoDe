@@ -81,15 +81,12 @@ def ReviewAnalysisCheck():
             if ui_dump is None:
                 ui_dump = ""
             
-            # Check for review analysis and attraction selection UI elements
-            analysis_indicators = [
-                '评论', '分析', '最佳景点', '评分', '推荐',
-                '景点', '选择', '评价', '星级', '口碑'
-            ]
+            # Check for review analysis and attraction selection
+            has_reviews_interface = any(review in ui_dump for review in ['评论', '用户评价', '点评', '评分'])
+            has_attraction_info = any(attr in ui_dump for attr in ['景点', '景区', '旅游', '门票'])
+            has_selection_made = any(select in ui_dump for select in ['选择', '确定', '预订', '购买门票', '已选择'])
             
-            found_indicators = [indicator for indicator in analysis_indicators if indicator in ui_dump]
-            
-            if found_indicators:
+            if has_reviews_interface and has_attraction_info and has_selection_made:
                 print(f"SUCCESS: Found UI elements")
                 if update_review_analysis_history("Analyze Reviews and Select Best Attraction"):
                     return True
@@ -97,7 +94,12 @@ def ReviewAnalysisCheck():
                     print("X Review analysis history update failed")
                     return False
             else:
-                print("X Review analysis elements not found in UI")
+                if not has_reviews_interface:
+                    print("X Reviews interface not found")
+                elif not has_attraction_info:
+                    print("X Attraction information not found")
+                else:
+                    print("X Selection not made")
                 return False
         else:
             print(f"UI detection failed: {result.stderr}")

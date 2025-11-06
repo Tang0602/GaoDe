@@ -81,15 +81,12 @@ def MultiPointRouteCheck():
             if ui_dump is None:
                 ui_dump = ""
             
-            # Check for multi-point route planning UI elements
-            route_indicators = [
-                '多地点', '复合路线', '路线规划', '添加途经点',
-                '多点导航', '途经', '规划路线', '多个地点'
-            ]
+            # Check for multi-point route planning (must have multiple destinations)
+            has_route_planning = any(route in ui_dump for route in ['路线规划', '导航', '规划路线'])
+            has_multiple_points = any(multi in ui_dump for multi in ['添加途经点', '多地点', '途经点', '第2个地点', '第三个'])
+            has_route_generated = any(gen in ui_dump for gen in ['路线方案', '开始导航', '总时长', '总距离'])
             
-            found_indicators = [indicator for indicator in route_indicators if indicator in ui_dump]
-            
-            if found_indicators:
+            if has_route_planning and has_multiple_points and has_route_generated:
                 print(f"SUCCESS: Found UI elements")
                 if update_multi_route_history("Plan Multi-Point Composite Route"):
                     return True
@@ -97,7 +94,12 @@ def MultiPointRouteCheck():
                     print("X Multi-route history update failed")
                     return False
             else:
-                print("X Multi-point route elements not found in UI")
+                if not has_route_planning:
+                    print("X Route planning interface not found")
+                elif not has_multiple_points:
+                    print("X Multiple points not added")
+                else:
+                    print("X Route not generated")
                 return False
         else:
             print(f"UI detection failed: {result.stderr}")

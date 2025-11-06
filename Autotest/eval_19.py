@@ -81,15 +81,12 @@ def ExpensiveHotelBookingCheck():
             if ui_dump is None:
                 ui_dump = ""
             
-            # Check for hotel booking and price sorting UI elements
-            hotel_indicators = [
-                '最贵', '价格排序', '酒店预订', '豪华酒店',
-                '五星级', '预订', '高价', '排序', '酒店'
-            ]
+            # Check for Hyatt hotel booking completion (more flexible matching)
+            has_hyatt_hotel = any(hotel in ui_dump for hotel in ['凯悦酒店', '凯悦', 'Hyatt', '凯悦大酒店'])
+            has_booking_completion = any(action in ui_dump for action in ['预订', '订购', '预订成功', '支付成功', '购买', '已预订', '订单'])
             
-            found_indicators = [indicator for indicator in hotel_indicators if indicator in ui_dump]
-            
-            if found_indicators:
+            # Check if we're in Hyatt hotel interface with booking elements
+            if has_hyatt_hotel and has_booking_completion:
                 print(f"SUCCESS: Found UI elements")
                 if update_hotel_booking_history("Find and Book Most Expensive Hotel"):
                     return True
@@ -97,7 +94,10 @@ def ExpensiveHotelBookingCheck():
                     print("X Hotel booking history update failed")
                     return False
             else:
-                print("X Hotel booking elements not found in UI")
+                if not has_hyatt_hotel:
+                    print("X Hyatt hotel not found in UI")
+                else:
+                    print("X Hotel booking completion not found in UI")
                 return False
         else:
             print(f"UI detection failed: {result.stderr}")
