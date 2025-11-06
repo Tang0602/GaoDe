@@ -2,6 +2,7 @@ package com.example.GaoDe.ui.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,6 +12,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -68,6 +70,8 @@ fun PlanRouteScreen(
     var routeOptions by remember { mutableStateOf<List<RouteOption>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var selectedTransportMode by remember { mutableStateOf("公共交通") }
+    var showWaypointSelector by remember { mutableStateOf(false) }
+    var waypoint by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
 
     LaunchedEffect(endLocation) {
@@ -93,28 +97,43 @@ fun PlanRouteScreen(
             .fillMaxSize()
             .background(Color.White)
     ) {
-        // Top Bar
-        PlanRouteTopBar(
-            startLocation = startLocation,
-            endLocation = endLocation,
-            onBackClick = onBackClick
-        )
-        
-        // Transportation Mode Filter
-        TransportationModeFilter(
-            selectedMode = selectedTransportMode,
-            onModeSelected = { selectedTransportMode = it }
-        )
-        
-        
-        if (isLoading) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
+        // Show waypoint selector or normal route planning
+        if (showWaypointSelector) {
+            WaypointSelectorScreen(
+                startLocation = startLocation,
+                endLocation = endLocation,
+                currentWaypoint = waypoint,
+                onBackClick = { showWaypointSelector = false },
+                onWaypointSelected = { selectedWaypoint ->
+                    waypoint = selectedWaypoint
+                    showWaypointSelector = false
+                }
+            )
         } else {
+            // Top Bar
+            PlanRouteTopBar(
+                startLocation = startLocation,
+                endLocation = endLocation,
+                waypoint = waypoint,
+                onBackClick = onBackClick,
+                onWaypointClick = { showWaypointSelector = true }
+            )
+        
+            // Transportation Mode Filter
+            TransportationModeFilter(
+                selectedMode = selectedTransportMode,
+                onModeSelected = { selectedTransportMode = it }
+            )
+        
+        
+            if (isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            } else {
             // Content based on selected transport mode
             if (selectedTransportMode == "打车") {
                 TaxiAggregateView(
@@ -141,6 +160,7 @@ fun PlanRouteScreen(
                     }
                 }
             }
+            }
         }
     }
 }
@@ -149,7 +169,9 @@ fun PlanRouteScreen(
 fun PlanRouteTopBar(
     startLocation: String,
     endLocation: String,
-    onBackClick: () -> Unit
+    waypoint: String? = null,
+    onBackClick: () -> Unit,
+    onWaypointClick: () -> Unit = {}
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -215,12 +237,12 @@ fun PlanRouteTopBar(
             
             Spacer(modifier = Modifier.height(8.dp))
             
-            // Start and end locations
+            // Start and end locations with waypoint button
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     // Start location
                     Row(
                         verticalAlignment = Alignment.CenterVertically
@@ -240,6 +262,28 @@ fun PlanRouteTopBar(
                     
                     Spacer(modifier = Modifier.height(8.dp))
                     
+                    // Waypoint if exists
+                    waypoint?.let { waypointText ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .background(Color(0xFF2196F3), CircleShape)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = waypointText,
+                                fontSize = 16.sp,
+                                color = Color.Black,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                    
                     // End location
                     Row(
                         verticalAlignment = Alignment.CenterVertically
@@ -258,6 +302,25 @@ fun PlanRouteTopBar(
                             overflow = TextOverflow.Ellipsis
                         )
                     }
+                }
+                
+                Spacer(modifier = Modifier.width(8.dp))
+                
+                // Waypoint button
+                OutlinedButton(
+                    onClick = onWaypointClick,
+                    modifier = Modifier.height(36.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = Color(0xFF2196F3)
+                    ),
+                    border = BorderStroke(1.dp, Color(0xFF2196F3)),
+                    shape = RoundedCornerShape(6.dp)
+                ) {
+                    Text(
+                        text = "途经点",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium
+                    )
                 }
             }
         }
@@ -2113,4 +2176,464 @@ private fun getIconBackgroundColor(colorName: String): Color {
         "gold" -> Color(0xFFFFD700)
         else -> Color(0xFF9E9E9E)
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun WaypointSelectorScreen(
+    startLocation: String,
+    endLocation: String,
+    currentWaypoint: String? = null,
+    onBackClick: () -> Unit,
+    onWaypointSelected: (String) -> Unit
+) {
+    var searchText by remember { mutableStateOf(currentWaypoint ?: "") }
+    var showPlaceList by remember { mutableStateOf(false) }
+    var availablePlaces by remember { mutableStateOf<List<PlaceInfo>>(emptyList()) }
+    val context = LocalContext.current
+    
+    // Load all available places
+    LaunchedEffect(Unit) {
+        withContext(Dispatchers.IO) {
+            try {
+                val places = loadAllPlaces(context)
+                withContext(Dispatchers.Main) {
+                    availablePlaces = places
+                }
+            } catch (e: Exception) {
+                // Handle error
+            }
+        }
+    }
+    
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
+        // Top Bar
+        WaypointTopBar(
+            onBackClick = onBackClick,
+            onConfirmClick = {
+                if (searchText.isNotEmpty()) {
+                    onWaypointSelected(searchText)
+                }
+            }
+        )
+        
+        // Route Display
+        WaypointRouteDisplay(
+            startLocation = startLocation,
+            waypoint = searchText.takeIf { it.isNotEmpty() },
+            endLocation = endLocation,
+            onWaypointClick = { showPlaceList = true }
+        )
+        
+        if (showPlaceList) {
+            // Place selection list with categories
+            PlaceCategoryList(
+                places = availablePlaces,
+                onPlaceSelected = { place ->
+                    searchText = place.name
+                    showPlaceList = false
+                }
+            )
+        } else {
+            // Search suggestions or empty state
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "点击“途经点”选择地点",
+                        fontSize = 16.sp,
+                        color = Color.Gray
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    OutlinedButton(
+                        onClick = { showPlaceList = true },
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Color(0xFF2196F3)
+                        ),
+                        border = BorderStroke(1.dp, Color(0xFF2196F3))
+                    ) {
+                        Text(
+                            text = "选择地点",
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun WaypointTopBar(
+    onBackClick: () -> Unit,
+    onConfirmClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = Color.White,
+        shadowElevation = 2.dp
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(
+                onClick = onBackClick,
+                modifier = Modifier.size(40.dp)
+            ) {
+                Icon(
+                    Icons.Default.ArrowBack,
+                    contentDescription = "返回",
+                    tint = Color.Gray
+                )
+            }
+            
+            Spacer(modifier = Modifier.weight(1f))
+            
+            Text(
+                text = "添加途经点",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            )
+            
+            Spacer(modifier = Modifier.weight(1f))
+            
+            TextButton(onClick = onConfirmClick) {
+                Text(
+                    text = "确定",
+                    fontSize = 16.sp,
+                    color = Color(0xFF2196F3)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun WaypointRouteDisplay(
+    startLocation: String,
+    waypoint: String?,
+    endLocation: String,
+    onWaypointClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = Color(0xFFF8F8F8)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            // Start location
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .background(Color(0xFF4CAF50), CircleShape)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = startLocation,
+                    fontSize = 16.sp,
+                    color = Color.Black
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Waypoint
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onWaypointClick() }
+                    .border(1.dp, Color(0xFF2196F3), RoundedCornerShape(8.dp))
+                    .padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .background(Color(0xFF2196F3), CircleShape)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = waypoint ?: "途经点",
+                    fontSize = 16.sp,
+                    color = if (waypoint != null) Color.Black else Color.Gray
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Icon(
+                    Icons.Default.KeyboardArrowRight,
+                    contentDescription = "选择",
+                    tint = Color.Gray
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // End location
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .background(Color(0xFFFF5722), CircleShape)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = endLocation,
+                    fontSize = 16.sp,
+                    color = Color.Black
+                )
+            }
+        }
+    }
+}
+
+data class PlaceInfo(
+    val id: String,
+    val name: String,
+    val address: String,
+    val category: String
+)
+
+@Composable
+fun PlaceSelectionItem(
+    place: PlaceInfo,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Category icon
+            Surface(
+                modifier = Modifier.size(40.dp),
+                shape = CircleShape,
+                color = getCategoryColor(place.category)
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Text(
+                        text = getCategoryIcon(place.category),
+                        fontSize = 16.sp,
+                        color = Color.White
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.width(12.dp))
+            
+            // Place info
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = place.name,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color.Black,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = place.address,
+                    fontSize = 12.sp,
+                    color = Color.Gray,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(top = 2.dp)
+                )
+            }
+            
+            Icon(
+                Icons.Default.KeyboardArrowRight,
+                contentDescription = "选择",
+                tint = Color.Gray
+            )
+        }
+    }
+}
+
+private fun getCategoryColor(category: String): Color {
+    return when (category) {
+        "餐饮" -> Color(0xFFFF9800)
+        "酒店" -> Color(0xFF2196F3)
+        "景点" -> Color(0xFF4CAF50)
+        else -> Color(0xFF9E9E9E)
+    }
+}
+
+private fun getCategoryIcon(category: String): String {
+    return when (category) {
+        "餐饮" -> "🍽️"
+        "酒店" -> "🏨"
+        "景点" -> "🏞️"
+        else -> "📍"
+    }
+}
+
+@Composable
+fun PlaceCategoryList(
+    places: List<PlaceInfo>,
+    onPlaceSelected: (PlaceInfo) -> Unit
+) {
+    var selectedCategory by remember { mutableStateOf("美食") }
+    val categories = listOf("美食", "酒店", "景点")
+    
+    val filteredPlaces = places.filter { place ->
+        when (selectedCategory) {
+            "美食" -> place.category == "餐饮"
+            "酒店" -> place.category == "酒店"
+            "景点" -> place.category == "景点"
+            else -> false
+        }
+    }
+    
+    Column {
+        // Category tabs
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            color = Color(0xFFF8F8F8)
+        ) {
+            LazyRow(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(categories) { category ->
+                    CategoryTab(
+                        category = category,
+                        isSelected = category == selectedCategory,
+                        onClick = { selectedCategory = category }
+                    )
+                }
+            }
+        }
+        
+        // Places list
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(filteredPlaces) { place ->
+                PlaceSelectionItem(
+                    place = place,
+                    onClick = { onPlaceSelected(place) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun CategoryTab(
+    category: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.clickable { onClick() }
+    ) {
+        Text(
+            text = category,
+            fontSize = 16.sp,
+            color = if (isSelected) Color(0xFF2196F3) else Color.Gray,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+        )
+        if (isSelected) {
+            Box(
+                modifier = Modifier
+                    .width(20.dp)
+                    .height(2.dp)
+                    .background(Color(0xFF2196F3))
+            )
+        }
+    }
+}
+
+private suspend fun loadAllPlaces(context: android.content.Context): List<PlaceInfo> {
+    val places = mutableListOf<PlaceInfo>()
+    
+    try {
+        // Load restaurants
+        val restaurantsJson = context.assets.open("data/poi_restaurants.json").bufferedReader().use { it.readText() }
+        val restaurantsArray = JSONArray(restaurantsJson)
+        for (i in 0 until restaurantsArray.length()) {
+            val restaurant = restaurantsArray.getJSONObject(i)
+            places.add(
+                PlaceInfo(
+                    id = restaurant.getString("id"),
+                    name = restaurant.getString("brandName"),
+                    address = restaurant.getString("address"),
+                    category = "餐饮"
+                )
+            )
+        }
+        
+        // Load hotels
+        val hotelsJson = context.assets.open("data/poi_hotels.json").bufferedReader().use { it.readText() }
+        val hotelsArray = JSONArray(hotelsJson)
+        for (i in 0 until hotelsArray.length()) {
+            val hotel = hotelsArray.getJSONObject(i)
+            places.add(
+                PlaceInfo(
+                    id = hotel.getString("id"),
+                    name = hotel.getString("hotelName"),
+                    address = hotel.getString("address"),
+                    category = "酒店"
+                )
+            )
+        }
+        
+        // Load scenic spots from places.json (filter by category and exclude specific places)
+        val placesJson = context.assets.open("data/places.json").bufferedReader().use { it.readText() }
+        val placesArray = JSONArray(placesJson)
+        val excludedNames = setOf("上海外滩", "天安门广场")
+        
+        for (i in 0 until placesArray.length()) {
+            val place = placesArray.getJSONObject(i)
+            val category = place.getString("category")
+            val name = place.getString("name")
+            
+            if (category == "景点" && !excludedNames.contains(name)) {
+                places.add(
+                    PlaceInfo(
+                        id = place.getString("id"),
+                        name = name,
+                        address = place.getString("address"),
+                        category = "景点"
+                    )
+                )
+            }
+        }
+        
+    } catch (e: Exception) {
+        // Handle error
+    }
+    
+    return places.sortedBy { it.name }
 }
