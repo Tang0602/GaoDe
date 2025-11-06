@@ -207,8 +207,11 @@ fun MainScreen() {
                     onTaxiClick = {
                         navController.navigate("${Screen.TaxiSuccess.route}/${Screen.PlanRoute.route}/$endName")
                     },
-                    onPublicTransportClick = { routeId ->
-                        navController.navigate("${Screen.NavigationSuccess.route}/${Screen.PlanRoute.route}/$endName")
+                    onPublicTransportClick = { routeId, startLoc, waypoint, endLoc ->
+                        val waypointParam = waypoint?.let { java.net.URLEncoder.encode(it, "UTF-8") } ?: "null"
+                        val startParam = java.net.URLEncoder.encode(startLoc, "UTF-8")
+                        val endParam = java.net.URLEncoder.encode(endLoc, "UTF-8")
+                        navController.navigate("${Screen.NavigationSuccess.route}/$startParam/$waypointParam/$endParam")
                     }
                 )
             }
@@ -246,24 +249,21 @@ fun MainScreen() {
                     }
                 )
             }
-            composable("${Screen.NavigationSuccess.route}/{fromRoute}/{endName}") { backStackEntry ->
-                val fromRoute = backStackEntry.arguments?.getString("fromRoute") ?: ""
-                val endName = backStackEntry.arguments?.getString("endName") ?: ""
+            composable("${Screen.NavigationSuccess.route}/{startLocation}/{waypoint}/{endLocation}") { backStackEntry ->
+                val startLocation = java.net.URLDecoder.decode(backStackEntry.arguments?.getString("startLocation") ?: "我的位置", "UTF-8")
+                val waypointParam = backStackEntry.arguments?.getString("waypoint") ?: "null"
+                val waypoint = if (waypointParam == "null") null else java.net.URLDecoder.decode(waypointParam, "UTF-8")
+                val endLocation = java.net.URLDecoder.decode(backStackEntry.arguments?.getString("endLocation") ?: "目的地", "UTF-8")
+                
                 NavigationSuccessScreen(
+                    startLocation = startLocation,
+                    waypoint = waypoint,
+                    endLocation = endLocation,
+                    transportMode = "公共交通",
                     onConfirmClick = {
-                        if (fromRoute == Screen.Home.route) {
-                            // 如果是从首页来的，返回首页
-                            navController.navigate(Screen.Home.route) {
-                                popUpTo(Screen.Home.route) {
-                                    inclusive = true
-                                }
-                            }
-                        } else {
-                            // 其他情况保持原逻辑
-                            navController.navigate("$fromRoute/$endName") {
-                                popUpTo("$fromRoute/$endName") {
-                                    inclusive = true
-                                }
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(Screen.Home.route) {
+                                inclusive = true
                             }
                         }
                     }

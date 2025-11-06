@@ -4,7 +4,7 @@ import os
 import base64
 from datetime import datetime
 
-def update_multi_route_history(route_action):
+def update_multi_route_history(route_action, waypoint_added=False, navigation_success=False):
     """Update multi-point route planning history to device storage"""
     try:
         timestamp = int(datetime.now().timestamp() * 1000)
@@ -12,6 +12,9 @@ def update_multi_route_history(route_action):
             "id": f"multi_route_{timestamp}",
             "action": route_action,
             "routeType": "多地点复合路线",
+            "waypointAdded": waypoint_added,
+            "navigationSuccess": navigation_success,
+            "taskCompleted": waypoint_added and navigation_success,
             "timestamp": timestamp,
             "formattedTime": datetime.fromtimestamp(timestamp / 1000).strftime("%Y-%m-%d %H:%M:%S"),
             "page": "Multi-point Route Planning",
@@ -70,7 +73,7 @@ def update_multi_route_history(route_action):
         return False
 
 def MultiPointRouteCheck():
-    """Check if multi-point route planning is successful"""
+    """Check if waypoint was added and navigation success is displayed"""
     try:
         result = subprocess.run(['adb', 'exec-out', 'uiautomator', 'dump', '/dev/stdout'], 
                               capture_output=True, text=True, encoding='utf-8', errors='ignore')
@@ -81,25 +84,45 @@ def MultiPointRouteCheck():
             if ui_dump is None:
                 ui_dump = ""
             
-            # Check for multi-point route planning (must have multiple destinations)
-            has_route_planning = any(route in ui_dump for route in ['路线规划', '导航', '规划路线'])
-            has_multiple_points = any(multi in ui_dump for multi in ['添加途经点', '多地点', '途经点', '第2个地点', '第三个'])
-            has_route_generated = any(gen in ui_dump for gen in ['路线方案', '开始导航', '总时长', '总距离'])
+            # Check if waypoint was added (途径点功能)
+            waypoint_added = any(waypoint in ui_dump for waypoint in [
+                '途经点', '途径点', '添加途经点', '第2个地点', '第三个地点', 
+                '经过', '中转点', '多地点', '经过地点'
+            ])
             
-            if has_route_planning and has_multiple_points and has_route_generated:
-                print(f"SUCCESS: Found UI elements")
-                if update_multi_route_history("Plan Multi-Point Composite Route"):
+            # Check if navigation success is displayed (after clicking route)
+            navigation_success = any(nav in ui_dump for nav in [
+                '导航成功', '导航开始', '开始导航', '导航中', '正在导航',
+                '导航', '到达目的地', '路线导航', '导航路线', 
+                '成功', '开始', '启动导航'
+            ])
+            
+            # Success criteria: waypoint added AND navigation success displayed
+            task_completed = waypoint_added and navigation_success
+            
+            if task_completed:
+                print(f"SUCCESS: Waypoint added and navigation success displayed")
+                if update_multi_route_history(
+                    "Add Waypoint and Show Navigation Success", 
+                    waypoint_added=True, 
+                    navigation_success=True
+                ):
                     return True
                 else:
                     print("X Multi-route history update failed")
                     return False
             else:
-                if not has_route_planning:
-                    print("X Route planning interface not found")
-                elif not has_multiple_points:
-                    print("X Multiple points not added")
-                else:
-                    print("X Route not generated")
+                if not waypoint_added:
+                    print("X FAILED: Waypoint not added")
+                elif not navigation_success:
+                    print("X FAILED: Navigation success not displayed after route selection")
+                
+                # Update history with current state
+                update_multi_route_history(
+                    "Task Incomplete", 
+                    waypoint_added=waypoint_added, 
+                    navigation_success=navigation_success
+                )
                 return False
         else:
             print(f"UI detection failed: {result.stderr}")
@@ -110,6 +133,6 @@ def MultiPointRouteCheck():
         return False
 
 if __name__ == "__main__":
-    print("Starting detection: Plan Multi-Point Composite Route")
+    print("Starting detection: Add Waypoint and Display Navigation Success")
     result = MultiPointRouteCheck()
     print(f"Detection result: {'PASS' if result else 'FAIL'}")

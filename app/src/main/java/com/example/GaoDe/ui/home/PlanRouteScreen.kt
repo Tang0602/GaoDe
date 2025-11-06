@@ -65,7 +65,7 @@ fun PlanRouteScreen(
     endLocation: String = "巴奴毛肚火锅（群光广场店）",
     onBackClick: () -> Unit = {},
     onTaxiClick: () -> Unit = {},
-    onPublicTransportClick: (String) -> Unit = {}
+    onPublicTransportClick: (String, String, String?, String) -> Unit = { _, _, _, _ -> }
 ) {
     var routeOptions by remember { mutableStateOf<List<RouteOption>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
@@ -153,7 +153,7 @@ fun PlanRouteScreen(
                             onClick = { 
                                 when (route.transportationType) {
                                     "打车" -> onTaxiClick()
-                                    else -> onPublicTransportClick(route.id)
+                                    else -> onPublicTransportClick(route.id, startLocation, waypoint, endLocation)
                                 }
                             }
                         )
