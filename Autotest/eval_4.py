@@ -1,112 +1,81 @@
+#!/usr/bin/env python3
+"""
+Android App Home Navigation Log Verification Script
+"""
+
 import subprocess
 import json
-import os
-import base64
-from datetime import datetime
+import sys
 
-def update_home_navigation_history(navigation_action):
-    """Update home page navigation history to device storage"""
+def verify_last_log():
+    """
+    Verify the last log entry in 4_home_navigation_history.json matches the expected action.
+    """
     try:
-        timestamp = int(datetime.now().timestamp() * 1000)
-        home_record = {
-            "id": f"home_{timestamp}",
-            "action": navigation_action,
-            "timestamp": timestamp,
-            "formattedTime": datetime.fromtimestamp(timestamp / 1000).strftime("%Y-%m-%d %H:%M:%S"),
-            "page": "Home Page",
-            "success": True
-        }
-        
-        device_file_path = 'files/4_home_navigation_history.json'
-        history_records = []
+        cmd = ["adb", "exec-out", "run-as", "com.example.GaoDe", "cat", "files/4_home_navigation_history.json"]
+        result = subprocess.run(cmd, capture_output=True, text=False, check=True)
         
         try:
-            result = subprocess.run(['adb', 'exec-out', 'run-as', 'com.example.GaoDe', 'cat', device_file_path],
-                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8', errors='ignore')
-            if result.returncode == 0 and result.stdout and result.stdout.strip():
-                try:
-                    history_records = json.loads(result.stdout)
-                except json.JSONDecodeError:
-                    history_records = []
-        except Exception:
-            history_records = []
+            stdout_text = result.stdout.decode('utf-8')
+        except UnicodeDecodeError:
+            try:
+                stdout_text = result.stdout.decode('gbk')
+            except UnicodeDecodeError:
+                stdout_text = result.stdout.decode('utf-8', errors='ignore')
         
-        history_records.append(home_record)
-        
-        temp_file = os.path.join(os.path.dirname(__file__), 'temp_home.json')
-        with open(temp_file, 'w', encoding='utf-8') as f:
-            json.dump(history_records, f, ensure_ascii=False, indent=2)
-        
-        with open(temp_file, 'r', encoding='utf-8') as f:
-            json_content = f.read()
-        
-        json_bytes = json_content.encode('utf-8')
-        json_b64 = base64.b64encode(json_bytes).decode('ascii')
-        
-        create_result = subprocess.run(['adb', 'exec-out', 'run-as', 'com.example.GaoDe', 
-                                      'sh', '-c', f'echo "{json_b64}" | base64 -d > {device_file_path}'],
-                                     capture_output=True, text=True)
-        
-        os.remove(temp_file)
-        
-        if create_result.returncode == 0:
-            verify_result = subprocess.run(['adb', 'exec-out', 'run-as', 'com.example.GaoDe', 
-                                          'test', '-f', device_file_path],
-                                         capture_output=True, text=True)
-            
-            if verify_result.returncode == 0:
-                print(f"Home navigation history updated to device storage: {navigation_action}")
-                return True
-            else:
-                print("File creation verification failed")
-                return False
-        else:
-            print(f"Failed to create file: {create_result.stderr}")
+        if not stdout_text.strip():
+            print("FAIL: JSON file is empty")
             return False
+            
+        json_data = json.loads(stdout_text)
         
-    except Exception as e:
-        print(f"Failed to update home navigation history: {e}")
+        if not json_data or len(json_data) == 0:
+            print("FAIL: No records found in JSON file")
+            return False
+            
+        last_record = json_data[-1]
+        
+        if "action" not in last_record:
+            print("FAIL: 'action' field not found in last record")
+            return False
+            
+        expected_action = "进入主页"
+        actual_action = last_record["action"]
+        if actual_action == expected_action:
+            print("PASS: Home navigation action verification successful")
+            print(f"Expected: {expected_action}")
+            print(f"Actual: {actual_action}")
+            print(f"Timestamp: {last_record.get('timestamp', 'N/A')}")
+            print(f"Page: {last_record.get('page', 'N/A')}")
+            return True
+        else:
+            print("FAIL: Action mismatch")
+            print(f"Expected: {expected_action}")
+            print(f"Actual: {actual_action}")
+            return False
+            
+    except subprocess.CalledProcessError as e:
+        print(f"FAIL: ADB command failed - {e}")
+        try:
+            error_text = e.stderr.decode('utf-8') if e.stderr else "No error output"
+        except:
+            error_text = "Error decoding stderr"
+        print(f"Error output: {error_text}")
         return False
-
-def HomePageNavigationCheck():
-    """Check if successfully returned to home page"""
-    try:
-        result = subprocess.run(['adb', 'exec-out', 'uiautomator', 'dump', '/dev/stdout'], 
-                              capture_output=True, text=True, encoding='utf-8', errors='ignore')
-        
-        if result.returncode == 0:
-            ui_dump = result.stdout
-            
-            if ui_dump is None:
-                ui_dump = ""
-            
-            # Check for actual Chinese UI elements in home page
-            home_indicators = [
-                '武汉站', '公交', '地铁', '骑行', 
-                '打车', '步行', '订酒店', '回家', '去单位'
-            ]
-            
-            found_indicators = [indicator for indicator in home_indicators if indicator in ui_dump]
-            
-            if found_indicators:
-                print(f"SUCCESS: Found home page elements in UI")
-                if update_home_navigation_history("Return to Home"):
-                    return True
-                else:
-                    print("X Home navigation history update failed")
-                    return False
-            else:
-                print("X Home page elements not found in UI")
-                return False
-        else:
-            print(f"UI detection failed: {result.stderr}")
-            return False
-            
+    except json.JSONDecodeError as e:
+        print(f"FAIL: JSON parsing error - {e}")
+        print(f"Raw content: {stdout_text}")
+        return False
     except Exception as e:
-        print(f"Home page navigation detection failed: {e}")
+        print(f"FAIL: Unexpected error - {e}")
         return False
 
 if __name__ == "__main__":
-    print("Starting detection: Return to Home Page")
-    result = HomePageNavigationCheck()
-    print(f"Detection result: {'PASS' if result else 'FAIL'}")
+    success = verify_last_log()
+    
+    if success:
+        print("\n✓ PASS")
+        sys.exit(0)
+    else:
+        print("\n✗ FAIL")
+        sys.exit(1)

@@ -1,6 +1,7 @@
 package com.example.GaoDe.ui.home
 
 import android.view.View
+import java.net.URLEncoder
 // import com.google.android.gms.maps.MapView // 实际项目中需要导入地图SDK的MapView
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -44,6 +45,8 @@ import com.example.GaoDe.R
 import com.example.GaoDe.data.DataManager
 import com.example.GaoDe.model.Place
 import android.content.Context
+import com.example.GaoDe.LogEvent
+import com.example.GaoDe.MainActivity
 import com.example.GaoDe.Screen
 // 临时MapView类，实际项目中应使用真实的地图SDK
 class MapView(context: Context) : View(context) {
@@ -426,24 +429,47 @@ fun QuickActionItem(action: QuickAction) {
     }
 }
 
+
+// --- 这是修改后的 HomeWorkButtons 函数 ---
+
+
+
+
 @Composable
 fun HomeWorkButtons(navController: NavController) {
+    // --- 关键修复：将 context 的获取移动到 Composable 函数的顶层 ---
+    val context = LocalContext.current
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        // --- "回家" 按钮 ---
         Surface(
             modifier = Modifier
                 .weight(1f)
                 .clickable {
-                    navController.navigate("${Screen.NavigationSuccess.route}/${Screen.Home.route}/回家")
+                    // --- 现在这里可以安全地使用在外部定义的 context 变量了 ---
+                    MainActivity.recordLog(
+                        context = context,
+                        event = LogEvent.HOME_BUTTON_CLICK,
+                        action = "点击回家按钮",
+                        page = "导航成功页面"
+                    )
+
+                    // 保持原有的导航逻辑不变
+                    val startParam = java.net.URLEncoder.encode("我的位置", "UTF-8")
+                    val waypointParam = "null"
+                    val endParam = java.net.URLEncoder.encode("回家", "UTF-8")
+                    navController.navigate("${Screen.NavigationSuccess.route}/$startParam/$waypointParam/$endParam")
                 },
             color = Color.White,
             shape = RoundedCornerShape(12.dp),
             shadowElevation = 2.dp
         ) {
+            // ... (Row with Icon and Text, no changes here) ...
             Row(
                 modifier = Modifier.padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -463,17 +489,23 @@ fun HomeWorkButtons(navController: NavController) {
                 )
             }
         }
-        
+
+        // --- "去单位" 按钮 (保持不变) ---
         Surface(
             modifier = Modifier
                 .weight(1f)
                 .clickable {
-                    navController.navigate("${Screen.NavigationSuccess.route}/${Screen.Home.route}/去单位")
+                    // ... (no changes here) ...
+                    val startParam = java.net.URLEncoder.encode("我的位置", "UTF-8")
+                    val waypointParam = "null"
+                    val endParam = java.net.URLEncoder.encode("去单位", "UTF-8")
+                    navController.navigate("${Screen.NavigationSuccess.route}/$startParam/$waypointParam/$endParam")
                 },
             color = Color.White,
             shape = RoundedCornerShape(12.dp),
             shadowElevation = 2.dp
         ) {
+            // ... (Row with Icon and Text, no changes here) ...
             Row(
                 modifier = Modifier.padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically

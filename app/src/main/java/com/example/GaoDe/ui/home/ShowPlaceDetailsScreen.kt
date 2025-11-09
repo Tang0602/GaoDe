@@ -35,11 +35,13 @@ import com.example.GaoDe.ui.home.ShowPlaceDetailsPresenter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+// --- 修改后 ---
 fun ShowPlaceDetailsScreen(
     placeId: String,
     onBackClick: () -> Unit = {},
     onRouteClick: (String) -> Unit = {},
-    onShareClick: (String, String) -> Unit = { _, _ -> }
+    onShareClick: (String, String) -> Unit = { _, _ -> },
+    onFavoriteClick: (String) -> Unit = {}
 ) {
     var placeDetails by remember { mutableStateOf<PlaceDetails?>(null) }
     var isLoading by remember { mutableStateOf(true) }
@@ -139,7 +141,8 @@ fun ShowPlaceDetailsScreen(
                 BottomActionBar(
                     placeDetails = placeDetails!!,
                     onRouteClick = onRouteClick,
-                    onShareClick = onShareClick
+                    onShareClick = onShareClick,
+                    onFavoriteClick = onFavoriteClick
                 )
             }
         }
@@ -840,22 +843,25 @@ fun ReviewCard(review: com.example.GaoDe.model.Review) {
 fun BottomActionBar(
     placeDetails: PlaceDetails,
     onRouteClick: (String) -> Unit,
-    onShareClick: (String, String) -> Unit = { _, _ -> }
+    onShareClick: (String, String) -> Unit = { _, _ -> },
+    onFavoriteClick: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
     val dataManager = remember { DataManager(context) }
     var isFavorited by remember { mutableStateOf(dataManager.isPlaceFavorited(placeDetails.place.id)) }
     var favoriteCount by remember { mutableIntStateOf(dataManager.getFavorites().size) }
     var showShareDialog by remember { mutableStateOf(false) }
-    
-    val toggleFavorite = {
+
+    val toggleFavorite: (PlaceDetails) -> Unit = { details ->
+        onFavoriteClick(details.place.id)
+
         if (isFavorited) {
-            if (dataManager.removeFromFavorites(placeDetails.place.id)) {
+            if (dataManager.removeFromFavorites(details.place.id)) {
                 isFavorited = false
                 favoriteCount = dataManager.getFavorites().size
             }
         } else {
-            if (dataManager.addToFavorites(placeDetails.place)) {
+            if (dataManager.addToFavorites(details.place)) {
                 isFavorited = true
                 favoriteCount = dataManager.getFavorites().size
             }
@@ -883,7 +889,7 @@ fun BottomActionBar(
                     text = "收藏",
                     badge = favoriteCount.toString(),
                     isSelected = isFavorited,
-                    onClick = toggleFavorite
+                    onClick = { toggleFavorite(placeDetails) }
                 )
                 ActionButton(
                     icon = Icons.Default.Share,

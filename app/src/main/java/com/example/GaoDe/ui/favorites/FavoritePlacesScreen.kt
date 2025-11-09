@@ -33,7 +33,18 @@ fun FavoritePlacesScreen(
     onNavigateBack: () -> Unit = {},
     onFavoriteClick: (Place) -> Unit = {}
 ) {
+    val context = LocalContext.current
     var selectedTab by remember { mutableStateOf(FavoriteTab.MY_FAVORITES) }
+    
+    // 示例2: 指令2 - 查看收藏
+    LaunchedEffect(Unit) {
+        com.example.GaoDe.MainActivity.recordLog(
+            context = context,
+            event = com.example.GaoDe.LogEvent.FAVORITES_VIEW,
+            action = "查看我的收藏",
+            page = "收藏夹页面"
+        )
+    }
     
     Column(
         modifier = Modifier

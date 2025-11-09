@@ -29,6 +29,11 @@ data class Review(
     val timestamp: Long
 )
 
+data class POI(
+    val id: String,
+    val name: String
+)
+
 data class POIItem(
     val id: String,
     val brandName: String,

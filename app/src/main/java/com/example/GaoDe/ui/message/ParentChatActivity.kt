@@ -164,6 +164,8 @@ fun ParentChatScreen(
                 )
             )
         },
+        // --- 这是完整的、已修复的 bottomBar 代码块 ---
+
         bottomBar = {
             // Message input area
             Surface(
@@ -181,7 +183,7 @@ fun ParentChatScreen(
                         modifier = Modifier.weight(1f),
                         verticalAlignment = Alignment.Bottom
                     ) {
-                        // Location sharing button
+                        // Location sharing button (保持不变)
                         IconButton(
                             onClick = {
                                 // Share a sample location
@@ -193,7 +195,7 @@ fun ParentChatScreen(
                                     messageType = ChatMessageType.LOCATION
                                 )
                                 chatMessages = chatMessages + locationMessage
-                                
+
                                 // Save location message to DataManager
                                 dataManager.addSharedMessage(contactId, contactName, "您分享了地点: 武汉市洪山区华中科技大学 - 我在这里")
                             },
@@ -205,7 +207,8 @@ fun ParentChatScreen(
                                 tint = Color(0xFF42A5F5)
                             )
                         }
-                        
+
+                        // OutlinedTextField (保持不变)
                         OutlinedTextField(
                             value = messageText,
                             onValueChange = { messageText = it },
@@ -218,25 +221,40 @@ fun ParentChatScreen(
                             )
                         )
                     }
-                    
+
                     Spacer(modifier = Modifier.width(8.dp))
-                    
+
+                    // "发送" 按钮 (这是被修改的部分)
                     Button(
                         onClick = {
-                            if (messageText.isNotBlank()) {
-                                // Add new message to chat
+                            val trimmedMessage = messageText.trim()
+                            if (trimmedMessage.isNotBlank()) {
+
+                                // --- 1. 在这里添加带有精确条件的日志记录 ---
+                                // 必须是和爸爸聊天，并且消息内容是“吃了吗”
+                                if (contactId == "dad" && trimmedMessage == "吃了吗") {
+                                    // 指令 #12: 记录发送消息的动作
+                                    com.example.GaoDe.MainActivity.recordLog(
+                                        context = context,
+                                        event = com.example.GaoDe.LogEvent.DAD_CHAT,
+                                        action = "发送与爸爸的聊天，询问吃了吗",
+                                        page = "聊天页面"
+                                    )
+                                }
+
+                                // --- 2. 保持您原有的、完整的发送消息业务逻辑不变 ---
                                 val newMessage = ChatMessage(
                                     id = "msg_${System.currentTimeMillis()}",
-                                    content = messageText,
+                                    content = trimmedMessage,
                                     timestamp = System.currentTimeMillis(),
                                     isFromUser = true,
                                     messageType = ChatMessageType.TEXT
                                 )
                                 chatMessages = chatMessages + newMessage
-                                
+
                                 // Save message to DataManager
-                                dataManager.addSharedMessage(contactId, contactName, messageText)
-                                
+                                dataManager.addSharedMessage(contactId, contactName, trimmedMessage)
+
                                 messageText = ""
                             }
                         },

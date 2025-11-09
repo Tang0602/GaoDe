@@ -1,112 +1,81 @@
+#!/usr/bin/env python3
+"""
+Android App Chat with Mom Log Verification Script
+"""
+
 import subprocess
 import json
-import os
-import base64
-from datetime import datetime
+import sys
 
-def update_chat_history(action_type):
-    """Update chat history to device storage"""
+def verify_last_log():
+    """
+    Verify the last log entry in 6_chat_history.json matches the expected action.
+    """
     try:
-        timestamp = int(datetime.now().timestamp() * 1000)
-        chat_record = {
-            "id": f"chat_{timestamp}",
-            "action": action_type,
-            "contact": "妈妈",
-            "timestamp": timestamp,
-            "formattedTime": datetime.fromtimestamp(timestamp / 1000).strftime("%Y-%m-%d %H:%M:%S"),
-            "page": "Chat with Mom",
-            "success": True
-        }
-        
-        device_file_path = 'files/6_chat_history.json'
-        history_records = []
+        cmd = ["adb", "exec-out", "run-as", "com.example.GaoDe", "cat", "files/6_chat_history.json"]
+        result = subprocess.run(cmd, capture_output=True, text=False, check=True)
         
         try:
-            result = subprocess.run(['adb', 'exec-out', 'run-as', 'com.example.GaoDe', 'cat', device_file_path],
-                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8', errors='ignore')
-            if result.returncode == 0 and result.stdout and result.stdout.strip():
-                try:
-                    history_records = json.loads(result.stdout)
-                except json.JSONDecodeError:
-                    history_records = []
-        except Exception:
-            history_records = []
+            stdout_text = result.stdout.decode('utf-8')
+        except UnicodeDecodeError:
+            try:
+                stdout_text = result.stdout.decode('gbk')
+            except UnicodeDecodeError:
+                stdout_text = result.stdout.decode('utf-8', errors='ignore')
         
-        history_records.append(chat_record)
-        
-        temp_file = os.path.join(os.path.dirname(__file__), 'temp_chat6.json')
-        with open(temp_file, 'w', encoding='utf-8') as f:
-            json.dump(history_records, f, ensure_ascii=False, indent=2)
-        
-        with open(temp_file, 'r', encoding='utf-8') as f:
-            json_content = f.read()
-        
-        json_bytes = json_content.encode('utf-8')
-        json_b64 = base64.b64encode(json_bytes).decode('ascii')
-        
-        create_result = subprocess.run(['adb', 'exec-out', 'run-as', 'com.example.GaoDe', 
-                                      'sh', '-c', f'echo "{json_b64}" | base64 -d > {device_file_path}'],
-                                     capture_output=True, text=True)
-        
-        os.remove(temp_file)
-        
-        if create_result.returncode == 0:
-            verify_result = subprocess.run(['adb', 'exec-out', 'run-as', 'com.example.GaoDe', 
-                                          'test', '-f', device_file_path],
-                                         capture_output=True, text=True)
-            
-            if verify_result.returncode == 0:
-                print(f"Chat history updated to device storage: {action_type}")
-                return True
-            else:
-                print("File creation verification failed")
-                return False
-        else:
-            print(f"Failed to create file: {create_result.stderr}")
+        if not stdout_text.strip():
+            print("FAIL: JSON file is empty")
             return False
+            
+        json_data = json.loads(stdout_text)
         
-    except Exception as e:
-        print(f"Failed to update chat history: {e}")
+        if not json_data or len(json_data) == 0:
+            print("FAIL: No records found in JSON file")
+            return False
+            
+        last_record = json_data[-1]
+        
+        if "action" not in last_record:
+            print("FAIL: 'action' field not found in last record")
+            return False
+            
+        expected_action = "进入与妈妈的聊天界面"
+        actual_action = last_record["action"]
+        if actual_action == expected_action:
+            print("PASS: Chat with mom action verification successful")
+            print(f"Expected: {expected_action}")
+            print(f"Actual: {actual_action}")
+            print(f"Timestamp: {last_record.get('timestamp', 'N/A')}")
+            print(f"Page: {last_record.get('page', 'N/A')}")
+            return True
+        else:
+            print("FAIL: Action mismatch")
+            print(f"Expected: {expected_action}")
+            print(f"Actual: {actual_action}")
+            return False
+            
+    except subprocess.CalledProcessError as e:
+        print(f"FAIL: ADB command failed - {e}")
+        try:
+            error_text = e.stderr.decode('utf-8') if e.stderr else "No error output"
+        except:
+            error_text = "Error decoding stderr"
+        print(f"Error output: {error_text}")
         return False
-
-def ChatWithMomCheck():
-    """Check if successfully entered mom's specific chat interface"""
-    try:
-        result = subprocess.run(['adb', 'exec-out', 'uiautomator', 'dump', '/dev/stdout'], 
-                              capture_output=True, text=True, encoding='utf-8', errors='ignore')
-        
-        if result.returncode == 0:
-            ui_dump = result.stdout
-            
-            if ui_dump is None:
-                ui_dump = ""
-            
-            # Must have "妈妈" in the interface AND chat interface elements
-            has_mom = '妈妈' in ui_dump
-            has_chat_interface = any(element in ui_dump for element in ['发送', '输入框', '对话框', '消息输入'])
-            
-            if has_mom and has_chat_interface:
-                print(f"SUCCESS: Found UI elements")
-                if update_chat_history("Enter Mom's Chat Interface"):
-                    return True
-                else:
-                    print("X Chat history update failed")
-                    return False
-            else:
-                if not has_mom:
-                    print("X Mom identifier not found in UI")
-                else:
-                    print("X Chat interface elements not found in UI")
-                return False
-        else:
-            print(f"UI detection failed: {result.stderr}")
-            return False
-            
+    except json.JSONDecodeError as e:
+        print(f"FAIL: JSON parsing error - {e}")
+        print(f"Raw content: {stdout_text}")
+        return False
     except Exception as e:
-        print(f"Chat interface detection failed: {e}")
+        print(f"FAIL: Unexpected error - {e}")
         return False
 
 if __name__ == "__main__":
-    print("Starting detection: Enter Mom's Chat Interface")
-    result = ChatWithMomCheck()
-    print(f"Detection result: {'PASS' if result else 'FAIL'}")
+    success = verify_last_log()
+    
+    if success:
+        print("\n✓ PASS")
+        sys.exit(0)
+    else:
+        print("\n✗ FAIL")
+        sys.exit(1)

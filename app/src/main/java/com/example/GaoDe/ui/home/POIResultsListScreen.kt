@@ -27,6 +27,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import android.graphics.BitmapFactory
+import com.example.GaoDe.model.POI
 import com.example.GaoDe.model.POIItem
 import com.example.GaoDe.model.GroupBuyInfo
 import com.google.accompanist.flowlayout.FlowRow
@@ -40,13 +41,24 @@ import org.json.JSONObject
 fun POIResultsListScreen(
     searchCategory: String = "美食",
     onBackClick: () -> Unit = {},
-    onPOIClick: (String) -> Unit = {}
+    onPOIClick: (POI) -> Unit = {}
+
 ) {
     var poiList by remember { mutableStateOf<List<POIItem>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
+        // 示例: 指令3 - 搜索美食
+        if (searchCategory == "美食") {
+            com.example.GaoDe.MainActivity.recordLog(
+                context = context,
+                event = com.example.GaoDe.LogEvent.FOOD_SEARCH,
+                action = "搜索美食",
+                page = "美食搜索结果页"
+            )
+        }
+        
         withContext(Dispatchers.IO) {
             try {
                 val inputStream = context.assets.open("data/poi_restaurants.json")
@@ -91,14 +103,15 @@ fun POIResultsListScreen(
             }
         } else {
             // POI List
+            // --- 修改后 ---
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(vertical = 8.dp)
             ) {
-                items(poiList) { poi ->
+                items(items = poiList) { poiItem ->
                     POIListItem(
-                        poi = poi,
-                        onClick = { onPOIClick(poi.id) }
+                        poi = poiItem,
+                        onClick = { onPOIClick(POI(id = poiItem.id, name = poiItem.brandName)) } // <-- 关键修改：转换为POI对象
                     )
                     Divider(
                         modifier = Modifier.padding(horizontal = 16.dp),

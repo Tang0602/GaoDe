@@ -1,113 +1,98 @@
+#!/usr/bin/env python3
+"""
+Android App Hotel Location Share Navigation Log Verification Script
+
+This script verifies that the "分享如家酒店位置给妈妈" action was correctly recorded
+by reading the private storage JSON file using ADB.
+"""
+
 import subprocess
 import json
-import os
-import base64
-from datetime import datetime
+import sys
 
-def update_share_history(action_type):
-    """Update hotel location sharing history to device storage"""
+
+def verify_last_log():
+    """
+    Verify the last log entry in 14_hotel_share_history.json matches the expected action.
+    
+    Returns:
+        bool: True if verification passes, False otherwise
+    """
     try:
-        timestamp = int(datetime.now().timestamp() * 1000)
-        share_record = {
-            "id": f"share_{timestamp}",
-            "action": action_type,
-            "hotelName": "如家酒店",
-            "sharedTo": "妈妈",
-            "timestamp": timestamp,
-            "formattedTime": datetime.fromtimestamp(timestamp / 1000).strftime("%Y-%m-%d %H:%M:%S"),
-            "page": "Share Hotel Location",
-            "success": True
-        }
+        # Use ADB to read the private file content directly into memory
+        cmd = ["adb", "exec-out", "run-as", "com.example.GaoDe", "cat", "files/14_hotel_share_history.json"]
+        result = subprocess.run(cmd, capture_output=True, text=False, check=True)
         
-        device_file_path = 'files/14_hotel_share_history.json'
-        history_records = []
-        
+        # Decode the output with proper encoding handling
         try:
-            result = subprocess.run(['adb', 'exec-out', 'run-as', 'com.example.GaoDe', 'cat', device_file_path],
-                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, encoding='utf-8', errors='ignore')
-            if result.returncode == 0 and result.stdout and result.stdout.strip():
-                try:
-                    history_records = json.loads(result.stdout)
-                except json.JSONDecodeError:
-                    history_records = []
-        except Exception:
-            history_records = []
+            stdout_text = result.stdout.decode('utf-8')
+        except UnicodeDecodeError:
+            # Fallback to gbk encoding for Chinese Windows systems
+            try:
+                stdout_text = result.stdout.decode('gbk')
+            except UnicodeDecodeError:
+                # Last resort: ignore decode errors
+                stdout_text = result.stdout.decode('utf-8', errors='ignore')
         
-        history_records.append(share_record)
-        
-        temp_file = os.path.join(os.path.dirname(__file__), 'temp_hotel_share14.json')
-        with open(temp_file, 'w', encoding='utf-8') as f:
-            json.dump(history_records, f, ensure_ascii=False, indent=2)
-        
-        with open(temp_file, 'r', encoding='utf-8') as f:
-            json_content = f.read()
-        
-        json_bytes = json_content.encode('utf-8')
-        json_b64 = base64.b64encode(json_bytes).decode('ascii')
-        
-        create_result = subprocess.run(['adb', 'exec-out', 'run-as', 'com.example.GaoDe', 
-                                      'sh', '-c', f'echo "{json_b64}" | base64 -d > {device_file_path}'],
-                                     capture_output=True, text=True)
-        
-        os.remove(temp_file)
-        
-        if create_result.returncode == 0:
-            verify_result = subprocess.run(['adb', 'exec-out', 'run-as', 'com.example.GaoDe', 
-                                          'test', '-f', device_file_path],
-                                         capture_output=True, text=True)
-            
-            if verify_result.returncode == 0:
-                print(f"Hotel share history updated to device storage: {action_type}")
-                return True
-            else:
-                print("File creation verification failed")
-                return False
-        else:
-            print(f"Failed to create file: {create_result.stderr}")
+        # Parse JSON content from memory
+        if not stdout_text.strip():
+            print("FAIL: JSON file is empty")
             return False
+            
+        json_data = json.loads(stdout_text)
         
+        # Check if there are any records
+        if not json_data or len(json_data) == 0:
+            print("FAIL: No records found in JSON file")
+            return False
+            
+        # Get the last record
+        last_record = json_data[-1]
+        
+        # Verify the action field
+        if "action" not in last_record:
+            print("FAIL: 'action' field not found in last record")
+            return False
+            
+        expected_action = "分享如家酒店位置给妈妈"
+        actual_action = last_record["action"]
+        if actual_action == expected_action:
+            print("PASS: Share Home Inn location to mom verification successful")
+            print(f"Expected: {expected_action}")
+            print(f"Actual: {actual_action}")
+            print(f"Timestamp: {last_record.get('timestamp', 'N/A')}")
+            print(f"Page: {last_record.get('page', 'N/A')}")
+            return True
+        else:
+            print("FAIL: Action mismatch")
+            print(f"Expected: {expected_action}")
+            print(f"Actual: {actual_action}")
+            return False
+            
+    except subprocess.CalledProcessError as e:
+        print(f"FAIL: ADB command failed - {e}")
+        try:
+            error_text = e.stderr.decode('utf-8') if e.stderr else "No error output"
+        except:
+            error_text = "Error decoding stderr"
+        print(f"Error output: {error_text}")
+        return False
+    except json.JSONDecodeError as e:
+        print(f"FAIL: JSON parsing error - {e}")
+        print(f"Raw content: {stdout_text}")
+        return False
     except Exception as e:
-        print(f"Failed to update hotel share history: {e}")
+        print(f"FAIL: Unexpected error - {e}")
         return False
 
-def HotelShareCheck():
-    """Check if hotel location was shared to mom (click selection completes share)"""
-    try:
-        result = subprocess.run(['adb', 'exec-out', 'uiautomator', 'dump', '/dev/stdout'], 
-                              capture_output=True, text=True, encoding='utf-8', errors='ignore')
-        
-        if result.returncode == 0:
-            ui_dump = result.stdout
-            
-            if ui_dump is None:
-                ui_dump = ""
-            
-            # Must have both hotel info AND mom selected (clicking mom completes the share)
-            has_hotel = '如家酒店' in ui_dump
-            has_mom_selected = '妈妈' in ui_dump
-            
-            if has_hotel and has_mom_selected:
-                print(f"SUCCESS: Found UI elements")
-                if update_share_history("Share Rujia Hotel Location to Mom"):
-                    return True
-                else:
-                    print("X Hotel share history update failed")
-                    return False
-            else:
-                if not has_hotel:
-                    print("X Hotel information not found in UI")
-                else:
-                    print("X Mom selection not found in UI")
-                return False
-        else:
-            print(f"UI detection failed: {result.stderr}")
-            return False
-            
-    except Exception as e:
-        print(f"Hotel sharing detection failed: {e}")
-        return False
 
 if __name__ == "__main__":
-    print("Starting detection: Share Rujia Hotel Location to Mom")
-    result = HotelShareCheck()
-    print(f"Detection result: {'PASS' if result else 'FAIL'}")
+    # Verify the expected operation: "分享如家酒店位置给妈妈"
+    success = verify_last_log()
+    
+    if success:
+        print("\n✓ PASS")
+        sys.exit(0)
+    else:
+        print("\n✗ FAIL")
+        sys.exit(1)

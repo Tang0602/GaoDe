@@ -58,8 +58,13 @@ fun MessageScreen() {
     
     // 使用LaunchedEffect来定期刷新消息
     LaunchedEffect(Unit) {
-        // 记录用户点击进入消息页面的操作
-        com.example.GaoDe.MainActivity.recordNavigationAction(context, "点击消息页面", "MessageScreen")
+        // 示例1: 指令1 - 点击消息页面
+        com.example.GaoDe.MainActivity.recordLog(
+            context = context,
+            event = com.example.GaoDe.LogEvent.MESSAGE_PAGE_NAVIGATE,
+            action = "点击消息页面",
+            page = "MessageScreen"
+        )
     }
     
     // 打车会话点击处理
@@ -264,6 +269,7 @@ fun MessageRow(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 12.dp)
+            // --- 修改后 ---
             .clickable {
                 // 如果是打车会话消息，处理点击事件
                 if (message.id.startsWith("ride_")) {
@@ -275,6 +281,19 @@ fun MessageRow(
                         "contact_mom" -> "mom"
                         else -> return@clickable
                     }
+
+                    // !!! 在这里根据 contactId 添加日志记录 !!!
+                    if (contactId == "mom") {
+                        // 指令 #6: 进入与妈妈的聊天界面
+                        com.example.GaoDe.MainActivity.recordLog(
+                            context = context,
+                            event = com.example.GaoDe.LogEvent.MOM_CHAT, // 确保枚举名正确
+                            action = "进入与妈妈的聊天界面",
+                            page = "聊天页面"
+                        )
+                    }
+
+                    // --- 保持原有的导航逻辑不变 ---
                     val contactName = when (contactId) {
                         "dad" -> "爸爸"
                         "mom" -> "妈妈"
@@ -285,7 +304,7 @@ fun MessageRow(
                         "mom" -> "friend_2.jpg"
                         else -> return@clickable
                     }
-                    
+
                     val intent = Intent(context, ParentChatActivity::class.java).apply {
                         putExtra("CONTACT_ID", contactId)
                         putExtra("CONTACT_NAME", contactName)
