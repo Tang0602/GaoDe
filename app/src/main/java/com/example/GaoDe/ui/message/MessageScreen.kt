@@ -58,7 +58,8 @@ fun MessageScreen() {
     
     // 使用LaunchedEffect来定期刷新消息
     LaunchedEffect(Unit) {
-        // 组件首次加载时获取最新消息
+        // 记录用户点击进入消息页面的操作
+        com.example.GaoDe.MainActivity.recordNavigationAction(context, "点击消息页面", "MessageScreen")
     }
     
     // 打车会话点击处理

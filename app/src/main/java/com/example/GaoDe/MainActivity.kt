@@ -1,10 +1,16 @@
 package com.example.GaoDe
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.amap.api.maps.MapsInitializer
+import org.json.JSONArray
+import org.json.JSONObject
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -52,6 +58,39 @@ class MainActivity : ComponentActivity() {
         setContent {
             GaoDeTheme {
                 MainScreen()
+            }
+        }
+    }
+    
+    companion object {
+        fun recordNavigationAction(context: Context, action: String, page: String) {
+            val fileName = "1_message_history.json"
+            val file = File(context.filesDir, fileName)
+            
+            try {
+                val jsonArray = if (file.exists()) {
+                    val content = file.readText()
+                    if (content.isNotEmpty()) {
+                        JSONArray(content)
+                    } else {
+                        JSONArray()
+                    }
+                } else {
+                    JSONArray()
+                }
+                
+                val currentTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+                val newRecord = JSONObject().apply {
+                    put("timestamp", currentTime)
+                    put("action", action)
+                    put("page", page)
+                }
+                
+                jsonArray.put(newRecord)
+                
+                file.writeText(jsonArray.toString(2))
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }
