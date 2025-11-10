@@ -24,6 +24,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import android.graphics.BitmapFactory
+import com.example.GaoDe.model.Hotel
 import com.example.GaoDe.model.HotelItem
 import com.example.GaoDe.model.HotelPriceInfo
 import com.google.accompanist.flowlayout.FlowRow
@@ -38,7 +39,7 @@ fun HotelResultsListScreen(
     searchCategory: String = "酒店",
     onBackClick: () -> Unit = {},
     onHotelClick: (String) -> Unit = {},
-    onOrderClick: (String) -> Unit = {}
+    onOrderClick: (Hotel) -> Unit = {}
 ) {
     var hotelList by remember { mutableStateOf<List<HotelItem>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
@@ -93,11 +94,11 @@ fun HotelResultsListScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(vertical = 8.dp)
             ) {
-                items(hotelList) { hotel ->
+                items(hotelList) { hotelItem ->
                     HotelListItem(
-                        hotel = hotel,
-                        onClick = { onHotelClick(hotel.id) },
-                        onOrderClick = { onOrderClick(hotel.id) }
+                        hotel = hotelItem,
+                        onClick = { onHotelClick(hotelItem.id) },
+                        onOrderClick = { onOrderClick(Hotel(id = hotelItem.id, name = hotelItem.hotelName)) }
                     )
                     Divider(
                         modifier = Modifier.padding(horizontal = 16.dp),

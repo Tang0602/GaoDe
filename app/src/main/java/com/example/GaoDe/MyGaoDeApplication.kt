@@ -30,11 +30,7 @@ class MyGaoDeApplication : Application() {
             "13_happy_valley_ride_history.json",
             "14_hotel_share_history.json",
             "15_muyu_navigation_history.json",
-            "16_skin_history.json",
-            "17_navigation_history.json",
-            "18_ride_history.json",
             "19_hotel_booking_history.json",
-            "20_multi_route_history.json"
         )
         
         // 遍历所有文件，确保它们在App启动时就已经存在

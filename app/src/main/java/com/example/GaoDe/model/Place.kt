@@ -34,6 +34,11 @@ data class POI(
     val name: String
 )
 
+data class Hotel(
+    val id: String,
+    val name: String
+)
+
 data class POIItem(
     val id: String,
     val brandName: String,

@@ -65,7 +65,8 @@ fun PlanRouteScreen(
     endLocation: String = "巴奴毛肚火锅（群光广场店）",
     onBackClick: () -> Unit = {},
     onTaxiClick: () -> Unit = {},
-    onPublicTransportClick: (String, String, String?, String) -> Unit = { _, _, _, _ -> }
+    onPublicTransportClick: (String, String, String?, String) -> Unit = { _, _, _, _ -> },
+    onConfirmMultiRouteClick: () -> Unit = {}
 ) {
     var routeOptions by remember { mutableStateOf<List<RouteOption>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
@@ -142,21 +143,53 @@ fun PlanRouteScreen(
                     onTaxiClick = onTaxiClick
                 )
             } else {
-                // Route Options List
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(vertical = 8.dp)
-                ) {
-                    items(routeOptions) { route ->
-                        RouteOptionCard(
-                            route = route,
-                            onClick = { 
-                                when (route.transportationType) {
-                                    "打车" -> onTaxiClick()
-                                    else -> onPublicTransportClick(route.id, startLocation, waypoint, endLocation)
+                Column(modifier = Modifier.fillMaxSize()) {
+                    // Route Options List
+                    LazyColumn(
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(vertical = 8.dp)
+                    ) {
+                        items(routeOptions) { route ->
+                            RouteOptionCard(
+                                route = route,
+                                onClick = { 
+                                    when (route.transportationType) {
+                                        "打车" -> onTaxiClick()
+                                        else -> onPublicTransportClick(route.id, startLocation, waypoint, endLocation)
+                                    }
                                 }
+                            )
+                        }
+                    }
+                    
+                    // 多地点路线确认按钮 - 指令 #20
+                    if (waypoint != null) {
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            color = Color.White,
+                            shadowElevation = 8.dp
+                        ) {
+                            Button(
+                                onClick = {
+                                    // 指令 #20: 规划多地点复合路线 (动作日志 - 无条件)
+                                    onConfirmMultiRouteClick()
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFF2196F3)
+                                ),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Text(
+                                    text = "确定多地点路线",
+                                    color = Color.White,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
                             }
-                        )
+                        }
                     }
                 }
             }

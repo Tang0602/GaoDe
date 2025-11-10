@@ -21,5 +21,10 @@ enum class LogEvent(val fileName: String) {
     DAD_CHAT("12_dad_chat_history.json"),
     HAPPY_VALLEY_RIDE("13_happy_valley_ride_history.json"),
     HOTEL_SHARE("14_hotel_share_history.json"),
-    MUYU_NAVIGATION("15_muyu_navigation_history.json")
+    MUYU_NAVIGATION("15_muyu_navigation_history.json"),
+
+
+
+    HOTEL_BOOKING("19_hotel_booking_history.json"),
+
 }

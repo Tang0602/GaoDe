@@ -26,7 +26,9 @@ import androidx.compose.ui.unit.sp
 import android.content.Intent
 
 @Composable
-fun MyScreen() {
+fun MyScreen(
+    onSkinClick: () -> Unit = {}
+) {
     val context = LocalContext.current
     
     Box(modifier = Modifier.fillMaxSize()) {
@@ -44,10 +46,7 @@ fun MyScreen() {
             
             // 个性化设置模块
             PersonalizationCard(
-                onSkinClick = {
-                    val intent = Intent(context, com.example.GaoDe.ui.themes.ThemeSkinActivity::class.java)
-                    context.startActivity(intent)
-                }
+                onSkinClick = onSkinClick
             )
             
             // 订单中心模块
