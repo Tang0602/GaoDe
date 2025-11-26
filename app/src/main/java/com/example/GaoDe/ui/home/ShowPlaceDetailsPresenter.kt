@@ -13,7 +13,7 @@ import com.example.GaoDe.model.Place
 import com.example.GaoDe.model.PlaceDetails
 import com.example.GaoDe.model.Review
 import kotlinx.coroutines.*
-
+import android.util.Log
 class ShowPlaceDetailsPresenter(
     private val view: ShowPlaceDetailsContract.View,
     private val dataManager: DataManager,
@@ -25,34 +25,54 @@ class ShowPlaceDetailsPresenter(
 
     // 高德定位客户端
     private var mLocationClient: AMapLocationClient? = null
-    // 存储用户当前位置
-    private var myLocationPoint: LatLonPoint? = null
+    // 存储用户当前位置（固定坐标用于路线规划）
+    private val fixedStartPoint = LatLonPoint(30.519752, 114.357138)  // 华中师范大学（南湖校区）
+    // 起点显示名称（直接设置为成功定位状态）
+    private var startLocationName: String = "华中师范大学（南湖校区）"
 
     override fun start() {
+        // --- 日志添加在这里 ---
+        Log.d("GaoDeTest", "【初始化】ShowPlaceDetailsPresenter.start() 方法被调用。")
+        // --------------------
+
         // Presenter started
         if (context != null) {
             try {
                 // 初始化高德POI搜索
                 poiSearch = PoiSearch(context, null)
                 poiSearch?.setOnPoiSearchListener(this)
+                // --- 日志添加在这里 ---
+                Log.d("GaoDeTest", "【初始化】PoiSearch客户端初始化并设置监听器成功。")
+                // --------------------
 
                 // 初始化高德定位客户端
                 mLocationClient = AMapLocationClient(context.applicationContext)
                 // 设置定位回调监听
                 mLocationClient?.setLocationListener(this)
+                // --- 日志添加在这里 ---
+                Log.d("GaoDeTest", "【初始化】AMapLocationClient客户端初始化并设置监听器成功。")
+                // --------------------
+
                 // 配置定位参数
                 val locationOption = AMapLocationClientOption()
                 // 设置定位模式为高精度模式
                 locationOption.locationMode = AMapLocationClientOption.AMapLocationMode.Hight_Accuracy
-                // 设置定位间隔，单次定位
+                // 设置为单次定位
                 locationOption.isOnceLocation = true
                 // 设置超时时间
                 locationOption.httpTimeOut = 20000
                 // 设置定位参数
                 mLocationClient?.setLocationOption(locationOption)
+
                 // 启动定位
+                // --- 日志添加在这里 ---
+                Log.d("GaoDeTest", "【发起请求】正在调用SDK启动单次定位...")
+                // --------------------
                 mLocationClient?.startLocation()
             } catch (e: Exception) {
+                // --- 日志添加在这里 ---
+                Log.e("GaoDeTest", "【失败】SDK客户端初始化失败！错误信息: ${e.message}", e)
+                // --------------------
                 // 初始化失败，将使用本地数据
             }
         }
@@ -94,6 +114,9 @@ class ShowPlaceDetailsPresenter(
     override fun onPoiItemSearched(poiItem: com.amap.api.services.core.PoiItem?, rCode: Int) {
         presenterScope.launch {
             if (rCode == 1000 && poiItem != null) {
+                // --- 日志添加在这里 ---
+                Log.d("GaoDeTest", "【成功】POI详情SDK回调成功！店名: ${poiItem.title}, 地址: ${poiItem.snippet}")
+                // --------------------
                 try {
                     // 解析高德SDK返回的POI详情数据
                     val place = Place(
@@ -108,6 +131,7 @@ class ShowPlaceDetailsPresenter(
                         rating = 4.8f,
                         description = null,
                         imageUrl = null
+
                     )
 
                     // 构建详情信息，结合SDK数据和本地占位数据
@@ -135,6 +159,10 @@ class ShowPlaceDetailsPresenter(
                 }
             } else {
                 // 查询失败，使用本地数据
+                // --- 日志添加在这里 ---
+                Log.e("GaoDeTest", "【失败】POI详情SDK回调失败，将使用本地数据。错误码: $rCode")
+                // --------------------
+
                 loadLocalPlaceDetails("place_006")
             }
         }
@@ -374,17 +402,25 @@ class ShowPlaceDetailsPresenter(
 
     // 高德定位回调：处理定位结果
     override fun onLocationChanged(amapLocation: AMapLocation?) {
+        // 注意：我们使用固定坐标和固定名称，确保UI始终显示"华中师范大学（南湖校区）"
+        // 真实定位结果仅用于日志记录，不影响UI显示
         if (amapLocation != null && amapLocation.errorCode == 0) {
-            // 定位成功，获取经纬度并存储为LatLonPoint
-            myLocationPoint = LatLonPoint(amapLocation.latitude, amapLocation.longitude)
+            // 定位成功（日志记录）
+            android.util.Log.d("ShowPlaceDetailsPresenter", "定位成功: ${amapLocation.latitude}, ${amapLocation.longitude}")
         } else {
-            // 定位失败，使用默认位置（华中科技大学）
-            myLocationPoint = LatLonPoint(30.5167, 114.4115)
+            // 定位失败（日志记录）
+            android.util.Log.d("ShowPlaceDetailsPresenter", "定位失败: ${amapLocation?.errorInfo}")
         }
+        // 始终保持显示名称为"华中师范大学（南湖校区）"
     }
 
-    // 获取用户当前位置（供View层调用）
-    fun getUserLocation(): LatLonPoint? {
-        return myLocationPoint
+    // 获取起点显示名称
+    fun getStartLocationName(): String {
+        return startLocationName
+    }
+
+    // 获取用户当前位置（始终返回固定坐标用于路线规划）
+    fun getUserLocation(): LatLonPoint {
+        return fixedStartPoint
     }
 }

@@ -668,9 +668,9 @@ app/src/main/
 
 完整的用户流程：**定位用户位置 → 查看POI详情 → 规划公共交通路线**
 
-### 步骤1：实现"我的位置"的真实定位
+### 步骤1：实现"我的位置"的真实定位（已升级）
 
-**功能目标**：在用户点击"路线"按钮时，不使用固定坐标，而是通过高德定位SDK获取设备的实时位置。
+**功能目标**：在用户点击"路线"按钮时，UI始终显示"华中师范大学（南湖校区）"作为起点，使用精确的固定坐标进行路线规划。
 
 **技术实现**：
 - **文件位置**：`ShowPlaceDetailsPresenter.kt`
@@ -679,13 +679,17 @@ app/src/main/
   1. 初始化定位客户端：在Presenter的`start()`方法中创建`AMapLocationClient`实例
   2. 配置定位参数：使用`AMapLocationClientOption`设置高精度定位模式，单次定位
   3. 设置定位回调：实现`AMapLocationListener`接口，处理定位结果
-  4. 定位成功处理：在`onLocationChanged()`回调中提取经纬度，存储为`LatLonPoint`
+  4. **显示逻辑**（最新）：
+     - UI始终显示：显示名称固定为"华中师范大学（南湖校区）"
+     - 精确坐标：路线规划使用固定坐标 `LatLonPoint(30.519752, 114.357138)` 以确保可测试性和准确性
+     - 真实定位：后台仍然执行真实定位请求，结果仅用于日志记录，不影响UI显示
   5. 资源管理：在`stop()`方法中释放定位客户端资源
 
 **关键代码位置**：
-- 定位初始化：`ShowPlaceDetailsPresenter.kt:39-54`
-- 定位回调：`ShowPlaceDetailsPresenter.kt:376-384`
-- 获取位置方法：`ShowPlaceDetailsPresenter.kt:387-389`
+- 定位初始化：`ShowPlaceDetailsPresenter.kt:39-56`
+- 定位回调（日志记录）：`ShowPlaceDetailsPresenter.kt:378-389`
+- 获取起点显示名称：`ShowPlaceDetailsPresenter.kt:391-393`
+- 获取固定坐标：`ShowPlaceDetailsPresenter.kt:395-397`
 
 ### 步骤2：实现"巴奴毛肚火锅"详情页的真实数据填充
 
@@ -715,42 +719,56 @@ app/src/main/
 - ID搜索请求：`ShowPlaceDetailsPresenter.kt:43-55`
 - 结果解析：`ShowPlaceDetailsPresenter.kt:63-109`
 
-### 步骤3：实现到"巴奴毛肚火锅"的公共交通路线规划
+### 步骤3：实现到"巴奴毛肚火锅"的公共交通路线规划（已升级）
 
-**功能目标**：当用户点击"路线"按钮后，跳转到路线规划页，在线查询从用户位置到目的地的公共交通路线，并用真实数据填充UI。
+**功能目标**：当用户点击"路线"按钮后，跳转到路线规划页，在线查询从用户位置到目的地的公共交通路线，并进行超详细的数据解析。
 
 **技术实现**：
-- **文件位置**：`PlanRoutePresenter.kt` (新创建)
+- **文件位置**：`PlanRoutePresenter.kt`
 - **SDK集成**：高德路线规划SDK (`RouteSearch`)
 - **实现细节**：
-  1. 数据传递：在详情页"路线"按钮点击时，通过Intent传递起点`LatLonPoint`（步骤1获取）和终点`LatLonPoint`（步骤2获取）
+  1. 数据传递：在详情页"路线"按钮点击时，传递起点名称、终点名称及坐标
   2. 初始化路线搜索：创建`RouteSearch`实例并设置监听器
   3. 构造查询参数：
      - 创建`RouteSearch.FromAndTo`对象（起点和终点）
      - 创建`RouteSearch.BusRouteQuery`对象（公交查询参数，城市：武汉）
   4. 发起异步查询：调用`calculateBusRouteAsyn()`方法
-  5. 解析复杂结果：在`onBusRouteSearched()`回调中解析`BusRouteResult`
-  6. 路线方案提取：遍历`result.getPaths()`获取多条路线方案
-  7. 路线段落解析：对每个`BusPath`遍历`getSteps()`，识别步行、公交、地铁段
-  8. 数据转换：将SDK数据转换为应用的`RouteOption`和`RouteSegment`模型
+  5. **超详细解析**（新增）：
+     - A. 提取宏观信息：总时长、总距离、**总步行距离**（`busPath.getWalkDistance()`）
+     - B. 深入解析每一段路程：
+       - 步行段：提取步行距离（米）和时长，显示在图标旁
+       - 公交段：提取**线路名称**、**经过站数**、**上车站名称**
+       - 地铁段：提取线路名称
+     - C. 生成详细信息：
+       - **站数和上车站**：如"2站·珞狮路狮城名居上车"
+       - **首末班车警告**：检测当前时间，生成如"⚠️ 首班车即将发出，汉奇定制公交4号线首班车时间00:30"
+     - D. 可乘坐性判断：
+       - 检查首末班车时间与当前时间
+       - 标记 `isAvailable` 字段（当前不可乘坐的方案可单独展示）
 
-**复杂数据解析**：
+**复杂数据解析（已升级）**：
 - **总耗时**：`busPath.getDuration()`（秒）→ 格式化为"X小时X分钟"
 - **总距离**：`busPath.getDistance()`（米）→ 格式化为"X.X公里"
+- **总步行距离**（新增）：`busPath.getWalkDistance()`（米）→ 格式化为"步行 X.X公里"
 - **总费用**：`busPath.getCost()`（元）
 - **路线详情**：
-  - 步行段：提取距离和时长
-  - 公交段：提取线路名称（`busLine.getBusLineName()`）、经过站数（`busLine.getPassStationNum()`）
-  - 地铁段：提取线路名称（`railway.name`）
-  - 上车站：提取第一个公交段的`departure.name`
+  - 步行段：提取距离（米）和时长（分钟）
+  - 公交段：提取线路名称、经过站数、上车站名称
+  - 地铁段：提取线路名称
+- **站数信息**（新增）：`generateStationsInfo()` 方法生成如"2站·珞狮路狮城名居上车"
+- **首末班车警告**（新增）：`generateWarnings()` 方法检查首末班车时间
+- **可乘坐性判断**（新增）：`checkAvailability()` 方法判断当前是否在运营时间内
 
 **关键代码位置**：
-- Presenter创建：`PlanRoutePresenter.kt:17-400`
+- Presenter完整实现：`PlanRoutePresenter.kt:17-477`
 - 路线搜索请求：`PlanRoutePresenter.kt:40-67`
-- 公交结果解析：`PlanRoutePresenter.kt:70-108`
-- 路线数据转换：`PlanRoutePresenter.kt:110-169`
+- 超详细结果解析：`PlanRoutePresenter.kt:110-177`
+- 路线段解析（含详细信息）：`PlanRoutePresenter.kt:186-246`
+- 站数信息生成：`PlanRoutePresenter.kt:345-380`
+- 首末班车警告生成：`PlanRoutePresenter.kt:382-437`
+- 可乘坐性判断：`PlanRoutePresenter.kt:439-471`
 - Screen集成：`PlanRouteScreen.kt:84-127`
-- 位置传递：`ShowPlaceDetailsScreen.kt:928-950`
+- 位置传递：`ShowPlaceDetailsScreen.kt:928-953`
 
 ### SDK依赖配置
 
@@ -768,10 +786,32 @@ implementation 'com.amap.api:search:latest.integration'
 ### MVP架构设计
 
 所有功能严格遵循MVP模式：
-- **Model层**：`Place.kt`、`PlaceDetails.kt`、`RouteOption.kt` 数据模型
+- **Model层**：`Place.kt`、`PlaceDetails.kt`、`RouteOption.kt` 数据模型（已升级）
 - **View层**：`ShowPlaceDetailsContract.View`、`PlanRouteContract.View` 接口
 - **Presenter层**：`ShowPlaceDetailsPresenter.kt`、`PlanRoutePresenter.kt` 业务逻辑
 - **Screen层**：`ShowPlaceDetailsScreen.kt`、`PlanRouteScreen.kt` Compose UI
+
+### 数据模型升级（新增）
+
+为了支持超详细的UI展示，对数据模型进行了重大升级：
+
+**RouteOption 模型新增字段**：
+- `walkDistance: String?` - 总步行距离，如"步行 1.9公里"
+- `stationsInfo: String?` - 站数和上车站信息，如"2站·珞狮路狮城名居上车"
+- `warnings: List<RouteWarning>` - 警告信息列表（首末班车提示）
+- `isAvailable: Boolean` - 当前是否可乘坐（默认true）
+
+**RouteSegment 模型新增字段**：
+- `walkDistance: Int?` - 步行距离（米），显示在步行图标旁
+- `lineName: String?` - 线路名称，如"汉奇定制公交4号线"
+- `stations: Int?` - 经过站数
+
+**RouteWarning 新增模型**：
+- `type: String` - 警告类型（"first_bus", "last_bus", "not_available"）
+- `message: String` - 警告消息文本
+
+**关键代码位置**：
+- 数据模型定义：`Place.kt:127-158`
 
 ### 错误处理
 

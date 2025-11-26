@@ -201,8 +201,8 @@ fun MainScreen() {
                 ShowPlaceDetailsScreen(
                     placeId = placeId,
                     onBackClick = { navController.popBackStack() },
-                    onRouteClick = { startLat, startLon, endLat, endLon, placeName ->
-                        navController.navigate("${Screen.PlanRoute.route}/$placeName/$startLat/$startLon/$endLat/$endLon")
+                    onRouteClick = { startLat, startLon, endLat, endLon, startName, endName ->
+                        navController.navigate("${Screen.PlanRoute.route}/$startName/$endName/$startLat/$startLon/$endLat/$endLon")
                     },
                     onShareClick = { contactId, message ->
                         MainActivity.recordLog(context = context, event = LogEvent.HOTEL_SHARE, action = "分享如家酒店位置给妈妈", page = "地点详情页面")
@@ -258,14 +258,16 @@ fun MainScreen() {
                 )
 
             }
-            composable("${Screen.PlanRoute.route}/{endName}/{startLat}/{startLon}/{endLat}/{endLon}") { backStackEntry ->
+            composable("${Screen.PlanRoute.route}/{startName}/{endName}/{startLat}/{startLon}/{endLat}/{endLon}") { backStackEntry ->
+                val startName = backStackEntry.arguments?.getString("startName") ?: "我的位置"
                 val endName = backStackEntry.arguments?.getString("endName") ?: "目的地"
-                val startLat = backStackEntry.arguments?.getString("startLat")?.toDoubleOrNull() ?: 30.5167
-                val startLon = backStackEntry.arguments?.getString("startLon")?.toDoubleOrNull() ?: 114.4115
+                val startLat = backStackEntry.arguments?.getString("startLat")?.toDoubleOrNull() ?: 30.518000
+                val startLon = backStackEntry.arguments?.getString("startLon")?.toDoubleOrNull() ?: 114.363000
                 val endLat = backStackEntry.arguments?.getString("endLat")?.toDoubleOrNull() ?: 30.516
                 val endLon = backStackEntry.arguments?.getString("endLon")?.toDoubleOrNull() ?: 114.361
                 val context = LocalContext.current
                 PlanRouteScreen(
+                    startLocation = startName,
                     endLocation = endName,
                     startLat = startLat,
                     startLon = startLon,
@@ -279,7 +281,7 @@ fun MainScreen() {
                         if (endName.contains("欢乐谷", ignoreCase = true)) {
                             MainActivity.recordLog(context = context, event = LogEvent.HAPPY_VALLEY_RIDE, action = "经济型打车去武汉欢乐谷", page = "打车成功页面")
                         }
-                        navController.navigate("${Screen.TaxiSuccess.route}/${Screen.PlanRoute.route}/$endName/$startLat/$startLon/$endLat/$endLon")
+                        navController.navigate("${Screen.TaxiSuccess.route}/${Screen.PlanRoute.route}/$startName/$endName/$startLat/$startLon/$endLat/$endLon")
                     },
                     // Removed logic for #17 and #20 from onPublicTransportClick and onConfirmMultiRouteClick
                     onPublicTransportClick = { routeId, startLoc, waypoint, endLoc ->
@@ -307,19 +309,20 @@ fun MainScreen() {
                 val category = it.arguments?.getString("category") ?: ""
                 PaymentSuccessScreen(onConfirmClick = { navController.navigate("$fromRoute/$category") { popUpTo("$fromRoute/$category") { inclusive = true } } })
             }
-            composable("${Screen.TaxiSuccess.route}/{fromRoute}/{endName}/{startLat}/{startLon}/{endLat}/{endLon}") { backStackEntry ->
+            composable("${Screen.TaxiSuccess.route}/{fromRoute}/{startName}/{endName}/{startLat}/{startLon}/{endLat}/{endLon}") { backStackEntry ->
                 // Removed ride chat log call (#18) by removing the intent logic for RideChatActivity
                 val fromRoute = backStackEntry.arguments?.getString("fromRoute") ?: ""
+                val startName = backStackEntry.arguments?.getString("startName") ?: "我的位置"
                 val endName = backStackEntry.arguments?.getString("endName") ?: ""
-                val startLat = backStackEntry.arguments?.getString("startLat") ?: "30.5167"
-                val startLon = backStackEntry.arguments?.getString("startLon") ?: "114.4115"
+                val startLat = backStackEntry.arguments?.getString("startLat") ?: "30.518000"
+                val startLon = backStackEntry.arguments?.getString("startLon") ?: "114.363000"
                 val endLat = backStackEntry.arguments?.getString("endLat") ?: "30.516"
                 val endLon = backStackEntry.arguments?.getString("endLon") ?: "114.361"
                 val context = LocalContext.current
                 TaxiSuccessScreen(
                     onConfirmClick = {
-                        navController.navigate("$fromRoute/$endName/$startLat/$startLon/$endLat/$endLon") {
-                            popUpTo("$fromRoute/$endName/$startLat/$startLon/$endLat/$endLon") { inclusive = true }
+                        navController.navigate("$fromRoute/$startName/$endName/$startLat/$startLon/$endLat/$endLon") {
+                            popUpTo("$fromRoute/$startName/$endName/$startLat/$startLon/$endLat/$endLon") { inclusive = true }
                         }
                     },
                     onContactDriverClick = {

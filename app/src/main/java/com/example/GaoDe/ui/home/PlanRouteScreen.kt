@@ -1034,8 +1034,8 @@ private fun generateNearbyRoutes(distance: String, taxiPrice: String, taxiDurati
             distance = distance,
             price = "2元",
             mainRoute = listOf(
-                RouteSegment("步行", "3分钟", "walk", null),
-                RouteSegment("公交", "586路", "bus", "绿色")
+                RouteSegment(type = "步行", description = "3分钟", icon = "walk", backgroundColor = null),
+                RouteSegment(type = "公交", description = "586路", icon = "bus", backgroundColor = "绿色")
             ),
             details = "3站 · 2元 · 广八路公交站上车",
             realTimeInfo = "586路 预计 2分钟到站",
@@ -1049,7 +1049,7 @@ private fun generateNearbyRoutes(distance: String, taxiPrice: String, taxiDurati
             distance = distance,
             price = null,
             mainRoute = listOf(
-                RouteSegment("步行", "12分钟", "walk", null)
+                RouteSegment(type = "步行", description = "12分钟", icon = "walk", backgroundColor = null)
             ),
             details = "全程步行 · 无红绿灯",
             realTimeInfo = null,
@@ -1063,7 +1063,7 @@ private fun generateNearbyRoutes(distance: String, taxiPrice: String, taxiDurati
             distance = distance,
             price = taxiPrice,
             mainRoute = listOf(
-                RouteSegment("打车", "一口价 $taxiPrice", "taxi", "蓝色")
+                RouteSegment(type = "打车", description = "一口价 $taxiPrice", icon = "taxi", backgroundColor = "蓝色")
             ),
             details = "$distance · 上门接送",
             realTimeInfo = "附近有车，预计 1分钟上车",
@@ -1082,9 +1082,9 @@ private fun generateMidDistanceRoutes(distance: String, taxiPrice: String, busDu
             distance = distance,
             price = "2元",
             mainRoute = listOf(
-                RouteSegment("步行", "8分钟", "walk", null),
-                RouteSegment("公交", "702路", "bus", "绿色"),
-                RouteSegment("步行", "5分钟", "walk", null)
+                RouteSegment(type = "步行", description = "8分钟", icon = "walk", backgroundColor = null),
+                RouteSegment(type = "公交", description = "702路", icon = "bus", backgroundColor = "绿色"),
+                RouteSegment(type = "步行", description = "5分钟", icon = "walk", backgroundColor = null)
             ),
             details = "8站 · 2元 · 雄楚大道公交站上车",
             realTimeInfo = "702路 预计 5分钟到站",
@@ -1098,9 +1098,9 @@ private fun generateMidDistanceRoutes(distance: String, taxiPrice: String, busDu
             distance = distance,
             price = "3元",
             mainRoute = listOf(
-                RouteSegment("步行", "12分钟", "walk", null),
-                RouteSegment("地铁", "2号线", "subway", "蓝色"),
-                RouteSegment("步行", "8分钟", "walk", null)
+                RouteSegment(type = "步行", description = "12分钟", icon = "walk", backgroundColor = null),
+                RouteSegment(type = "地铁", description = "2号线", icon = "subway", backgroundColor = "蓝色"),
+                RouteSegment(type = "步行", description = "8分钟", icon = "walk", backgroundColor = null)
             ),
             details = "4站 · 3元 · 虎泉站 (B口) 进站",
             realTimeInfo = "2号线 首班发车约 4分钟",
@@ -1114,9 +1114,9 @@ private fun generateMidDistanceRoutes(distance: String, taxiPrice: String, busDu
             distance = distance,
             price = "约10元",
             mainRoute = listOf(
-                RouteSegment("打车", "打车 6元", "taxi", "蓝色"),
-                RouteSegment("地铁", "2号线", "subway", "蓝色"),
-                RouteSegment("步行", "5分钟", "walk", null)
+                RouteSegment(type = "打车", description = "打车 6元", icon = "taxi", backgroundColor = "蓝色"),
+                RouteSegment(type = "地铁", description = "2号线", icon = "subway", backgroundColor = "蓝色"),
+                RouteSegment(type = "步行", description = "5分钟", icon = "walk", backgroundColor = null)
             ),
             details = "3站 · 打车+地铁 · 螃蟹岬站进站",
             realTimeInfo = "2号线 首班发车约 3分钟",
@@ -1130,7 +1130,7 @@ private fun generateMidDistanceRoutes(distance: String, taxiPrice: String, busDu
             distance = distance,
             price = taxiPrice,
             mainRoute = listOf(
-                RouteSegment("打车", "一口价 $taxiPrice", "taxi", "蓝色")
+                RouteSegment(type = "打车", description = "一口价 $taxiPrice", icon = "taxi", backgroundColor = "蓝色")
             ),
             details = "$distance · 更快更省心 · 上门接送",
             realTimeInfo = "附近有车，预计 3分钟上车",
@@ -1149,10 +1149,10 @@ private fun generateLongDistanceRoutes(distance: String, taxiPrice: String, busD
             distance = distance,
             price = "5元",
             mainRoute = listOf(
-                RouteSegment("步行", "15分钟", "walk", null),
-                RouteSegment("地铁", "2号线", "subway", "蓝色"),
-                RouteSegment("地铁", "4号线", "subway", "绿色"),
-                RouteSegment("步行", "12分钟", "walk", null)
+                RouteSegment(type = "步行", description = "15分钟", icon = "walk", backgroundColor = null),
+                RouteSegment(type = "地铁", description = "2号线", icon = "subway", backgroundColor = "蓝色"),
+                RouteSegment(type = "地铁", description = "4号线", icon = "subway", backgroundColor = "绿色"),
+                RouteSegment(type = "步行", description = "12分钟", icon = "walk", backgroundColor = null)
             ),
             details = "地铁换乘 · 中南路站换乘 · 5元",
             realTimeInfo = "换乘等待约 5分钟",
@@ -1166,10 +1166,10 @@ private fun generateLongDistanceRoutes(distance: String, taxiPrice: String, busD
             distance = distance,
             price = "4元",
             mainRoute = listOf(
-                RouteSegment("步行", "8分钟", "walk", null),
-                RouteSegment("公交", "538路", "bus", "绿色"),
-                RouteSegment("公交", "413路", "bus", "蓝色"),
-                RouteSegment("步行", "10分钟", "walk", null)
+                RouteSegment(type = "步行", description = "8分钟", icon = "walk", backgroundColor = null),
+                RouteSegment(type = "公交", description = "538路", icon = "bus", backgroundColor = "绿色"),
+                RouteSegment(type = "公交", description = "413路", icon = "bus", backgroundColor = "蓝色"),
+                RouteSegment(type = "步行", description = "10分钟", icon = "walk", backgroundColor = null)
             ),
             details = "公交换乘 · 中南路站换乘 · 4元",
             realTimeInfo = "538路 预计 12分钟到站",
@@ -1183,9 +1183,9 @@ private fun generateLongDistanceRoutes(distance: String, taxiPrice: String, busD
             distance = distance,
             price = "约15元",
             mainRoute = listOf(
-                RouteSegment("打车", "打车 10元", "taxi", "蓝色"),
-                RouteSegment("地铁", "4号线", "subway", "绿色"),
-                RouteSegment("步行", "8分钟", "walk", null)
+                RouteSegment(type = "打车", description = "打车 10元", icon = "taxi", backgroundColor = "蓝色"),
+                RouteSegment(type = "地铁", description = "4号线", icon = "subway", backgroundColor = "绿色"),
+                RouteSegment(type = "步行", description = "8分钟", icon = "walk", backgroundColor = null)
             ),
             details = "打车+地铁 · 王家湾站进站 · 约15元",
             realTimeInfo = "4号线 首班发车约 6分钟",
@@ -1199,7 +1199,7 @@ private fun generateLongDistanceRoutes(distance: String, taxiPrice: String, busD
             distance = distance,
             price = taxiPrice,
             mainRoute = listOf(
-                RouteSegment("打车", "一口价 $taxiPrice", "taxi", "蓝色")
+                RouteSegment(type = "打车", description = "一口价 $taxiPrice", icon = "taxi", backgroundColor = "蓝色")
             ),
             details = "$distance · 高速直达 · 上门接送",
             realTimeInfo = "附近有车，预计 5分钟上车",
@@ -1218,9 +1218,9 @@ private fun generateComplexRoutes(distance: String, taxiPrice: String, busDurati
             distance = distance,
             price = "2元",
             mainRoute = listOf(
-                RouteSegment("步行", "12分钟", "walk", null),
-                RouteSegment("公交", "804路", "bus", "绿色"),
-                RouteSegment("步行", "8分钟", "walk", null)
+                RouteSegment(type = "步行", description = "12分钟", icon = "walk", backgroundColor = null),
+                RouteSegment(type = "公交", description = "804路", icon = "bus", backgroundColor = "绿色"),
+                RouteSegment(type = "步行", description = "8分钟", icon = "walk", backgroundColor = null)
             ),
             details = "15站 · 2元 · 雄楚大道BRT元宝山站上车",
             realTimeInfo = "804路 预计 8分钟到站",
@@ -1234,10 +1234,10 @@ private fun generateComplexRoutes(distance: String, taxiPrice: String, busDurati
             distance = distance,
             price = "约12元",
             mainRoute = listOf(
-                RouteSegment("打车", "打车 8元", "taxi", "蓝色"),
-                RouteSegment("步行", "3分钟", "walk", null),
-                RouteSegment("地铁", "5号线", "subway", "蓝色"),
-                RouteSegment("地铁", "11号线", "subway", "紫色")
+                RouteSegment(type = "打车", description = "打车 8元", icon = "taxi", backgroundColor = "蓝色"),
+                RouteSegment(type = "步行", description = "3分钟", icon = "walk", backgroundColor = null),
+                RouteSegment(type = "地铁", description = "5号线", icon = "subway", backgroundColor = "蓝色"),
+                RouteSegment(type = "地铁", description = "11号线", icon = "subway", backgroundColor = "紫色")
             ),
             details = "地铁换乘 · 宝通寺站换乘 · 12元",
             realTimeInfo = "地铁首班发车约 5分钟",
@@ -1251,10 +1251,10 @@ private fun generateComplexRoutes(distance: String, taxiPrice: String, busDurati
             distance = distance,
             price = "4元",
             mainRoute = listOf(
-                RouteSegment("步行", "18分钟", "walk", null),
-                RouteSegment("地铁", "5号线", "subway", "蓝色"),
-                RouteSegment("地铁", "11号线", "subway", "紫色"),
-                RouteSegment("步行", "6分钟", "walk", null)
+                RouteSegment(type = "步行", description = "18分钟", icon = "walk", backgroundColor = null),
+                RouteSegment(type = "地铁", description = "5号线", icon = "subway", backgroundColor = "蓝色"),
+                RouteSegment(type = "地铁", description = "11号线", icon = "subway", backgroundColor = "紫色"),
+                RouteSegment(type = "步行", description = "6分钟", icon = "walk", backgroundColor = null)
             ),
             details = "地铁换乘 · 宝通寺站换乘 · 4元",
             realTimeInfo = "换乘等待约 3分钟",
@@ -1268,7 +1268,7 @@ private fun generateComplexRoutes(distance: String, taxiPrice: String, busDurati
             distance = distance,
             price = taxiPrice,
             mainRoute = listOf(
-                RouteSegment("打车", "一口价 $taxiPrice", "taxi", "蓝色")
+                RouteSegment(type = "打车", description = "一口价 $taxiPrice", icon = "taxi", backgroundColor = "蓝色")
             ),
             details = "$distance · 避开拥堵路段 · 上门接送",
             realTimeInfo = "附近有车，预计 3分钟上车",
@@ -1287,9 +1287,9 @@ private fun generateDefaultRoutes(distance: String, taxiPrice: String, busDurati
             distance = distance,
             price = "2元",
             mainRoute = listOf(
-                RouteSegment("步行", "10分钟", "walk", null),
-                RouteSegment("公交", "518路", "bus", "绿色"),
-                RouteSegment("步行", "6分钟", "walk", null)
+                RouteSegment(type = "步行", description = "10分钟", icon = "walk", backgroundColor = null),
+                RouteSegment(type = "公交", description = "518路", icon = "bus", backgroundColor = "绿色"),
+                RouteSegment(type = "步行", description = "6分钟", icon = "walk", backgroundColor = null)
             ),
             details = "9站 · 2元 · 珞喻路公交站上车",
             realTimeInfo = "518路 预计 8分钟到站",
@@ -1303,9 +1303,9 @@ private fun generateDefaultRoutes(distance: String, taxiPrice: String, busDurati
             distance = distance,
             price = "3元",
             mainRoute = listOf(
-                RouteSegment("步行", "15分钟", "walk", null),
-                RouteSegment("地铁", "2号线", "subway", "蓝色"),
-                RouteSegment("步行", "8分钟", "walk", null)
+                RouteSegment(type = "步行", description = "15分钟", icon = "walk", backgroundColor = null),
+                RouteSegment(type = "地铁", description = "2号线", icon = "subway", backgroundColor = "蓝色"),
+                RouteSegment(type = "步行", description = "8分钟", icon = "walk", backgroundColor = null)
             ),
             details = "5站 · 3元 · 虎泉站进站",
             realTimeInfo = "2号线 首班发车约 6分钟",
@@ -1319,7 +1319,7 @@ private fun generateDefaultRoutes(distance: String, taxiPrice: String, busDurati
             distance = distance,
             price = taxiPrice,
             mainRoute = listOf(
-                RouteSegment("打车", "一口价 $taxiPrice", "taxi", "蓝色")
+                RouteSegment(type = "打车", description = "一口价 $taxiPrice", icon = "taxi", backgroundColor = "蓝色")
             ),
             details = "$distance · 更快更省心 · 上门接送",
             realTimeInfo = "附近有车，预计 4分钟上车",

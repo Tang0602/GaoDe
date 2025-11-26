@@ -1,37 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(mkdir:*)",
-      "Bash(gradlew.bat build:*)",
-      "Bash(./gradlew:*)",
-      "Bash(ls:*)",
-      "Bash(find:*)",
-      "Bash(gradle build)",
-      "Bash(rm:*)",
-      "Bash(true)",
-      "Bash(gradle:*)",
-      "Bash(dir)",
-      "Bash(dir:*)",
-      "Bash(curl:*)",
-      "Bash(chmod:*)",
-      "Bash(.gradlew.bat build)",
-      "Bash(\"./gradlew\" compileDebugKotlin)",
-      "Bash(java:*)",
-      "Bash(git rm:*)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(git filter-branch:*)",
-      "Bash(git push:*)",
-      "Bash(.gradlew assembleDebug)",
-      "Bash(cmd:*)",
-      "Bash(adb exec-out run-as:*)",
-      "Bash(del *.json)",
-      "Bash(python:*)",
-      "Bash(adb push:*)",
-      "Bash(move eval_4_fixed.py eval_4.py)",
-      "Bash(mv:*)",
-      "Bash(adb exec-out:*)"
+      "Bash(gradlew.bat assembleDebug:*)",
+      "Bash(Select-String -Pattern \"error:|BUILD SUCCESSFUL|BUILD FAILED\")",
+      "Bash(Select-Object -First 20)",
+      "Bash(./gradlew.bat assembleDebug:*)"
     ],
-    "deny": []
+    "deny": [],
+    "ask": []
   }
 }

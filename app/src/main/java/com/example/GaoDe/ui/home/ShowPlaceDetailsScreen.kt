@@ -39,8 +39,8 @@ import com.example.GaoDe.ui.home.ShowPlaceDetailsPresenter
 fun ShowPlaceDetailsScreen(
     placeId: String,
     onBackClick: () -> Unit = {},
-    // 修改路线按钮回调：传递起点和终点的经纬度，以及地点名称
-    onRouteClick: (startLat: Double, startLon: Double, endLat: Double, endLon: Double, placeName: String) -> Unit = { _, _, _, _, _ -> },
+    // 修改路线按钮回调：传递起点和终点的经纬度、起点显示名称、终点名称
+    onRouteClick: (startLat: Double, startLon: Double, endLat: Double, endLon: Double, startName: String, endName: String) -> Unit = { _, _, _, _, _, _ -> },
     onShareClick: (String, String) -> Unit = { _, _ -> },
     onFavoriteClick: (String) -> Unit = {}
 ) {
@@ -846,7 +846,7 @@ fun ReviewCard(review: com.example.GaoDe.model.Review) {
 fun BottomActionBar(
     placeDetails: PlaceDetails,
     presenter: ShowPlaceDetailsPresenter,
-    onRouteClick: (startLat: Double, startLon: Double, endLat: Double, endLon: Double, placeName: String) -> Unit,
+    onRouteClick: (startLat: Double, startLon: Double, endLat: Double, endLon: Double, startName: String, endName: String) -> Unit,
     onShareClick: (String, String) -> Unit = { _, _ -> },
     onFavoriteClick: (String) -> Unit = {}
 ) {
@@ -926,27 +926,19 @@ fun BottomActionBar(
                 
                 Button(
                     onClick = {
-                        // 获取用户当前位置
+                        // 获取用户当前位置（固定坐标）
                         val userLocation = presenter.getUserLocation()
-                        if (userLocation != null) {
-                            // 传递用户位置（起点）和POI位置（终点）的经纬度
-                            onRouteClick(
-                                userLocation.latitude,
-                                userLocation.longitude,
-                                placeDetails.place.latitude,
-                                placeDetails.place.longitude,
-                                placeDetails.place.name
-                            )
-                        } else {
-                            // 如果定位失败，使用默认位置（华中科技大学）
-                            onRouteClick(
-                                30.5167,
-                                114.4115,
-                                placeDetails.place.latitude,
-                                placeDetails.place.longitude,
-                                placeDetails.place.name
-                            )
-                        }
+                        // 获取起点显示名称（根据定位结果）
+                        val startName = presenter.getStartLocationName()
+                        // 传递用户位置（起点）和POI位置（终点）的经纬度及名称
+                        onRouteClick(
+                            userLocation.latitude,
+                            userLocation.longitude,
+                            placeDetails.place.latitude,
+                            placeDetails.place.longitude,
+                            startName,
+                            placeDetails.place.name
+                        )
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF2196F3)
