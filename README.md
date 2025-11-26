@@ -660,6 +660,131 @@ app/src/main/
 - 车辆管理功能
 - 更多交互功能和页面导航
 
+## 核心功能实现：实时定位与POI路线规划
+
+本章节描述了应用的核心业务流程：从用户定位到查看POI详情，再到规划公共交通路线的完整实现。这一功能深度集成了高德地图SDK的三大核心能力。
+
+### 实现概览
+
+完整的用户流程：**定位用户位置 → 查看POI详情 → 规划公共交通路线**
+
+### 步骤1：实现"我的位置"的真实定位
+
+**功能目标**：在用户点击"路线"按钮时，不使用固定坐标，而是通过高德定位SDK获取设备的实时位置。
+
+**技术实现**：
+- **文件位置**：`ShowPlaceDetailsPresenter.kt`
+- **SDK集成**：高德定位SDK (`AMapLocationClient`)
+- **实现细节**：
+  1. 初始化定位客户端：在Presenter的`start()`方法中创建`AMapLocationClient`实例
+  2. 配置定位参数：使用`AMapLocationClientOption`设置高精度定位模式，单次定位
+  3. 设置定位回调：实现`AMapLocationListener`接口，处理定位结果
+  4. 定位成功处理：在`onLocationChanged()`回调中提取经纬度，存储为`LatLonPoint`
+  5. 资源管理：在`stop()`方法中释放定位客户端资源
+
+**关键代码位置**：
+- 定位初始化：`ShowPlaceDetailsPresenter.kt:39-54`
+- 定位回调：`ShowPlaceDetailsPresenter.kt:376-384`
+- 获取位置方法：`ShowPlaceDetailsPresenter.kt:387-389`
+
+### 步骤2：实现"巴奴毛肚火锅"详情页的真实数据填充
+
+**功能目标**：当用户进入POI详情页时，使用高德搜索SDK在线查询详细信息，并用真实数据动态更新UI。
+
+**技术实现**：
+- **文件位置**：`ShowPlaceDetailsPresenter.kt`
+- **SDK集成**：高德搜索SDK (`PoiSearch`)
+- **实现细节**：
+  1. 数据源：使用固定的高德POI ID `B0FFG1QA5P`（巴奴毛肚火锅群光广场店）
+  2. 初始化搜索：创建`PoiSearch`实例并设置监听器
+  3. 发起ID搜索：调用`searchPOIIdAsyn()`方法进行异步查询
+  4. 解析回调数据：在`onPoiItemSearched()`中解析`PoiItem`对象
+  5. 数据映射：将SDK返回的数据映射到应用的`Place`和`PlaceDetails`模型
+  6. UI更新：通过MVP模式的View接口更新界面显示
+
+**数据映射关系**：
+- 店铺名称 ← `poiItem.getTitle()`
+- 分类 ← `poiItem.getTypeDes()`
+- 营业时间 ← `poiItem.getPoiExtension().getOpentime()`
+- 地址 ← `poiItem.getSnippet()`
+- 电话 ← `poiItem.getTel()`
+- 坐标 ← `poiItem.getLatLonPoint()`
+
+**关键代码位置**：
+- POI搜索初始化：`ShowPlaceDetailsPresenter.kt:35-37`
+- ID搜索请求：`ShowPlaceDetailsPresenter.kt:43-55`
+- 结果解析：`ShowPlaceDetailsPresenter.kt:63-109`
+
+### 步骤3：实现到"巴奴毛肚火锅"的公共交通路线规划
+
+**功能目标**：当用户点击"路线"按钮后，跳转到路线规划页，在线查询从用户位置到目的地的公共交通路线，并用真实数据填充UI。
+
+**技术实现**：
+- **文件位置**：`PlanRoutePresenter.kt` (新创建)
+- **SDK集成**：高德路线规划SDK (`RouteSearch`)
+- **实现细节**：
+  1. 数据传递：在详情页"路线"按钮点击时，通过Intent传递起点`LatLonPoint`（步骤1获取）和终点`LatLonPoint`（步骤2获取）
+  2. 初始化路线搜索：创建`RouteSearch`实例并设置监听器
+  3. 构造查询参数：
+     - 创建`RouteSearch.FromAndTo`对象（起点和终点）
+     - 创建`RouteSearch.BusRouteQuery`对象（公交查询参数，城市：武汉）
+  4. 发起异步查询：调用`calculateBusRouteAsyn()`方法
+  5. 解析复杂结果：在`onBusRouteSearched()`回调中解析`BusRouteResult`
+  6. 路线方案提取：遍历`result.getPaths()`获取多条路线方案
+  7. 路线段落解析：对每个`BusPath`遍历`getSteps()`，识别步行、公交、地铁段
+  8. 数据转换：将SDK数据转换为应用的`RouteOption`和`RouteSegment`模型
+
+**复杂数据解析**：
+- **总耗时**：`busPath.getDuration()`（秒）→ 格式化为"X小时X分钟"
+- **总距离**：`busPath.getDistance()`（米）→ 格式化为"X.X公里"
+- **总费用**：`busPath.getCost()`（元）
+- **路线详情**：
+  - 步行段：提取距离和时长
+  - 公交段：提取线路名称（`busLine.getBusLineName()`）、经过站数（`busLine.getPassStationNum()`）
+  - 地铁段：提取线路名称（`railway.name`）
+  - 上车站：提取第一个公交段的`departure.name`
+
+**关键代码位置**：
+- Presenter创建：`PlanRoutePresenter.kt:17-400`
+- 路线搜索请求：`PlanRoutePresenter.kt:40-67`
+- 公交结果解析：`PlanRoutePresenter.kt:70-108`
+- 路线数据转换：`PlanRoutePresenter.kt:110-169`
+- Screen集成：`PlanRouteScreen.kt:84-127`
+- 位置传递：`ShowPlaceDetailsScreen.kt:928-950`
+
+### SDK依赖配置
+
+本功能需要在`build.gradle`中添加以下高德SDK依赖：
+
+```gradle
+// 高德地图SDK
+implementation 'com.amap.api:map2d:latest.integration'
+// 高德定位SDK
+implementation 'com.amap.api:location:latest.integration'
+// 高德搜索SDK
+implementation 'com.amap.api:search:latest.integration'
+```
+
+### MVP架构设计
+
+所有功能严格遵循MVP模式：
+- **Model层**：`Place.kt`、`PlaceDetails.kt`、`RouteOption.kt` 数据模型
+- **View层**：`ShowPlaceDetailsContract.View`、`PlanRouteContract.View` 接口
+- **Presenter层**：`ShowPlaceDetailsPresenter.kt`、`PlanRoutePresenter.kt` 业务逻辑
+- **Screen层**：`ShowPlaceDetailsScreen.kt`、`PlanRouteScreen.kt` Compose UI
+
+### 错误处理
+
+所有SDK调用都包含完整的错误处理：
+- 定位失败：使用默认位置（华中科技大学坐标）
+- POI查询失败：回退到本地JSON数据
+- 路线查询失败：显示错误信息并提供重试按钮
+- 网络错误：显示友好的错误提示
+
+### 特别说明
+
+本功能是唯一使用高德在线SDK的模块，其他功能仍然使用本地JSON数据。这种混合架构既保证了核心功能的真实性，又确保了应用的离线可用性。
+
 ## 特别说明
 
 1. **离线应用**: 本应用不需要网络连接，所有数据来自本地 JSON 文件

@@ -39,7 +39,8 @@ import com.example.GaoDe.ui.home.ShowPlaceDetailsPresenter
 fun ShowPlaceDetailsScreen(
     placeId: String,
     onBackClick: () -> Unit = {},
-    onRouteClick: (String) -> Unit = {},
+    // 修改路线按钮回调：传递起点和终点的经纬度，以及地点名称
+    onRouteClick: (startLat: Double, startLon: Double, endLat: Double, endLon: Double, placeName: String) -> Unit = { _, _, _, _, _ -> },
     onShareClick: (String, String) -> Unit = { _, _ -> },
     onFavoriteClick: (String) -> Unit = {}
 ) {
@@ -56,24 +57,25 @@ fun ShowPlaceDetailsScreen(
                 override fun showPlaceDetails(details: PlaceDetails) {
                     placeDetails = details
                 }
-                
+
                 override fun showLoading() {
                     isLoading = true
                 }
-                
+
                 override fun hideLoading() {
                     isLoading = false
                 }
-                
+
                 override fun showError(message: String) {
                     errorMessage = message
                 }
-                
+
                 override fun setPresenter(presenter: ShowPlaceDetailsContract.Presenter) {
                     // No-op for Compose
                 }
             },
-            dataManager = dataManager
+            dataManager = dataManager,
+            context = context
         )
     }
     
@@ -140,6 +142,7 @@ fun ShowPlaceDetailsScreen(
                 // Bottom Action Bar
                 BottomActionBar(
                     placeDetails = placeDetails!!,
+                    presenter = presenter,
                     onRouteClick = onRouteClick,
                     onShareClick = onShareClick,
                     onFavoriteClick = onFavoriteClick
@@ -842,7 +845,8 @@ fun ReviewCard(review: com.example.GaoDe.model.Review) {
 @Composable
 fun BottomActionBar(
     placeDetails: PlaceDetails,
-    onRouteClick: (String) -> Unit,
+    presenter: ShowPlaceDetailsPresenter,
+    onRouteClick: (startLat: Double, startLon: Double, endLat: Double, endLon: Double, placeName: String) -> Unit,
     onShareClick: (String, String) -> Unit = { _, _ -> },
     onFavoriteClick: (String) -> Unit = {}
 ) {
@@ -921,8 +925,28 @@ fun BottomActionBar(
                 }
                 
                 Button(
-                    onClick = { 
-                        onRouteClick(placeDetails.place.name)
+                    onClick = {
+                        // 获取用户当前位置
+                        val userLocation = presenter.getUserLocation()
+                        if (userLocation != null) {
+                            // 传递用户位置（起点）和POI位置（终点）的经纬度
+                            onRouteClick(
+                                userLocation.latitude,
+                                userLocation.longitude,
+                                placeDetails.place.latitude,
+                                placeDetails.place.longitude,
+                                placeDetails.place.name
+                            )
+                        } else {
+                            // 如果定位失败，使用默认位置（华中科技大学）
+                            onRouteClick(
+                                30.5167,
+                                114.4115,
+                                placeDetails.place.latitude,
+                                placeDetails.place.longitude,
+                                placeDetails.place.name
+                            )
+                        }
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF2196F3)

@@ -63,6 +63,11 @@ data class LocationPricing(
 fun PlanRouteScreen(
     startLocation: String = "我的位置",
     endLocation: String = "巴奴毛肚火锅（群光广场店）",
+    // 添加起点和终点的经纬度参数
+    startLat: Double = 30.5167,
+    startLon: Double = 114.4115,
+    endLat: Double = 30.516,
+    endLon: Double = 114.361,
     onBackClick: () -> Unit = {},
     onTaxiClick: () -> Unit = {},
     onPublicTransportClick: (String, String, String?, String) -> Unit = { _, _, _, _ -> },
@@ -70,26 +75,54 @@ fun PlanRouteScreen(
 ) {
     var routeOptions by remember { mutableStateOf<List<RouteOption>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
     var selectedTransportMode by remember { mutableStateOf("公共交通") }
     var showWaypointSelector by remember { mutableStateOf(false) }
     var waypoint by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
 
-    LaunchedEffect(endLocation) {
-        withContext(Dispatchers.IO) {
-            try {
-                // Generate dynamic route data based on destination
-                val items = generateRouteOptions(endLocation)
-                
-                withContext(Dispatchers.Main) {
-                    routeOptions = items
+    // 创建 Presenter
+    val presenter = remember {
+        PlanRoutePresenter(
+            view = object : PlanRouteContract.View {
+                override fun showRouteOptions(routes: List<RouteOption>) {
+                    routeOptions = routes
+                    errorMessage = null
+                }
+
+                override fun showLoading() {
+                    isLoading = true
+                    errorMessage = null
+                }
+
+                override fun hideLoading() {
                     isLoading = false
                 }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
+
+                override fun showError(message: String) {
+                    errorMessage = message
                     isLoading = false
                 }
-            }
+
+                override fun setPresenter(presenter: PlanRouteContract.Presenter) {
+                    // No-op for Compose
+                }
+            },
+            context = context
+        )
+    }
+
+    // 在组件启动时初始化presenter并查询路线
+    LaunchedEffect(startLat, startLon, endLat, endLon) {
+        presenter.start()
+        // 使用高德SDK查询真实的公交路线
+        presenter.searchBusRoute(startLat, startLon, endLat, endLon)
+    }
+
+    // 在组件销毁时清理presenter
+    DisposableEffect(Unit) {
+        onDispose {
+            presenter.stop()
         }
     }
 
@@ -133,6 +166,33 @@ fun PlanRouteScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator()
+                }
+            } else if (errorMessage != null) {
+                // 显示错误信息
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = errorMessage ?: "未知错误",
+                            color = Color.Red,
+                            fontSize = 16.sp
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = {
+                                presenter.searchBusRoute(startLat, startLon, endLat, endLon)
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF2196F3)
+                            )
+                        ) {
+                            Text(text = "重试", color = Color.White)
+                        }
+                    }
                 }
             } else {
             // Content based on selected transport mode

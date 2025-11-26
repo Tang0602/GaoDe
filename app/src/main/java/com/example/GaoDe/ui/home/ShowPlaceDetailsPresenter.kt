@@ -1,36 +1,160 @@
 package com.example.GaoDe.ui.home
 
+import android.content.Context
+import com.amap.api.location.AMapLocation
+import com.amap.api.location.AMapLocationClient
+import com.amap.api.location.AMapLocationClientOption
+import com.amap.api.location.AMapLocationListener
+import com.amap.api.services.core.LatLonPoint
+import com.amap.api.services.poisearch.PoiResult
+import com.amap.api.services.poisearch.PoiSearch
 import com.example.GaoDe.data.DataManager
+import com.example.GaoDe.model.Place
 import com.example.GaoDe.model.PlaceDetails
 import com.example.GaoDe.model.Review
 import kotlinx.coroutines.*
 
 class ShowPlaceDetailsPresenter(
     private val view: ShowPlaceDetailsContract.View,
-    private val dataManager: DataManager
-) : ShowPlaceDetailsContract.Presenter {
-    
+    private val dataManager: DataManager,
+    private val context: Context? = null
+) : ShowPlaceDetailsContract.Presenter, PoiSearch.OnPoiSearchListener, AMapLocationListener {
+
     private val presenterScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
-    
+    private var poiSearch: PoiSearch? = null
+
+    // 高德定位客户端
+    private var mLocationClient: AMapLocationClient? = null
+    // 存储用户当前位置
+    private var myLocationPoint: LatLonPoint? = null
+
     override fun start() {
         // Presenter started
+        if (context != null) {
+            try {
+                // 初始化高德POI搜索
+                poiSearch = PoiSearch(context, null)
+                poiSearch?.setOnPoiSearchListener(this)
+
+                // 初始化高德定位客户端
+                mLocationClient = AMapLocationClient(context.applicationContext)
+                // 设置定位回调监听
+                mLocationClient?.setLocationListener(this)
+                // 配置定位参数
+                val locationOption = AMapLocationClientOption()
+                // 设置定位模式为高精度模式
+                locationOption.locationMode = AMapLocationClientOption.AMapLocationMode.Hight_Accuracy
+                // 设置定位间隔，单次定位
+                locationOption.isOnceLocation = true
+                // 设置超时时间
+                locationOption.httpTimeOut = 20000
+                // 设置定位参数
+                mLocationClient?.setLocationOption(locationOption)
+                // 启动定位
+                mLocationClient?.startLocation()
+            } catch (e: Exception) {
+                // 初始化失败，将使用本地数据
+            }
+        }
     }
-    
+
     override fun stop() {
         presenterScope.cancel()
+        poiSearch = null
+        // 停止定位并释放资源
+        mLocationClient?.stopLocation()
+        mLocationClient?.onDestroy()
+        mLocationClient = null
     }
-    
+
     override fun loadPlaceDetails(placeId: String) {
         view.showLoading()
-        
+
+        // 特殊处理：当placeId为"place_006"时，使用固定的高德POI ID进行在线查询
+        if (placeId == "place_006" && poiSearch != null) {
+            presenterScope.launch {
+                try {
+                    // 使用高德SDK进行ID查询，查询"巴奴毛肚火锅（群光广场店）"
+                    withContext(Dispatchers.IO) {
+                        poiSearch?.searchPOIIdAsyn("B0FFG1QA5P")
+                    }
+                    // 结果将在onPoiItemSearched回调中处理
+                } catch (e: Exception) {
+                    // 如果在线查询失败，回退到本地数据
+                    loadLocalPlaceDetails(placeId)
+                }
+            }
+        } else {
+            // 其他POI使用本地数据
+            loadLocalPlaceDetails(placeId)
+        }
+    }
+
+    // 高德POI ID搜索结果回调
+    override fun onPoiItemSearched(poiItem: com.amap.api.services.core.PoiItem?, rCode: Int) {
+        presenterScope.launch {
+            if (rCode == 1000 && poiItem != null) {
+                try {
+                    // 解析高德SDK返回的POI详情数据
+                    val place = Place(
+                        id = "place_006",
+                        name = poiItem.title ?: "巴奴毛肚火锅（群光广场店）",
+                        address = poiItem.snippet ?: "湖北省武汉市洪山区珞喻路158号群光广场5楼",
+                        latitude = poiItem.latLonPoint?.latitude ?: 30.516,
+                        longitude = poiItem.latLonPoint?.longitude ?: 114.361,
+                        category = poiItem.typeDes ?: "火锅",
+                        phone = poiItem.tel,
+                        // 高德SDK的PoiExtension不包含rating字段，使用默认值
+                        rating = 4.8f,
+                        description = null,
+                        imageUrl = null
+                    )
+
+                    // 构建详情信息，结合SDK数据和本地占位数据
+                    val placeDetails = PlaceDetails(
+                        place = place,
+                        businessHours = poiItem.poiExtension?.opentime ?: "周一至周日 00:00-24:00",
+                        facilities = listOf("街道口火锅榜", "食材很新鲜", "可订大厅", "汤味道浓郁", "服务好"),
+                        reviews = listOf(
+                            Review(
+                                userId = "user_fB40918",
+                                userName = "用户_fB40918",
+                                rating = 5.0f,
+                                comment = "好像营业到凌晨3:00, 我快2:00到的服务员很热情",
+                                timestamp = System.currentTimeMillis()
+                            )
+                        ),
+                        photos = listOf("经典毛肚.jpg", "梅花肉.jpg")
+                    )
+
+                    view.hideLoading()
+                    view.showPlaceDetails(placeDetails)
+                } catch (e: Exception) {
+                    // 解析失败，使用本地数据
+                    loadLocalPlaceDetails("place_006")
+                }
+            } else {
+                // 查询失败，使用本地数据
+                loadLocalPlaceDetails("place_006")
+            }
+        }
+    }
+
+    // 高德POI搜索结果回调（本项目未使用）
+    override fun onPoiSearched(result: PoiResult?, rCode: Int) {
+        // 不需要实现
+    }
+
+    // 加载本地数据的方法
+    private fun loadLocalPlaceDetails(placeId: String) {
         presenterScope.launch {
             try {
                 val places = dataManager.getPlaces()
                 val place = places.find { it.id == placeId }
-                
+
                 if (place != null) {
                     val placeDetails = createPlaceDetailsForId(place, placeId)
-                    
+
                     view.hideLoading()
                     view.showPlaceDetails(placeDetails)
                 } else {
@@ -246,5 +370,21 @@ class ShowPlaceDetailsPresenter(
                 photos = emptyList()
             )
         }
+    }
+
+    // 高德定位回调：处理定位结果
+    override fun onLocationChanged(amapLocation: AMapLocation?) {
+        if (amapLocation != null && amapLocation.errorCode == 0) {
+            // 定位成功，获取经纬度并存储为LatLonPoint
+            myLocationPoint = LatLonPoint(amapLocation.latitude, amapLocation.longitude)
+        } else {
+            // 定位失败，使用默认位置（华中科技大学）
+            myLocationPoint = LatLonPoint(30.5167, 114.4115)
+        }
+    }
+
+    // 获取用户当前位置（供View层调用）
+    fun getUserLocation(): LatLonPoint? {
+        return myLocationPoint
     }
 }
