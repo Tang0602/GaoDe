@@ -4,8 +4,8 @@
     android:layout_height="match_parent">
 
     <!-- 这就是教程里的地图控件，它会铺满整个屏幕 -->
-    <com.amap.api.maps.MapView
-        android:id="@+id/map"
+    <com.baidu.mapapi.map.MapView
+        android:id="@+id/bmapView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

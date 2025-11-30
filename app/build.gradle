@@ -21,7 +21,13 @@ android {
         
         // 优化：只编译常用架构，加快编译速度
         ndk {
-            abiFilters 'arm64-v8a', 'armeabi-v7a'
+            abiFilters 'arm64-v8a', 'armeabi-v7a',"x86","x86_64"
+        }
+    }
+
+    sourceSets {
+        main {
+            jniLibs.srcDir 'libs'
         }
     }
 
@@ -34,7 +40,7 @@ android {
         }
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
     compileOptions {
@@ -57,7 +63,9 @@ android {
     }
 }
 
+
 dependencies {
+
     // 基础库，升级到与 compileSdk 35 兼容的稳定版
     implementation 'androidx.core:core-ktx:1.15.0'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.7'
@@ -79,7 +87,6 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'androidx.lifecycle:lifecycle-runtime-compose:2.8.7'
     implementation 'com.google.accompanist:accompanist-flowlayout:0.32.0'
-    implementation files('libs\\AMap3DMap_10.1.500_AMapSearch_9.7.4_AMapLocation_6.5.0_20250814.jar')
 
     // 删掉了之前导致错误的高版本 lifecycle-runtime-compose 库
     // BOM 会自动管理相关依赖，不需要手动添加
@@ -93,5 +100,8 @@ dependencies {
     debugImplementation 'androidx.compose.ui:ui-tooling'
     debugImplementation 'androidx.compose.ui:ui-test-manifest'
 
-    implementation fileTree(dir: 'libs', include: ['*.jar']) 
+    //百度地图相关的依赖
+    implementation 'com.baidu.lbsyun:BaiduMapSDK_Location:9.6.4'//全量定位组件
+    implementation 'com.baidu.lbsyun:BaiduMapSDK_Search:7.6.4'//检索组件
+    implementation 'com.baidu.lbsyun:BaiduMapSDK_Map:7.6.4'//地图组件
 }

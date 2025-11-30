@@ -1,12 +1,13 @@
 package com.example.GaoDe.ui.home
 
 import android.content.Context
-import com.amap.api.services.core.LatLonPoint
-import com.amap.api.services.route.BusRouteResult
-import com.amap.api.services.route.DriveRouteResult
-import com.amap.api.services.route.RideRouteResult
-import com.amap.api.services.route.RouteSearch
-import com.amap.api.services.route.WalkRouteResult
+// 高德SDK导入已注释 - 待迁移到百度SDK
+// import com.amap.api.services.core.LatLonPoint
+// import com.amap.api.services.route.BusRouteResult
+// import com.amap.api.services.route.DriveRouteResult
+// import com.amap.api.services.route.RideRouteResult
+// import com.amap.api.services.route.RouteSearch
+// import com.amap.api.services.route.WalkRouteResult
 import com.example.GaoDe.model.RouteOption
 import com.example.GaoDe.model.RouteSegment
 import kotlinx.coroutines.*
@@ -14,13 +15,14 @@ import android.util.Log
 class PlanRoutePresenter(
     private val view: PlanRouteContract.View,
     private val context: Context? = null
-) : PlanRouteContract.Presenter, RouteSearch.OnRouteSearchListener {
+) : PlanRouteContract.Presenter /* , RouteSearch.OnRouteSearchListener */ {
 
     private val presenterScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
-    private var routeSearch: RouteSearch? = null
+    // private var routeSearch: RouteSearch? = null // 高德SDK - 已注释
 
     override fun start() {
-        // 初始化高德路线规划搜索
+        // 高德SDK初始化已注释 - 待迁移到百度SDK
+        /*
         if (context != null) {
             try {
                 routeSearch = RouteSearch(context)
@@ -29,45 +31,43 @@ class PlanRoutePresenter(
                 view.showError("路线搜索初始化失败: ${e.message}")
             }
         }
+        */
     }
 
     override fun stop() {
         presenterScope.cancel()
-        routeSearch = null
+        // routeSearch = null
     }
 
     override fun searchBusRoute(startLat: Double, startLon: Double, endLat: Double, endLon: Double) {
         view.showLoading()
 
+        // 高德SDK路线搜索已注释 - 待迁移到百度SDK
+        // 暂时显示错误提示
+        view.hideLoading()
+        view.showError("路线规划功能暂不可用，待迁移到百度SDK")
+
+        /*
         presenterScope.launch {
             try {
-                // 构造起点和终点
                 val startPoint = LatLonPoint(startLat, startLon)
                 val endPoint = LatLonPoint(endLat, endLon)
-
-                // 创建路线查询对象
                 val fromAndTo = RouteSearch.FromAndTo(startPoint, endPoint)
-
-                // 创建公交路线查询参数
-                // 第三个参数是查询模式：0-最快捷, 1-最经济, 2-最少换乘, 3-最少步行, 4-最舒适, 5-不乘地铁
-                val busQuery = RouteSearch.BusRouteQuery(
-                    fromAndTo,
-                    RouteSearch.BusDefault,  // 使用默认模式（最快捷）
-                    "武汉",  // 城市名称
-                    0  // 第几页，从0开始
-                )
-
-                // 发起异步查询
+                val query = RouteSearch.BusRouteQuery(fromAndTo, RouteSearch.BusDefault, "武汉市", 1)
                 withContext(Dispatchers.IO) {
-                    routeSearch?.calculateBusRouteAsyn(busQuery)
+                    routeSearch?.calculateBusRouteAsyn(query)
                 }
             } catch (e: Exception) {
                 view.hideLoading()
                 view.showError("路线查询失败: ${e.message}")
             }
         }
+        */
     }
 
+    // 以下所有高德SDK回调方法已注释 - 待迁移到百度SDK
+
+    /*
     // 高德公交路线搜索结果回调
     override fun onBusRouteSearched(result: BusRouteResult?, errorCode: Int) {
         presenterScope.launch {
@@ -476,7 +476,8 @@ class PlanRoutePresenter(
     }
 
     // 以下回调暂不实现
-    override fun onDriveRouteSearched(result: DriveRouteResult?, errorCode: Int) {}
-    override fun onWalkRouteSearched(result: WalkRouteResult?, errorCode: Int) {}
-    override fun onRideRouteSearched(result: RideRouteResult?, errorCode: Int) {}
+    // override fun onDriveRouteSearched(result: DriveRouteResult?, errorCode: Int) {}
+    // override fun onWalkRouteSearched(result: WalkRouteResult?, errorCode: Int) {}
+    // override fun onRideRouteSearched(result: RideRouteResult?, errorCode: Int) {}
+    */
 }

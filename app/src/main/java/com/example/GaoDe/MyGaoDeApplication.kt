@@ -1,6 +1,8 @@
 package com.example.GaoDe
 
 import android.app.Application
+import com.baidu.mapapi.SDKInitializer
+import com.baidu.mapapi.CoordType
 import org.json.JSONArray
 import java.io.File
 
@@ -8,7 +10,11 @@ class MyGaoDeApplication : Application() {
     
     override fun onCreate() {
         super.onCreate()
-        
+
+        // 初始化百度地图SDK
+        SDKInitializer.initialize(this)
+        SDKInitializer.setCoordType(CoordType.BD09LL)
+
         // 初始化所有日志文件
         initializeLogFiles()
     }

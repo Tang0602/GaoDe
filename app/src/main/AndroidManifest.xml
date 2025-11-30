@@ -61,8 +61,8 @@
         </activity>
 
         <meta-data
-            android:name="com.amap.api.v2.apikey"
-            android:value="bdb7ce34c661a4ea48443b1641332256" />
+            android:name="com.baidu.lbsapi.API_KEY"
+            android:value="7jYFB0wgQ7HcYtVjAnpT3yKQiqSpTudR" />
 
     </application>
 

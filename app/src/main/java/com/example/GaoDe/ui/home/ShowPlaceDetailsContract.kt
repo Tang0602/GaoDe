@@ -10,10 +10,11 @@ interface ShowPlaceDetailsContract {
         fun showPlaceDetails(placeDetails: PlaceDetails)
         fun setPresenter(presenter: Presenter)
     }
-    
+
     interface Presenter {
         fun start()
         fun stop()
         fun loadPlaceDetails(placeId: String)
+        fun getStartLocationName(): String
     }
 }

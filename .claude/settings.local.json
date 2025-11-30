@@ -4,7 +4,17 @@
       "Bash(gradlew.bat assembleDebug:*)",
       "Bash(Select-String -Pattern \"error:|BUILD SUCCESSFUL|BUILD FAILED\")",
       "Bash(Select-Object -First 20)",
-      "Bash(./gradlew.bat assembleDebug:*)"
+      "Bash(./gradlew.bat assembleDebug:*)",
+      "Bash(.gradlew.bat assembleDebug:*)",
+      "Bash(Select-Object -First 100)",
+      "Bash(cmd /c \"cd /d D:\\__gaode\\GaoDe-29491127cf9b0120d001489034afa4ea37d92bf0 && gradlew.bat assembleDebug\")",
+      "Bash(cmd /c \"chcp 65001 >nul && cd /d D:\\__gaode\\GaoDe-29491127cf9b0120d001489034afa4ea37d92bf0 && gradlew.bat assembleDebug 2>&1\")",
+      "Bash(cmd /c \"cd /d D:\\__gaode\\GaoDe-29491127cf9b0120d001489034afa4ea37d92bf0 && gradlew.bat assembleDebug > build_output.txt 2>&1 && echo BUILD_COMPLETE\")",
+      "Bash(./gradlew clean:*)",
+      "Bash(if [ -d \"D:\\__gaode\\GaoDe-29491127cf9b0120d001489034afa4ea37d92bf0\\app\\libs\" ])",
+      "Bash(then echo \"libs folder exists\")",
+      "Bash(else echo \"libs folder does not exist\")",
+      "Bash(fi)"
     ],
     "deny": [],
     "ask": []

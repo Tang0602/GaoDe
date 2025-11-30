@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import com.amap.api.maps.MapsInitializer
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -44,9 +43,6 @@ import com.example.GaoDe.ui.theme.GaoDeTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        MapsInitializer.updatePrivacyShow(this, true, true)
-        MapsInitializer.updatePrivacyAgree(this, true)
 
         setContent {
             GaoDeTheme {
