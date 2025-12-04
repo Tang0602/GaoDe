@@ -1,11 +1,22 @@
 package com.example.GaoDe
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.core.content.ContextCompat
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -38,9 +49,88 @@ import com.example.GaoDe.ui.navigation.NavigationSuccessScreen
 import com.example.GaoDe.ui.payment.PaymentSuccessScreen
 import com.example.GaoDe.ui.ride.TaxiSuccessScreen
 import com.example.GaoDe.ui.theme.GaoDeTheme
+// 【新增】导入百度离线地图相关类
+import com.baidu.mapapi.map.offline.MKOfflineMap
+import com.baidu.mapapi.map.offline.MKOfflineMapListener
+import com.baidu.mapapi.map.offline.MKOLSearchRecord
+import com.baidu.mapapi.map.offline.MKOLUpdateElement
 
 // MainActivity and companion object with recordLog function (No changes here, so it is kept as is)
 class MainActivity : ComponentActivity() {
+    // 【修改】声明离线地图管理对象
+    private lateinit var mOfflineMap: MKOfflineMap
+    // 【新增】标志位：确保初始化逻辑只执行一次
+    private var isOfflineMapInitialized = false
+    // 【新增】SharedPreferences 用于记录下载状态
+    private val prefs: SharedPreferences by lazy {
+        getSharedPreferences("offline_map_prefs", Context.MODE_PRIVATE)
+    }
+
+    // 【新增】检查是否连接到 WiFi
+    private fun isWifiConnected(): Boolean {
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val network = connectivityManager.activeNetwork ?: return false
+            val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+            return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
+        } else {
+            @Suppress("DEPRECATION")
+            val networkInfo = connectivityManager.activeNetworkInfo
+            @Suppress("DEPRECATION")
+            return networkInfo?.type == ConnectivityManager.TYPE_WIFI && networkInfo.isConnected
+        }
+    }
+
+    // 【新增】检查离线地图是否需要下载
+    private fun shouldDownloadOfflineMap(cityId: Int): Boolean {
+        // 检查是否已经标记为下载完成
+        val isDownloaded = prefs.getBoolean("offline_map_wuhan_downloaded", false)
+        if (isDownloaded) {
+            Log.d("OfflineMapSetup", "SharedPreferences 显示武汉离线地图已下载")
+            return false
+        }
+
+        // 检查实际下载状态
+        val updateInfo = mOfflineMap.getUpdateInfo(cityId)
+        if (updateInfo != null && updateInfo.ratio == 100) {
+            // 已下载完成，更新 SharedPreferences
+            prefs.edit().putBoolean("offline_map_wuhan_downloaded", true).apply()
+            Log.d("OfflineMapSetup", "检测到武汉离线地图已完整下载，更新记录")
+            return false
+        }
+
+        return true
+    }
+
+    // 【新增】使用新的 Activity Result API 注册权限请求
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val TAG = "PermissionRequest"
+
+        // 检查所有权限是否都被授予
+        val allGranted = permissions.entries.all { it.value }
+        val deniedPermissions = permissions.entries.filter { !it.value }.map { it.key }
+
+        if (allGranted) {
+            // 所有权限都已授予
+            Log.d(TAG, "用户已授予所有权限，开始初始化离线地图")
+            Toast.makeText(this,
+                "存储权限已授予，开始下载离线地图",
+                Toast.LENGTH_SHORT).show()
+            // 【修改】确保在主线程初始化
+            runOnUiThread {
+                setupOfflineMap()
+            }
+        } else {
+            // 有权限被拒绝
+            Log.e(TAG, "部分权限被拒绝: $deniedPermissions")
+            Toast.makeText(this,
+                "存储权限被拒绝，离线地图功能将无法使用\n被拒绝的权限: ${deniedPermissions.size} 个",
+                Toast.LENGTH_LONG).show()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -56,6 +146,306 @@ class MainActivity : ComponentActivity() {
             action = "进入主页",
             page = "主页"
         )
+
+        // 【修改】1. 先请求权限
+        requestPermissions()
+
+        // 【修改】2. 再初始化离线地图功能（注意：只有在权限已授予时才会真正初始化）
+        // setupOfflineMap() 将在权限授予后的回调中调用
+    }
+
+    // 【重构】设置百度离线地图的方法
+    private fun setupOfflineMap() {
+        val TAG = "OfflineMapSetup"
+
+        // 【新增】详细的诊断日志
+        Log.d(TAG, "========== 离线地图初始化诊断 ==========")
+
+        // 检查权限状态
+        val writeGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        val readGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+        Log.d(TAG, "WRITE_EXTERNAL_STORAGE 权限: ${if (writeGranted == PackageManager.PERMISSION_GRANTED) "✓ 已授予" else "✗ 未授予 (code=$writeGranted)"}")
+        Log.d(TAG, "READ_EXTERNAL_STORAGE 权限: ${if (readGranted == PackageManager.PERMISSION_GRANTED) "✓ 已授予" else "✗ 未授予 (code=$readGranted)"}")
+
+        // 检查当前线程
+        Log.d(TAG, "当前线程: ${Thread.currentThread().name} (id=${Thread.currentThread().id})")
+        Log.d(TAG, "是否为主线程: ${Thread.currentThread() == android.os.Looper.getMainLooper().thread}")
+
+        // 检查 Android 版本
+        Log.d(TAG, "Android SDK 版本: ${Build.VERSION.SDK_INT} (${Build.VERSION.RELEASE})")
+
+        // 【修改】使用应用专属目录（无需存储权限，Android 12 完全支持）
+        val offlineMapDir = getExternalFilesDir("BaiduMapSDK/offlinemap")?.absoluteFile
+            ?: File(filesDir, "BaiduMapSDK/offlinemap")
+
+        // 确保目录存在
+        if (!offlineMapDir.exists()) {
+            val created = offlineMapDir.mkdirs()
+            Log.d(TAG, "创建离线地图目录: ${offlineMapDir.absolutePath}, 结果: $created")
+        }
+
+        Log.d(TAG, "离线地图存储路径: ${offlineMapDir.absolutePath}")
+
+        try {
+            Log.d(TAG, "正在检查目录状态...")
+            val exists = offlineMapDir.exists()
+            Log.d(TAG, "目录是否存在: $exists")
+
+            val canWrite = offlineMapDir.canWrite()
+            Log.d(TAG, "目录是否可写: $canWrite")
+        } catch (e: Exception) {
+            Log.e(TAG, "检查目录状态时出错: ${e.message}", e)
+        }
+
+        Log.d(TAG, "=======================================")
+
+        try {
+            // 1. 实例化 MKOfflineMap 对象
+            Log.d(TAG, "准备创建 MKOfflineMap 对象...")
+            mOfflineMap = MKOfflineMap()
+            Log.d(TAG, "✓ MKOfflineMap 对象创建成功")
+
+            // 2. 初始化并设置离线地图监听器（这是一个异步操作）
+            Log.d(TAG, "准备调用 mOfflineMap.init()...")
+            mOfflineMap.init(object : MKOfflineMapListener {
+                /**
+                 * 离线地图状态回调
+                 * 这个方法会被多次调用，表示不同的状态
+                 *
+                 * @param type 状态类型：
+                 *   - TYPE_DOWNLOAD_UPDATE: 下载进度更新
+                 *   - TYPE_NEW_OFFLINE: 新离线地图安装成功
+                 *   - TYPE_VER_UPDATE: 离线地图版本更新成功
+                 * @param state 当 type 为 TYPE_DOWNLOAD_UPDATE 时，state 表示城市ID
+                 */
+                override fun onGetOfflineMapState(type: Int, state: Int) {
+                    Log.d(TAG, "onGetOfflineMapState 被调用: type=$type, state=$state")
+
+                    // 【新增】立即记录回调触发
+                    runOnUiThread {
+                        Toast.makeText(this@MainActivity,
+                            "✓ 回调已触发! type=$type, state=$state",
+                            Toast.LENGTH_SHORT).show()
+                    }
+
+                    // 【关键】首次进入回调，执行初始化逻辑（只记录状态，不重复下载）
+                    if (!isOfflineMapInitialized) {
+                        isOfflineMapInitialized = true
+                        Log.d(TAG, "✓ 离线地图回调已激活，开始监控下载进度")
+
+                        // 搜索武汉城市，获取城市ID
+                        val searchResult: ArrayList<MKOLSearchRecord> = mOfflineMap.searchCity("武汉")
+
+                        if (searchResult.isNotEmpty()) {
+                            val wuhanCityId = searchResult[0].cityID
+                            val cityName = searchResult[0].cityName
+                            Log.d(TAG, "找到城市: $cityName, ID: $wuhanCityId")
+
+                            // 检查武汉离线地图下载状态
+                            val updateInfo: MKOLUpdateElement? = mOfflineMap.getUpdateInfo(wuhanCityId)
+
+                            if (updateInfo != null) {
+                                Log.d(TAG, "获取到离线地图信息: serversize=${updateInfo.serversize}, ratio=${updateInfo.ratio}")
+
+                                if (updateInfo.ratio == 100) {
+                                    Log.d(TAG, "✓ 武汉离线地图已完整下载")
+                                    runOnUiThread {
+                                        Toast.makeText(this@MainActivity,
+                                            "✓ 武汉离线地图已完整下载！",
+                                            Toast.LENGTH_LONG).show()
+                                    }
+                                } else {
+                                    Log.d(TAG, "武汉离线地图下载中... (当前进度: ${updateInfo.ratio}%)")
+                                    // 注意：不在这里调用 start()，因为已经在主动测试中启动了下载
+                                }
+                            } else {
+                                Log.e(TAG, "getUpdateInfo 返回 null，无法获取武汉离线地图信息")
+                            }
+                        } else {
+                            Log.e(TAG, "searchCity 未找到武汉城市")
+                            runOnUiThread {
+                                Toast.makeText(this@MainActivity,
+                                    "未找到武汉城市",
+                                    Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    } else {
+                        // 【后续回调】处理下载进度、完成、错误等状态
+                        when (type) {
+                            MKOfflineMap.TYPE_DOWNLOAD_UPDATE -> {
+                                // 下载进度更新
+                                val updateInfo = mOfflineMap.getUpdateInfo(state)
+                                if (updateInfo != null) {
+                                    val progress = updateInfo.ratio
+                                    Log.d(TAG, "武汉离线地图下载进度: $progress%")
+                                    runOnUiThread {
+                                        Toast.makeText(this@MainActivity,
+                                            "武汉离线地图下载进度: $progress%",
+                                            Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            }
+                            MKOfflineMap.TYPE_NEW_OFFLINE -> {
+                                // 新离线地图安装成功
+                                Log.d(TAG, "✓ 武汉离线地图下载完成！")
+
+                                // 【新增】保存下载完成状态
+                                prefs.edit().putBoolean("offline_map_wuhan_downloaded", true).apply()
+                                Log.d(TAG, "已更新 SharedPreferences，标记为已下载")
+
+                                runOnUiThread {
+                                    Toast.makeText(this@MainActivity,
+                                        "✓ 武汉离线地图下载完成！",
+                                        Toast.LENGTH_LONG).show()
+                                }
+                            }
+                            MKOfflineMap.TYPE_VER_UPDATE -> {
+                                // 离线地图版本更新成功
+                                Log.d(TAG, "武汉离线地图更新成功！")
+                                runOnUiThread {
+                                    Toast.makeText(this@MainActivity,
+                                        "武汉离线地图更新成功！",
+                                        Toast.LENGTH_LONG).show()
+                                }
+                            }
+                            else -> {
+                                // 其他状态（包括错误）
+                                Log.w(TAG, "离线地图状态变化: type=$type, state=$state")
+                            }
+                        }
+                    }
+                }
+            })
+
+            Log.d(TAG, "MKOfflineMap.init() 已调用，等待回调...")
+
+            // 【优化】智能下载逻辑：延迟执行以确保 SDK 初始化完成
+            Handler(Looper.getMainLooper()).postDelayed({
+                try {
+                    Log.d(TAG, "========== 检查离线地图状态 ==========")
+
+                    // 1. 获取离线地图列表（必须先调用，否则 getUpdateInfo 返回 null）
+                    val allCities = mOfflineMap.offlineCityList
+                    Log.d(TAG, "离线地图列表获取成功，共 ${allCities?.size ?: 0} 个城市")
+
+                    // 2. 搜索武汉城市
+                    val searchResult = mOfflineMap.searchCity("武汉")
+                    if (searchResult.isNullOrEmpty()) {
+                        Log.w(TAG, "未找到武汉城市")
+                        return@postDelayed
+                    }
+
+                    val cityId = searchResult[0].cityID
+                    val cityName = searchResult[0].cityName
+                    Log.d(TAG, "找到城市: $cityName (ID: $cityId)")
+
+                    // 3. 检查是否需要下载
+                    if (!shouldDownloadOfflineMap(cityId)) {
+                        Log.d(TAG, "✓ $cityName 离线地图已存在，无需下载")
+                        runOnUiThread {
+                            Toast.makeText(this@MainActivity,
+                                "✓ $cityName 离线地图已存在",
+                                Toast.LENGTH_SHORT).show()
+                        }
+                        return@postDelayed
+                    }
+
+                    // 4. 检查网络连接
+                    val isWifi = isWifiConnected()
+                    Log.d(TAG, "网络状态: ${if (isWifi) "WiFi已连接" else "未连接WiFi"}")
+
+                    if (!isWifi) {
+                        Log.w(TAG, "建议在 WiFi 环境下载离线地图")
+                        runOnUiThread {
+                            Toast.makeText(this@MainActivity,
+                                "建议连接 WiFi 后下载离线地图（约 300MB）",
+                                Toast.LENGTH_LONG).show()
+                        }
+                        // 非 WiFi 环境下不自动下载
+                        return@postDelayed
+                    }
+
+                    // 5. 启动下载
+                    Log.d(TAG, "准备下载 $cityName 离线地图...")
+                    val started = mOfflineMap.start(cityId)
+                    Log.d(TAG, "下载启动结果: $started")
+
+                    if (started) {
+                        runOnUiThread {
+                            Toast.makeText(this@MainActivity,
+                                "✓ 开始下载 $cityName 离线地图（约 300MB）",
+                                Toast.LENGTH_LONG).show()
+                        }
+                    } else {
+                        Log.e(TAG, "下载启动失败")
+                    }
+
+                    Log.d(TAG, "=======================================")
+                } catch (e: Exception) {
+                    Log.e(TAG, "检查离线地图状态时出错: ${e.message}", e)
+                }
+            }, 2000) // 延迟 2 秒执行，确保 SDK 完全初始化
+
+        } catch (e: Exception) {
+            Log.e(TAG, "离线地图初始化失败", e)
+            Toast.makeText(this,
+                "离线地图初始化失败: ${e.message}",
+                Toast.LENGTH_LONG).show()
+        }
+    }
+
+    // 【修改】动态权限申请方法（使用新的 Activity Result API）
+    private fun requestPermissions() {
+        val TAG = "PermissionRequest"
+
+        // Android 6.0 (API 23) 以上需要动态申请权限
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            // 定义需要申请的权限
+            val permissions = arrayOf(
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            )
+
+            // 检查哪些权限还未被授予
+            val permissionsToRequest = mutableListOf<String>()
+            for (permission in permissions) {
+                if (ContextCompat.checkSelfPermission(this, permission)
+                    != PackageManager.PERMISSION_GRANTED) {
+                    permissionsToRequest.add(permission)
+                    Log.d(TAG, "权限未授予: $permission")
+                }
+            }
+
+            if (permissionsToRequest.isNotEmpty()) {
+                // 存在未授予的权限，使用新的 API 发起请求
+                Log.d(TAG, "正在请求 ${permissionsToRequest.size} 个权限...")
+                requestPermissionLauncher.launch(permissionsToRequest.toTypedArray())
+            } else {
+                // 所有权限已授予
+                Log.d(TAG, "所有权限已授予，开始初始化离线地图")
+                // 【修改】确保在主线程初始化
+                runOnUiThread {
+                    setupOfflineMap()
+                }
+            }
+        } else {
+            // Android 6.0 以下，权限在安装时已授予
+            Log.d(TAG, "Android 版本低于 6.0，无需动态申请权限")
+            // 【修改】确保在主线程初始化
+            runOnUiThread {
+                setupOfflineMap()
+            }
+        }
+    }
+
+    // 【新增】销毁离线地图资源
+    override fun onDestroy() {
+        super.onDestroy()
+        // 释放离线地图资源
+        if (::mOfflineMap.isInitialized) {
+            mOfflineMap.destroy()
+            Log.d("OfflineMapSetup", "离线地图资源已释放")
+        }
     }
 
     companion object {

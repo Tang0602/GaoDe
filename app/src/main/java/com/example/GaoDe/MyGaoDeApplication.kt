@@ -1,15 +1,32 @@
 package com.example.GaoDe
 
 import android.app.Application
+import android.os.Build
+import android.util.Log
 import com.baidu.mapapi.SDKInitializer
 import com.baidu.mapapi.CoordType
 import org.json.JSONArray
 import java.io.File
 
 class MyGaoDeApplication : Application() {
-    
+
     override fun onCreate() {
         super.onCreate()
+
+        Log.d("MyGaoDeApplication", "========== 应用初始化 ==========")
+        Log.d("MyGaoDeApplication", "Android 版本: ${Build.VERSION.SDK_INT} (${Build.VERSION.RELEASE})")
+        Log.d("MyGaoDeApplication", "设备型号: ${Build.MODEL}")
+
+        // 【新增】创建百度地图的自定义存储目录（使用应用专属目录，无需存储权限）
+        val mapDataDir = getExternalFilesDir("BaiduMapSDK")?.absolutePath
+            ?: (filesDir.absolutePath + "/BaiduMapSDK")
+
+        Log.d("MyGaoDeApplication", "百度地图数据目录: $mapDataDir")
+        val dirCreated = File(mapDataDir).mkdirs()
+        Log.d("MyGaoDeApplication", "目录创建结果: $dirCreated (false表示已存在)")
+
+        // 百度地图隐私政策设置（必须在初始化之前调用）
+        SDKInitializer.setAgreePrivacy(this, true)
 
         // 初始化百度地图SDK
         SDKInitializer.initialize(this)

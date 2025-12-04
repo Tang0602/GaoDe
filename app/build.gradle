@@ -19,9 +19,9 @@ android {
             useSupportLibrary true
         }
         
-        // 优化：只编译常用架构，加快编译速度
+        // 【修改】百度地图 SDK 对 64 位支持不完整，只使用 32 位架构避免 SIGSEGV 崩溃
         ndk {
-            abiFilters 'arm64-v8a', 'armeabi-v7a',"x86","x86_64"
+            abiFilters 'armeabi-v7a', 'x86'
         }
     }
 
@@ -87,6 +87,7 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.10.1'
     implementation 'androidx.lifecycle:lifecycle-runtime-compose:2.8.7'
     implementation 'com.google.accompanist:accompanist-flowlayout:0.32.0'
+    implementation 'com.google.android.gms:play-services-maps:19.2.0'
 
     // 删掉了之前导致错误的高版本 lifecycle-runtime-compose 库
     // BOM 会自动管理相关依赖，不需要手动添加
@@ -100,8 +101,10 @@ dependencies {
     debugImplementation 'androidx.compose.ui:ui-tooling'
     debugImplementation 'androidx.compose.ui:ui-test-manifest'
 
-    //百度地图相关的依赖
-    implementation 'com.baidu.lbsyun:BaiduMapSDK_Location:9.6.4'//全量定位组件
-    implementation 'com.baidu.lbsyun:BaiduMapSDK_Search:7.6.4'//检索组件
-    implementation 'com.baidu.lbsyun:BaiduMapSDK_Map:7.6.4'//地图组件
+    //百度地图相关的依赖（使用官方确认的版本和包名）
+    // 注意：包名使用大写字母格式，版本使用7.6.4
+    implementation 'com.baidu.lbsyun:BaiduMapSDK_Map:7.6.4'      // 地图组件（基础）- 包含离线地图
+    implementation 'com.baidu.lbsyun:BaiduMapSDK_Search:7.6.4'   // 检索组件
+    implementation 'com.baidu.lbsyun:BaiduMapSDK_Util:7.6.4'     // 工具包（包含离线地图管理类）
+    implementation 'com.baidu.lbsyun:BaiduMapSDK_Location:9.6.4' // 基础定位组件
 }

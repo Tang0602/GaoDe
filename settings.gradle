@@ -10,6 +10,18 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // 【修改】使用正确的百度地图SDK仓库配置
+        maven {
+            url 'https://repo.baidu.com/maven2/'
+            allowInsecureProtocol = false
+        }
+        // 【备用】阿里云Maven镜像（可能包含百度SDK）
+        maven {
+            url 'https://maven.aliyun.com/repository/public/'
+            allowInsecureProtocol = false
+        }
+        // JitPack仓库
+        maven { url 'https://jitpack.io' }
     }
 }
 

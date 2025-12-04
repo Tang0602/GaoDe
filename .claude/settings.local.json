@@ -14,7 +14,16 @@
       "Bash(if [ -d \"D:\\__gaode\\GaoDe-29491127cf9b0120d001489034afa4ea37d92bf0\\app\\libs\" ])",
       "Bash(then echo \"libs folder exists\")",
       "Bash(else echo \"libs folder does not exist\")",
-      "Bash(fi)"
+      "Bash(fi)",
+      "Bash(cmd /c \"gradlew.bat clean\")",
+      "WebSearch",
+      "WebFetch(domain:lbsyun.baidu.com)",
+      "WebFetch(domain:mapopen-pub-androidsdk.cdn.bcebos.com)",
+      "Bash(Select-String -Pattern \"error:|BUILD SUCCESSFUL|BUILD FAILED|setMapDataPath\")",
+      "Bash(Select-Object -First 50)",
+      "Bash(cmd /c \"chcp 65001 >nul && cd /d D:\\__gaode\\GaoDe-29491127cf9b0120d001489034afa4ea37d92bf0 && gradlew.bat assembleDebug 2>&1 | findstr /C:\"error:\" /C:\"BUILD SUCCESSFUL\" /C:\"BUILD FAILED\"\")",
+      "Bash(cmd /c \"cd /d D:\\__gaode\\GaoDe-29491127cf9b0120d001489034afa4ea37d92bf0 && gradlew.bat clean\")",
+      "Bash(cmd /c:*)"
     ],
     "deny": [],
     "ask": []

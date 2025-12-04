@@ -77,19 +77,27 @@
 **修改内容**：
 - **新增导入**：
   ```kotlin
-  
+//  import com.baidu.mapapi.SDKInitializer
+//  import com.baidu.mapapi.CoordType
   ```
 
 - **新增初始化代码**（在 `onCreate()` 方法开头）：
   ```kotlin
+  // 百度地图隐私政策设置（必须在初始化之前调用）
+  SDKInitializer.setAgreePrivacy(this, true)
+
   // 初始化百度地图SDK
   SDKInitializer.initialize(this)
   SDKInitializer.setCoordType(CoordType.BD09LL)
   ```
 
 **变更说明**：
-- 在 `onCreate()` 方法中，先初始化百度地图SDK，再执行原有的日志文件初始化逻辑
-- 设置坐标类型为 BD09LL（百度经纬度坐标系）
+- ⚠️ **关键修复**：在初始化SDK之前，必须先调用 `setAgreePrivacy(this, true)` 同意隐私政策，否则应用会崩溃并抛出 `BaiduMapSDKException: not agree privacyMode` 异常
+- 在 `onCreate()` 方法中，按顺序执行：
+  1. 设置隐私政策同意（必需）
+  2. 初始化百度地图SDK
+  3. 设置坐标类型为 BD09LL（百度经纬度坐标系）
+  4. 执行原有的日志文件初始化逻辑
 - 原有的应用逻辑完全保留，未做任何修改
 
 **文件位置**：`app/src/main/java/com/example/GaoDe/MyGaoDeApplication.kt`
