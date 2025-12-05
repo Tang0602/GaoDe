@@ -24,9 +24,18 @@ fun GaodeMap(modifier: Modifier = Modifier) {
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
-                Lifecycle.Event.ON_RESUME -> mapView.onResume()
-                Lifecycle.Event.ON_PAUSE -> mapView.onPause()
-                Lifecycle.Event.ON_DESTROY -> mapView.onDestroy()
+                Lifecycle.Event.ON_RESUME -> {
+                    // Activity onResume 时，确保 MapView 也 resume
+                    mapView.onResume()
+                }
+                Lifecycle.Event.ON_PAUSE -> {
+                    // Activity onPause 时，暂停 MapView
+                    mapView.onPause()
+                }
+                Lifecycle.Event.ON_DESTROY -> {
+                    // Activity onDestroy 时，销毁 MapView
+                    mapView.onDestroy()
+                }
                 else -> {}
             }
         }
@@ -34,6 +43,7 @@ fun GaodeMap(modifier: Modifier = Modifier) {
 
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
+            // 组件销毁时，确保 MapView 也销毁
             mapView.onDestroy()
         }
     }
