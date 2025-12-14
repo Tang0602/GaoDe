@@ -1,0 +1,189 @@
+package com.example.amap_sim.model
+
+data class Place(
+    val id: String,
+    val name: String,
+    val address: String,
+    val latitude: Double,
+    val longitude: Double,
+    val category: String? = null,
+    val phone: String? = null,
+    val rating: Float? = null,
+    val description: String? = null,
+    val imageUrl: String? = null
+)
+
+data class PlaceDetails(
+    val place: Place,
+    val businessHours: String? = null,
+    val facilities: List<String> = emptyList(),
+    val reviews: List<Review> = emptyList(),
+    val photos: List<String> = emptyList()
+)
+
+data class Review(
+    val userId: String,
+    val userName: String,
+    val rating: Float,
+    val comment: String,
+    val timestamp: Long
+)
+
+data class POI(
+    val id: String,
+    val name: String
+)
+
+data class Hotel(
+    val id: String,
+    val name: String
+)
+
+data class POIItem(
+    val id: String,
+    val brandName: String,
+    val address: String,
+    val latitude: Double,
+    val longitude: Double,
+    val category: String,
+    val phone: String? = null,
+    val rating: Float,
+    val ratingText: String,
+    val pricePerPerson: String,
+    val viewCount: String,
+    val logo: String,
+    val verified: Boolean = true,
+    val operatingStatus: String,
+    val certificationTags: List<String> = emptyList(),
+    val distance: String,
+    val travelTime: String,
+    val rankingInfo: String? = null,
+    val specialties: List<String> = emptyList(),
+    val userQuote: String? = null,
+    val promotionInfo: String? = null,
+    val groupBuyInfo: GroupBuyInfo? = null,
+    val actionButtonText: String = "订单"
+)
+
+data class GroupBuyInfo(
+    val currentPrice: String,
+    val originalPrice: String,
+    val discount: String,
+    val description: String
+)
+
+data class HotelItem(
+    val id: String,
+    val hotelName: String,
+    val hotelType: String, // 如 "高档型"
+    val address: String,
+    val latitude: Double,
+    val longitude: Double,
+    val nearMetro: String? = null, // 如 "近地铁"
+    val surroundingInfo: String? = null, // 周边信息
+    val rating: Float,
+    val ratingText: String, // 如 "超棒"
+    val rankingInfo: String? = null, // 如 "卓刀泉酒店 第1名"
+    val serviceTags: List<String> = emptyList(), // 如 ["免费停车", "近地铁"]
+    val userQuote: String? = null,
+    val priceInfo: HotelPriceInfo,
+    val logo: String? = null,
+    val phone: String? = null
+)
+
+data class HotelPriceInfo(
+    val lowestPriceHint: String, // 如 "过去14天最低价"
+    val originalPrice: String? = null, // 划线价格
+    val currentPrice: String, // 现价，如 "¥362起"
+    val discountInfo: String? = null // 如 "立减 | 优惠 152 ►"
+)
+
+data class ScenicSpotItem(
+    val id: String,
+    val spotName: String,
+    val spotLevel: String, // 如 "4A景区", "红色景点", "3A景区", "生态公园"
+    val address: String,
+    val latitude: Double,
+    val longitude: Double,
+    val distance: String, // 如 "13.1公里"
+    val travelTime: String, // 如 "驾车 25分钟"
+    val rating: Float,
+    val ratingText: String, // 如 "超棒"
+    val activityInfo: String, // 如 "近期销量 3508", "5000+ 人去过"
+    val rankingInfo: String? = null, // 如 "武汉市游乐园榜 第1名"
+    val serviceTags: List<String> = emptyList(), // 如 ["官方售票", "周边游", "亲子户外"]
+    val userQuote: String? = null,
+    val ticketInfo: TicketInfo? = null, // 门票信息，南湖花溪公园等免费景点为null
+    val logo: String? = null,
+    val phone: String? = null
+)
+
+data class TicketInfo(
+    val ticketDescription: String, // 如 "门票-成人票", "夜场门票-单人票"
+    val originalPrice: String? = null, // 划线价格，如 "¥230"
+    val currentPrice: String // 现价，如 "¥229起"
+)
+
+data class RouteOption(
+    val id: String,
+    val transportationType: String, // 如 "公交", "打车", "轨道交通", "混合"
+    val duration: String, // 如 "1小时22分钟"
+    val distance: String, // 如 "1.8公里"
+    val walkDistance: String? = null, // 总步行距离，如 "步行 1.9公里"
+    val price: String? = null, // 如 "2元", "约8元", "14元"
+    val mainRoute: List<RouteSegment>,
+    val details: String, // 如 "15站 · 2元 · 雄楚大道BRT元宝山站上车"
+    val stationsInfo: String? = null, // 站数和上车站信息，如 "2站·珞狮路狮城名居上车"
+    val realTimeInfo: String? = null, // 如 "804路 预计 20:23~20:33 到站"
+    val warnings: List<RouteWarning> = emptyList(), // 警告信息，如首末班车提示
+    val tags: List<String> = emptyList(), // 如 ["限时特价", "打车混合"]
+    val isRecommended: Boolean = false,
+    val isAvailable: Boolean = true // 当前是否可乘坐（首末班车时间判断）
+)
+
+data class RouteSegment(
+    val type: String, // 如 "步行", "公交", "地铁", "打车"
+    val description: String, // 如 "12分钟", "804路", "轨道交通5号线"
+    val walkDistance: Int? = null, // 步行距离（米），显示在步行图标旁
+    val lineName: String? = null, // 线路名称，如"汉奇定制公交4号线"
+    val stations: Int? = null, // 经过站数
+    val icon: String, // 图标类型
+    val backgroundColor: String? = null // 如 "绿色", "蓝色"
+)
+
+// 路线警告信息（首末班车提示等）
+data class RouteWarning(
+    val type: String, // "first_bus", "last_bus", "not_available"
+    val message: String // 如 "⚠️ 首班车即将发出，汉奇定制公交4号线首班车时间00:30"
+)
+
+// 打车模式数据模型
+data class TaxiCategory(
+    val id: String,
+    val name: String,
+    val badge: Int? = null, // 右上角数字角标
+    val isSelected: Boolean = false
+)
+
+data class TaxiOption(
+    val id: String,
+    val type: String, // "recommendation" | "aggregate" | "provider"
+    val name: String,
+    val subtitle: String? = null,
+    val iconColor: String, // "green" | "yellow" | "orange" | ...
+    val iconText: String? = null, // 如 "顺" 
+    val price: String,
+    val priceRange: String? = null, // 如 "未拼成 21-23元"
+    val actionText: String? = null, // 如 "去体验"
+    val discount: String? = null, // 如 "特惠 已优惠2元"
+    val tags: List<String> = emptyList(), // 如 ["特惠", "敢坐敢赔", "隐私保护"]
+    val isSelected: Boolean = false,
+    val logo: String? = null // 服务商Logo
+)
+
+data class TaxiGroup(
+    val title: String,
+    val count: Int,
+    val isAllSelected: Boolean,
+    val items: List<TaxiOption>
+)

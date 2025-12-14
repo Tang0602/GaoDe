@@ -23,7 +23,12 @@
       "Bash(Select-Object -First 50)",
       "Bash(cmd /c \"chcp 65001 >nul && cd /d D:\\__gaode\\GaoDe-29491127cf9b0120d001489034afa4ea37d92bf0 && gradlew.bat assembleDebug 2>&1 | findstr /C:\"error:\" /C:\"BUILD SUCCESSFUL\" /C:\"BUILD FAILED\"\")",
       "Bash(cmd /c \"cd /d D:\\__gaode\\GaoDe-29491127cf9b0120d001489034afa4ea37d92bf0 && gradlew.bat clean\")",
-      "Bash(cmd /c:*)"
+      "Bash(cmd /c:*)",
+      "Bash(D:__gaodeGaoDe-29491127cf9b0120d001489034afa4ea37d92bf0gradlew.bat assembleDebug)",
+      "Bash(python update_package.py:*)",
+      "Bash(python move_package.py:*)",
+      "Bash(python fix_references.py:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": []
